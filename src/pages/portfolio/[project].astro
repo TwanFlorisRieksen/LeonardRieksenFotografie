@@ -1,0 +1,65 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image, Picture } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// ARCH-07 / 13.94: one static route per published project entry, generated from the CMS collection.
+// Draft entries (12.90) never generate a public route — this is the enforcement point, not just a filter.
+export async function getStaticPaths() {
+	const projects = await getCollection('projects', ({ data }) => !data.draft);
+	return projects.map((project) => ({
+		params: { project: project.id },
+		props: { project },
+	}));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const data = project.data;
+
+// SEO-04/12.51-12.52: per-entry override with a quality fallback, never a blank tag.
+const seoTitle = data.seoTitle ?? data.title;
+const seoDescription = data.seoDescription ?? data.summary;
+const socialImage = data.socialImage ?? data.coverImage;
+---
+
+<BaseLayout title={seoTitle} description={seoDescription} socialImage={socialImage.src}>
+	<article>
+		<h1>{data.title}</h1>
+		<p>{data.summary}</p>
+
+		{
+			/* PH-05: the project's own cover/hero image is LCP-critical — eager, high priority, never
+			   lazy-loaded. Below-fold gallery images stay lazy (PH-06). Width/height are reserved
+			   automatically by astro:assets to protect CLS (PH-04). */
+		}
+		<Image
+			src={data.coverImage}
+			alt={data.coverImageAlt}
+			widths={[400, 800, 1200, 1700]}
+			sizes="(min-width: 1024px) 800px, 100vw"
+			loading="eager"
+			fetchpriority="high"
+		/>
+
+		<Content />
+
+		<ul>
+			{
+				data.gallery.map((item) => (
+					<li>
+						<Picture
+							src={item.image}
+							alt={item.alt}
+							formats={['avif', 'webp']}
+							widths={[400, 800, 1200, 1700]}
+							sizes="(min-width: 1024px) 800px, 100vw"
+							loading="lazy"
+						/>
+						{item.caption && <p>{item.caption}</p>}
+					</li>
+				))
+			}
+		</ul>
+	</article>
+</BaseLayout>

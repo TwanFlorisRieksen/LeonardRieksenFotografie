@@ -1,0 +1,85 @@
+# Decap CMS configuration — P1 foundation scaffold.
+# Auth route: direct GitHub backend + Netlify OAuth Provider Tokens (DECISIONS.md D-01b).
+# Netlify Identity and Git Gateway are both officially deprecated — deliberately NOT used here.
+
+backend:
+  name: github
+  # PLACEHOLDER: set to the real "owner/repo" once the GitHub repository for this site exists
+  # (DECISIONS.md D-01b, external prerequisite #1). Config is inert until this is corrected.
+  repo: leonard-rieksen-fotografie/website
+  branch: main
+
+# 12.93-12.95: workflow should match how Leo actually works. He publishes largely alone, so the
+# simplified/default publish mode is used now; editorial_workflow (draft/review branches+PRs) is a
+# CMS-08 decision explicitly deferred to P5, not enabled here.
+publish_mode: simple
+
+# 12.90: unpublished work is represented in-model via the `draft` field per entry (see below),
+# not via Decap's own branch-based workflow states (that's what editorial_workflow would add later).
+
+collections:
+  - name: "projects"
+    label: "Projecten"
+    label_singular: "Project"
+    folder: "src/content/projects"
+    create: true
+    delete: true
+    # One subfolder per entry (index.md + colocated images) — matches content.config.ts's loader and
+    # keeps Decap's uploaded-media path identical to the relative path Astro's image() helper expects.
+    path: "{{slug}}/index"
+    media_folder: ""
+    public_folder: ""
+    slug: "{{slug}}"
+    format: "frontmatter"
+    extension: "md"
+    fields:
+      - { label: "Titel", name: "title", widget: "string" }
+      - label: "Categorie"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "Architectuur", value: "architectuur" }
+          - { label: "Interieur", value: "interieur" }
+      - { label: "Samenvatting", name: "summary", widget: "text" }
+      - { label: "Coverbeeld", name: "coverImage", widget: "image" }
+      - label: "Alt-tekst coverbeeld"
+        name: "coverImageAlt"
+        widget: "string"
+        hint: "Beschrijf wat er te zien is — niet de bestandsnaam herhalen."
+      - label: "Galerij"
+        name: "gallery"
+        widget: "list"
+        fields:
+          - { label: "Afbeelding", name: "image", widget: "image" }
+          - label: "Alt-tekst"
+            name: "alt"
+            widget: "string"
+            hint: "Beschrijf wat er te zien is — niet de bestandsnaam herhalen."
+          - { label: "Bijschrift (optioneel)", name: "caption", widget: "string", required: false }
+      - { label: "Uitgelicht", name: "featured", widget: "boolean", default: false }
+      - label: "Volgorde"
+        name: "order"
+        widget: "number"
+        value_type: "int"
+        default: 0
+        hint: "Bepaalt de volgorde op het portfolio-overzicht (laag = eerst)."
+      - label: "Concept (nog niet publiceren)"
+        name: "draft"
+        widget: "boolean"
+        default: true
+        hint: "Aanvinken uit = zichtbaar op de live website."
+      - label: "SEO-titel (optioneel)"
+        name: "seoTitle"
+        widget: "string"
+        required: false
+        hint: "Leeg laten gebruikt automatisch de titel hierboven."
+      - label: "SEO-omschrijving (optioneel)"
+        name: "seoDescription"
+        widget: "text"
+        required: false
+        hint: "Leeg laten gebruikt automatisch de samenvatting hierboven."
+      - label: "Social share-afbeelding (optioneel)"
+        name: "socialImage"
+        widget: "image"
+        required: false
+        hint: "Leeg laten gebruikt automatisch het coverbeeld hierboven."

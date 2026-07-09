@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// PH-06/CLS: below-fold list thumbnails stay lazy (Image default); only a detail page's own cover
+// image is marked eager (see [project].astro). Draft entries (12.90 workflow states) never render here.
+const allProjects = await getCollection('projects', ({ data }) => !data.draft);
+const projects = allProjects.sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout
+	title="Portfolio"
+	description="Portfolio van Leonard Rieksen Fotografie — architectuur- en interieurfotografie."
+>
+	<h1>Portfolio</h1>
+	<p>
+		Technische P1-scaffold: bewijst dat projectpagina's dynamisch uit de CMS-collectie worden
+		gegenereerd (ARCH-07). Filters (Alles/Architectuur/Interieur, PH-11) en het grid-ontwerp volgen in
+		P5.
+	</p>
+	<ul>
+		{
+			projects.map((project) => (
+				<li>
+					<a href={`/portfolio/${project.id}/`}>
+						<Image src={project.data.coverImage} alt={project.data.coverImageAlt} width={400} />
+						<span>{project.data.title}</span>
+						<span> — {project.data.category}</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</BaseLayout>

@@ -1,0 +1,25 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# --- Security headers (SEC-02/11.47, centrally configured — 11.62) ---
+# CSP and HSTS are deliberately NOT set here yet. Blueprint 11.54/11.56: CSP must run Report-Only first
+# and HSTS must only be enabled after HTTPS/subdomain behaviour is validated — both are P6 work (SEC-03/04),
+# not P1. Shipping a premature strict CSP now would risk silently breaking the site with no real content
+# to test it against yet.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    X-Frame-Options = "DENY"
+
+# --- Caching (PERF-08): Astro's build-hashed assets are safe to cache forever; HTML is not. ---
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
