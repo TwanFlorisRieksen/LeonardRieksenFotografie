@@ -1,43 +1,53 @@
-# Astro Starter Kit: Minimal
+# Leonard Rieksen Fotografie — website
 
-```sh
-npm create astro@latest -- --template minimal
+Technical implementation. Requirements authority: `../documenten/WEBSITE_PROJECT_BLUEPRINT.txt`.
+Operational rules: `../CLAUDE.md`. Decisions/status: `../documenten/DECISIONS.md`, `PROGRESS.md`.
+
+## Stack (D-01a)
+
+[Astro](https://astro.build) (`output: 'static'`) — Content Collections for the CMS-driven project
+model, `astro:assets` (Sharp) for the responsive image pipeline, `@astrojs/sitemap` for the sitemap.
+No client-side framework runtime is shipped by default.
+
+## Structure
+
+```
+src/
+├── content.config.ts        # Project content model (Zod schema) — R-06
+├── content/projects/*/      # One folder per project: index.md + colocated images
+├── layouts/BaseLayout.astro # Landmarks, skip link, per-page SEO meta
+├── lib/seo.ts                # Title/canonical helpers
+└── pages/                   # One file per sitemap route (see blueprint 13.90)
+public/
+├── admin/                   # Decap CMS (index.html + config.yml)
+└── robots.txt is generated (src/pages/robots.txt.ts), not a static file
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Commands
 
-## 🚀 Project Structure
+| Command         | Action                                    |
+| --------------- | ------------------------------------------ |
+| `npm install`    | Install dependencies                        |
+| `npm run dev`    | Local dev server                            |
+| `npm run build`  | Production build to `./dist/`               |
+| `npm run preview`| Serve the production build locally          |
+| `npm run check`  | Type-check + Astro template diagnostics     |
 
-Inside of your Astro project, you'll see the following folders and files:
+## CMS auth — external setup still required (D-01b)
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+Decap CMS is configured for the direct GitHub backend + Netlify's OAuth Provider Tokens feature
+(Netlify Identity and Git Gateway are both officially deprecated — not used). This repo's local
+config is ready, but login has **not** been verified and cannot be until the following exist:
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+1. This project pushed to a real GitHub repository; update `public/admin/config.yml`'s
+   `backend.repo` from the current placeholder to the real `owner/repo`.
+2. A GitHub OAuth App (GitHub → Settings → Developer settings → OAuth Apps) with callback URL
+   `https://api.netlify.com/auth/done`.
+3. That OAuth App registered in the Netlify site's **Project configuration → Access & security →
+   OAuth → Install provider**.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Known placeholder
 
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+`astro.config.mjs`'s `site` is set to `https://example.com` (RFC 2606 reserved placeholder — not a
+real or guessed domain). Replace with the confirmed production domain before go-live; this affects
+the sitemap, canonical URLs, and Open Graph URLs.

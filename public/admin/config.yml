@@ -9,6 +9,13 @@ backend:
   repo: leonard-rieksen-fotografie/website
   branch: main
 
+# Decap's config schema requires a root-level media_folder/public_folder even though the only
+# current collection overrides both to "" for colocation (found via live browser validation —
+# Decap rejects the config without this). Serves only as the unused default for any future
+# collection that doesn't set its own.
+media_folder: "src/assets/uploads"
+public_folder: "/uploads"
+
 # 12.93-12.95: workflow should match how Leo actually works. He publishes largely alone, so the
 # simplified/default publish mode is used now; editorial_workflow (draft/review branches+PRs) is a
 # CMS-08 decision explicitly deferred to P5, not enabled here.
