@@ -5,9 +5,9 @@ self-hosting, subsetting, and bundling. Files are the Latin subsets published by
 Fontsource project (fontsource.org), re-hosted here so the site depends on NO external
 font host (see CSP/performance requirements, blueprint 9.97 / 11.48).
 
-- Instrument Serif — Copyright The Instrument Serif Project Authors. OFL-1.1.
-  https://fonts.google.com/specimen/Instrument+Serif
+- Archivo — Copyright The Archivo Project Authors (Omnibus Type). OFL-1.1.
+  https://fonts.google.com/specimen/Archivo   (display register — weights 500, 600)
 - Instrument Sans — Copyright The Instrument Sans Project Authors. OFL-1.1.
-  https://fonts.google.com/specimen/Instrument+Sans
+  https://fonts.google.com/specimen/Instrument+Sans   (functional register — weights 400, 500, 600)
 
 Full OFL-1.1 text: https://openfontlicense.org

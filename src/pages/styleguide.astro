@@ -11,6 +11,10 @@ import Button from '../components/Button.astro';
 import Icon from '../components/Icon.astro';
 import Media from '../components/Media.astro';
 
+// Authoritative homepage-hero asset (product-owner designated): assets/img/static/hero.jpeg,
+// staged into src/ as a pipeline input so astro:assets produces optimized derivatives (never the
+// source master — the postbuild gate purges originals). Blue-hour Reitdiephaven waterfront, 1536×1024.
+import heroImg from '../assets/static/hero.jpeg';
 import cover from '../content/projects/fixture-architectuur-scaffold/cover.jpg';
 import wide from '../content/projects/fixture-architectuur-scaffold/gallery-01-wide.jpg';
 import panorama from '../content/projects/fixture-architectuur-scaffold/gallery-02-panorama.jpg';
@@ -51,13 +55,22 @@ const icons = ['arrow-right', 'arrow-up-right', 'menu', 'close', 'mail', 'phone'
 	description="Interne design-system showcase — niet voor productie."
 	noindex={true}
 >
-	<!-- Hero: a big image moment + text-over-image (6.26) — proves the UI frames rather than competes -->
+	<!-- Hero: the authoritative hero.jpeg as a big image moment + text-over-image (6.26). The photograph
+	     is the primary layer; the UI frames rather than competes. Content is anchored bottom-left over the
+	     calm reflective water, where the corner scrim keeps light text legible without flattening the image. -->
 	<div class="sg-hero">
-		<Media src={cover} alt="Twee kantoorttorens met gekleurde gevels tegen een roze avondlucht, Arnhem." priority={true} sizes="100vw" widths={[800, 1200, 1700]} class="sg-hero__media" />
+		<Media
+			src={heroImg}
+			alt="Blauw-uur aan de Reitdiephaven: een rij kleurrijke houten woningen met een centrale toren, spiegelend in stil water."
+			priority={true}
+			sizes="100vw"
+			widths={[800, 1200, 1536]}
+			class="sg-hero__media"
+		/>
 		<div class="sg-hero__scrim"></div>
 		<div class="sg-hero__content u-container u-container--wide">
-			<p class="t-eyebrow t-eyebrow--accent">Design system · P2</p>
-			<h1 class="t-display sg-hero__title">Leonard&nbsp;Rieksen<br />Fotografie</h1>
+			<p class="t-eyebrow t-eyebrow--accent">Architectuur- &amp; interieurfotografie</p>
+			<h1 class="t-display sg-hero__title">Ruimte, licht<br />en precisie.</h1>
 			<p class="t-lead">
 				Een donkere, architectonisch precieze en fotografisch rustige omgeving waarin de
 				fotografie de lichtbron is en de interface zich terugtrekt.
@@ -109,7 +122,7 @@ const icons = ['arrow-right', 'arrow-up-right', 'menu', 'close', 'mail', 'phone'
 
 	<Section surface="surface">
 		<p class="t-eyebrow t-eyebrow--accent">Typografie</p>
-		<h2 class="t-h2 sg-h">Twee registers — Instrument Serif &amp; Instrument Sans</h2>
+		<h2 class="t-h2 sg-h">Twee registers — Archivo (display) &amp; Instrument Sans (functioneel)</h2>
 		<div class="sg-type">
 			{typeScale.map((t) => (
 				<div class="sg-type__row">
@@ -227,9 +240,21 @@ const icons = ['arrow-right', 'arrow-up-right', 'menu', 'close', 'mail', 'phone'
 	.sg-sub { margin-block: var(--space-2xl) var(--space-lg); color: var(--color-text); }
 	.sg-note { margin-top: var(--space-md); }
 
-	.sg-hero { position: relative; min-height: min(88vh, 760px); display: flex; align-items: flex-end; padding-block: var(--space-3xl); overflow: clip; }
+	.sg-hero { position: relative; min-height: min(84vh, 780px); display: flex; align-items: flex-end; padding-block: var(--space-3xl); overflow: clip; }
 	.sg-hero__media { position: absolute; inset: 0; }
-	.sg-hero__media :global(img) { width: 100%; height: 100%; object-fit: cover; }
+	/* The Media component wraps the image in <picture>; height:100% only reaches the <img> if <picture>
+	   itself fills the absolute box — otherwise the landscape 3:2 photo collapses to its own height and
+	   leaves a dark gap (visible on shorter/mobile viewports). Make the whole chain fill, then cover. */
+	.sg-hero__media :global(picture) { display: block; width: 100%; height: 100%; }
+	/* Show the houses + reflection band; the 3:2 photo is cover-cropped in the taller hero box. 42%
+	   keeps the colourful façades and their mirror image in frame rather than the empty upper sky. */
+	.sg-hero__media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: center 42%; }
+	/* Mobile: the photo is forced into a tall box, so lift the focal band a touch higher and keep the
+	   hero from becoming excessively tall — an intentional recompose, not a squeezed desktop crop. */
+	@media (max-width: 40rem) {
+		.sg-hero { min-height: min(78vh, 620px); }
+		.sg-hero__media :global(img) { object-position: center 46%; }
+	}
 	.sg-hero__scrim { position: absolute; inset: 0; background: var(--color-image-scrim-corner); }
 	.sg-hero__content { position: relative; }
 	.sg-hero__title { margin-block: var(--space-sm) var(--space-lg); }
@@ -240,7 +265,7 @@ const icons = ['arrow-right', 'arrow-up-right', 'menu', 'close', 'mail', 'phone'
 	.sg-swatch__name { display: block; font-size: var(--fs-caption); color: var(--color-text); margin-bottom: 2px; }
 	.sg-swatches--text { grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
 	.sg-tone { display: flex; align-items: center; gap: var(--space-md); }
-	.sg-tone__sample { font-family: var(--font-display); font-size: 2.6rem; line-height: 1; }
+	.sg-tone__sample { font-family: var(--font-display); font-weight: var(--fw-display); font-size: 2.6rem; line-height: 1; }
 
 	.sg-type__row { display: grid; grid-template-columns: 6rem 1fr; gap: var(--space-lg); align-items: baseline; padding-block: var(--space-md); border-top: 1px solid var(--color-border-subtle); }
 	.sg-type__label { color: var(--color-text-muted); }

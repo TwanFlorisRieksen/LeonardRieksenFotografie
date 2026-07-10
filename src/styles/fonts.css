@@ -1,25 +1,31 @@
 /*
- * Self-hosted webfonts (VIS-09 / PERF-07). Two families only, coherent superfamily:
- *   Instrument Serif  — display register (hero statements, page/project titles, pull quotes)
- *   Instrument Sans   — functional register (body, nav, buttons, forms, metadata)
- * Latin subsets only, woff2 only, font-display: swap (no invisible text; fallback stack is metric-close
- * enough to keep layout shift low). No external font host — files live in /fonts (CSP-friendly, 11.48).
- * Font-payload budget: ~95KB total across all 5 files; only the two 400 weights are preloaded.
+ * Self-hosted webfonts (VIS-09 / PERF-07). Two primary families, both modern grotesques (6.19):
+ *   Archivo         — DISPLAY register (hero statements, page/project titles, big visual moments).
+ *                     A modern architectural sans — blueprint 6.20 states a modern sans-serif conveys
+ *                     "architectonische precisie, helderheid, moderniteit", which is the corrected
+ *                     direction after the editorial/decorative-serif direction was rejected (D-11 rev.).
+ *   Instrument Sans — FUNCTIONAL register (body, nav, buttons, forms, metadata, captions). Retained
+ *                     from the original P2 system: it is a clean neutral grotesque, not the rejected
+ *                     element, so it stays (minimal churn — CLAUDE §11.5).
+ * Latin subsets only, woff2 only, font-display: swap (no invisible text; the sans fallback stack is
+ * metric-close enough to keep layout shift low). No external font host — files live in /fonts
+ * (CSP-friendly, 11.48). Font-payload budget: ~78KB total across 5 files; the display-600 + sans-400
+ * faces are preloaded. Variation comes from scale/weight/spacing, NOT extra families (6.21).
  */
 
 @font-face {
-	font-family: 'Instrument Serif';
+	font-family: 'Archivo';
 	font-style: normal;
-	font-weight: 400;
+	font-weight: 500;
 	font-display: swap;
-	src: url('/fonts/instrument-serif-latin-400-normal.woff2') format('woff2');
+	src: url('/fonts/archivo-latin-500-normal.woff2') format('woff2');
 }
 @font-face {
-	font-family: 'Instrument Serif';
-	font-style: italic;
-	font-weight: 400;
+	font-family: 'Archivo';
+	font-style: normal;
+	font-weight: 600;
 	font-display: swap;
-	src: url('/fonts/instrument-serif-latin-400-italic.woff2') format('woff2');
+	src: url('/fonts/archivo-latin-600-normal.woff2') format('woff2');
 }
 
 @font-face {

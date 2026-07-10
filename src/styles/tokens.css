@@ -120,7 +120,9 @@
 		linear-gradient(to right, rgba(6, 8, 11, 0.72) 0%, rgba(6, 8, 11, 0.24) 44%, transparent 74%);
 
 	/* --- Typography (6.18–6.26, 6.79) --- */
-	--font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+	/* Display = Archivo: a modern architectural grotesque (6.20 "moderne sans-serif → architectonische
+	   precisie"). Fallback stack is SANS (never serif) so a swap never flashes an editorial serif. */
+	--font-display: 'Archivo', 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 	--font-sans: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 
 	/* Fluid type scale (6.22) — controlled min→max; strong scale contrast (VIS-18). */
@@ -141,14 +143,19 @@
 	--lh-body: 1.65;
 	--lh-lead: 1.5;
 
-	--ls-display: -0.028em;
-	--ls-heading: -0.015em;
+	/* Tighter optical tracking for the Archivo grotesque at display sizes (a grotesque needs more
+	   negative tracking than the outgoing serif to read as monumental/architectural, not loose). */
+	--ls-display: -0.035em;
+	--ls-heading: -0.02em;
 	--ls-body: 0em;
 	--ls-eyebrow: 0.16em;
 
 	--fw-regular: 400;
 	--fw-medium: 500;
 	--fw-semibold: 600;
+	/* Display-register weights (Archivo). Hierarchy comes from weight + scale, not colour (6.21/6.25). */
+	--fw-display: 600; /* display / H1 / H2 — confident, architectural */
+	--fw-display-soft: 500; /* H3 / smaller display moments */
 
 	--measure: 68ch; /* max readable line length (6.24) */
 	--measure-lead: 58ch;

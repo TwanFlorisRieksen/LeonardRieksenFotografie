@@ -133,7 +133,7 @@ a {
 .t-h2,
 .t-h3 {
 	font-family: var(--font-display);
-	font-weight: var(--fw-regular);
+	font-weight: var(--fw-display);
 	color: var(--color-text);
 	text-wrap: balance;
 }
@@ -146,15 +146,17 @@ a {
 .t-h1 {
 	font-size: var(--fs-h1);
 	line-height: var(--lh-heading);
-	letter-spacing: var(--ls-heading);
+	letter-spacing: var(--ls-display);
 }
 .t-h2 {
 	font-size: var(--fs-h2);
 	line-height: var(--lh-heading);
 	letter-spacing: var(--ls-heading);
 }
+/* H3 steps down to the softer display weight — weight-based hierarchy (6.25). */
 .t-h3 {
 	font-size: var(--fs-h3);
+	font-weight: var(--fw-display-soft);
 	line-height: var(--lh-snug);
 	letter-spacing: var(--ls-heading);
 }
@@ -214,7 +216,7 @@ a {
 }
 .prose h2 {
 	font-family: var(--font-display);
-	font-weight: var(--fw-regular);
+	font-weight: var(--fw-display);
 	font-size: var(--fs-h2);
 	line-height: var(--lh-heading);
 	letter-spacing: var(--ls-heading);
