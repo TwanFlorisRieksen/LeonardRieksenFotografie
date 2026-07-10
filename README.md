@@ -33,6 +33,18 @@ public/
 | `npm run preview`| Serve the production build locally          |
 | `npm run check`  | Type-check + Astro template diagnostics     |
 
+## Repository & deployment topology
+
+**This `output/` directory _is_ the Git repository root** (`git status` runs here, not in the project
+parent). Push **this** directory to GitHub — it is the deployable unit. The project's planning/operational
+documents (`../documenten/`), the blueprint, raw asset library, and old-site reference live **outside** this
+repo on purpose (internal, not published) — note they are therefore not version-controlled by this repo, so
+keep them backed up separately.
+
+Netlify connects directly to this repo: `netlify.toml` sits at the repo root, so **no base directory is
+needed** — build command `npm run build`, publish directory `dist` (both already in `netlify.toml`). Do not
+push the project parent folder; push this folder.
+
 ## CMS auth — external setup still required (D-01b)
 
 Decap CMS is configured for the direct GitHub backend + Netlify's OAuth Provider Tokens feature
