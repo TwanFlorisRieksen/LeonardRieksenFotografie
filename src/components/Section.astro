@@ -6,7 +6,9 @@
  */
 interface Props {
 	width?: 'default' | 'narrow' | 'wide' | 'flush';
-	surface?: 'none' | 'surface' | 'deep';
+	/* 'light' is EXPERIMENTAL — P2.5 light-surface hypothesis test only (see DECISIONS.md). Remove this
+	   variant entirely if the experiment doesn't survive the rendered evaluation. */
+	surface?: 'none' | 'surface' | 'deep' | 'light';
 	tight?: boolean;
 	as?: 'section' | 'div' | 'article' | 'header' | 'footer';
 	class?: string;
@@ -50,5 +52,40 @@ const widthClass =
 	}
 	.section--deep {
 		background: var(--color-bg-deep);
+	}
+	/* EXPERIMENTAL (P2.5) — warm-stone light register, tested against the all-dark baseline. */
+	.section--light {
+		background: var(--color-bg-light);
+		color: var(--color-text-on-light);
+	}
+	.section--light :global(.t-display),
+	.section--light :global(.t-h1),
+	.section--light :global(.t-h2),
+	.section--light :global(.t-h3),
+	.section--light :global(.t-h4) {
+		color: var(--color-text-on-light);
+	}
+	.section--light :global(.t-lead),
+	.section--light :global(.t-secondary) {
+		color: var(--color-text-on-light-secondary);
+	}
+	.section--light :global(.t-eyebrow--accent) {
+		color: var(--color-accent-on-light);
+	}
+	/* Button is written for the dark context (--color-text = off-white). Re-point secondary/tertiary so
+	   they stay legible on the light experiment surface instead of rendering near-invisible white-on-stone. */
+	.section--light :global(.btn--secondary) {
+		color: var(--color-text-on-light);
+		border-color: var(--color-border-on-light);
+	}
+	.section--light :global(.btn--secondary:hover) {
+		border-color: var(--color-accent-on-light);
+		background: color-mix(in srgb, var(--color-text-on-light) 6%, transparent);
+	}
+	.section--light :global(.btn--tertiary) {
+		color: var(--color-text-on-light);
+	}
+	.section--light :global(.btn--tertiary:hover) {
+		color: var(--color-accent-on-light);
 	}
 </style>

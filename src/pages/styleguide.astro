@@ -202,9 +202,9 @@ const icons = ['arrow-right', 'arrow-up-right', 'menu', 'close', 'mail', 'phone'
 
 		<h3 class="t-h4 sg-sub">Gecureerde grid (opt-in 3:2 kader)</h3>
 		<div class="sg-grid">
-			<Media src={cover} alt="Kantoortorens Arnhem in avondlicht." ratio="3/2" widths={[400, 800]} sizes="(min-width:52rem) 33vw, 100vw" />
-			<Media src={wide} alt="Detail van een gevel in avondlicht." ratio="3/2" widths={[400, 800]} sizes="(min-width:52rem) 33vw, 100vw" />
-			<Media src={portrait} alt="Verticale architectuurcompositie." ratio="3/2" widths={[400, 800]} sizes="(min-width:52rem) 33vw, 100vw" />
+			<Media src={cover} alt="Kantoortorens Arnhem in avondlicht." ratio="3/2" widths={[400, 800]} sizes="(min-width:40rem) 33vw, 100vw" />
+			<Media src={wide} alt="Detail van een gevel in avondlicht." ratio="3/2" widths={[400, 800]} sizes="(min-width:40rem) 33vw, 100vw" />
+			<Media src={portrait} alt="Verticale architectuurcompositie." ratio="3/2" widths={[400, 800]} sizes="(min-width:40rem) 33vw, 100vw" />
 		</div>
 
 		<h3 class="t-h4 sg-sub">Portret — intrinsieke verhouding, volledig getoond</h3>
@@ -214,6 +214,37 @@ const icons = ['arrow-right', 'arrow-up-right', 'menu', 'close', 'mail', 'phone'
 
 		<h3 class="t-h4 sg-sub">Panorama 5.6:1 — breed beeldmoment</h3>
 		<Media src={panorama} alt="Panoramische opname van een architectonisch plein." widths={[800, 1200, 1700]} sizes="100vw" />
+	</Section>
+
+	<!-- EXPERIMENTAL — P2.5 light-surface hypothesis. Placed between two photographic moments (the grid
+	     above, the spacing/motion section below) to test whether a restrained warm-stone register improves
+	     rhythm/hierarchy for an informational, non-photographic block (a realistic "diensten" teaser),
+	     per the required rendered test. Removed entirely if the evaluation doesn't justify keeping it. -->
+	<Section surface="light">
+		<p class="t-eyebrow t-eyebrow--accent">Diensten (voorbeeldsectie — lichtregister)</p>
+		<h2 class="t-h2 sg-h">Architectuur- &amp; interieurfotografie op locatie</h2>
+		<p class="t-lead sg-light-lead">
+			Een informatieve sectie zonder fotografie op de achtergrond — de context waarin een lichtregister
+			het meest voor de hand ligt. Getest tegen de donkere basislijn, niet automatisch toegevoegd.
+		</p>
+		<div class="sg-light-grid">
+			<div class="sg-light-item">
+				<span class="t-eyebrow sg-light-item__num">01</span>
+				<h3 class="t-h4">Architectuurfotografie</h3>
+				<p class="t-secondary">Gevels, interieurs en ruimtelijke composities voor architecten en vastgoedprofessionals.</p>
+			</div>
+			<div class="sg-light-item">
+				<span class="t-eyebrow sg-light-item__num">02</span>
+				<h3 class="t-h4">Interieurfotografie</h3>
+				<p class="t-secondary">Sfeer, licht en materiaal vastgelegd voor interieurontwerpers en projectontwikkelaars.</p>
+			</div>
+			<div class="sg-light-item">
+				<span class="t-eyebrow sg-light-item__num">03</span>
+				<h3 class="t-h4">Op maat</h3>
+				<p class="t-secondary">Ieder project begint met een kort gesprek over ruimte, licht en het gewenste resultaat.</p>
+			</div>
+		</div>
+		<Button variant="secondary" class="sg-light-cta">Ontdek de diensten</Button>
 	</Section>
 
 	<Section>
@@ -278,6 +309,16 @@ const icons = ['arrow-right', 'arrow-up-right', 'menu', 'close', 'mail', 'phone'
 
 	.sg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--grid-gap); }
 	.sg-portrait { max-width: 420px; }
+
+	/* EXPERIMENTAL (P2.5 light-surface hypothesis) */
+	.sg-light-lead { margin-top: var(--space-md); max-width: 52ch; }
+	.sg-light-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-xl); margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border-on-light); }
+	.sg-light-item__num { display: block; margin-bottom: var(--space-sm); color: var(--color-accent-on-light); }
+	.sg-light-item h3 { margin-block: var(--space-2xs) var(--space-xs); }
+	.sg-light-cta { margin-top: var(--space-2xl); }
+	@media (max-width: 40rem) {
+		.sg-light-grid { grid-template-columns: 1fr; gap: var(--space-lg); }
+	}
 
 	.sg-space__row { display: grid; grid-template-columns: 8rem 1fr; gap: var(--space-md); align-items: center; padding-block: var(--space-2xs); }
 	.sg-space__bar { block-size: 0.9rem; background: var(--color-accent); border-radius: var(--radius-xs); }

@@ -52,6 +52,14 @@
 	--p-error: #ec6f7e; /* ~6.4:1 */
 	--p-info: #6fb4d6; /* ~8.3:1 */
 
+	/* --- EXPERIMENTAL (P2.5 light-surface hypothesis, dev-only /styleguide test — see DECISIONS.md).
+	   A restrained warm-stone light register, tested as an alternative to the all-dark surface scale.
+	   NOT pure white (6.10) — a desaturated warm greige so it reads as "paper/concrete", not a generic
+	   white SaaS card. Removed entirely if the rendered experiment doesn't earn its place. --- */
+	--p-stone-100: #ece7de; /* light surface — warm, desaturated, paper/concrete-like */
+	--p-stone-200: #ddd6c8; /* border/divider on the light surface */
+	--p-gold-800: #7c6339; /* deep gold, further darkened for AA small-text on stone-100 (4.6:1; gold-700 alone is 3.85:1) */
+
 	/* --- Alpha primitives (borders / overlays over unknown surfaces incl. photography). --- */
 	--p-white-a08: rgba(236, 238, 242, 0.08);
 	--p-white-a14: rgba(236, 238, 242, 0.14);
@@ -98,6 +106,14 @@
 	--color-warning: var(--p-warning);
 	--color-error: var(--p-error);
 	--color-info: var(--p-info);
+
+	/* --- EXPERIMENTAL light-surface semantic tokens (P2.5 hypothesis test only). --- */
+	--color-bg-light: var(--p-stone-100);
+	--color-border-on-light: var(--p-stone-200);
+	--color-text-on-light: var(--p-ink-900);
+	--color-text-on-light-secondary: var(--p-ink-700);
+	--color-accent-on-light: var(--p-gold-800); /* deep gold, AA-legible at small sizes on stone-100 */
+	--color-interactive-on-light: var(--p-blue-600); /* deep blue — AA on light */
 
 	/* Overlays / scrims (6.85) */
 	--color-overlay: var(--p-black-a72);

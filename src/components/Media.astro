@@ -71,6 +71,11 @@ const styleVars = ratio ? `--media-ratio:${ratio};--media-fit:${fit};--media-pos
 	.media {
 		display: block;
 		overflow: clip;
+		/* Grid/flex items default to min-width:auto, which browsers resolve against the *intrinsic* image
+		   size — this blows a grid track open (e.g. a 3-col grid rendering at ~2x its container) instead of
+		   letting the image shrink to its track/flex-basis. min-width/min-height:0 restores normal shrinking. */
+		min-width: 0;
+		min-height: 0;
 		background: var(--color-surface); /* calm holding colour before decode (no flashing skeleton, PH-07) */
 	}
 	.media :global(img) {

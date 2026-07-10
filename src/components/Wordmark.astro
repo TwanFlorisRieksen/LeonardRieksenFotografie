@@ -12,10 +12,11 @@ interface Props {
 const { class: className } = Astro.props;
 ---
 
-<a class:list={['wordmark', className]} href="/" aria-label="Leonard Rieksen Fotografie — naar de homepagina">
+<a class:list={['wordmark', className]} href="/">
 	<span class="wordmark__name">Leonard Rieksen</span>
 	<span class="wordmark__rule" aria-hidden="true"></span>
 	<span class="wordmark__suffix">Fotografie</span>
+	<span class="u-visually-hidden"> — naar de homepagina</span>
 </a>
 
 <style>
