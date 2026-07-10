@@ -136,8 +136,10 @@ const lastIndex = data.gallery.length - 1;
 			)
 		}
 
-		<!-- Ending / navigation (UX-03: never a dead end). -->
-		<Section tight>
+		<!-- Ending / navigation (UX-03: never a dead end). A hairline rule closes the article so the
+		     return link reads as a deliberate final beat rather than an orphaned link stranded in the
+		     open space after the last image (P3.5 ending-resolution refinement). -->
+		<div class="proj-outro u-container">
 			<a class="proj-back" href="/portfolio/">
 				<svg
 					width="18"
@@ -155,7 +157,7 @@ const lastIndex = data.gallery.length - 1;
 				</svg>
 				Terug naar portfolio
 			</a>
-		</Section>
+		</div>
 	</article>
 </BaseLayout>
 
@@ -267,7 +269,16 @@ const lastIndex = data.gallery.length - 1;
 		text-align: center;
 	}
 
-	/* --- Back navigation --- */
+	/* --- Article close + back navigation --- */
+	/* A restrained full-measure hairline terminates the article (idiomatic to the design system's
+	   hairline language) so the return link resolves the page instead of floating in the trailing void.
+	   The space above the rule stays generous — calm before the close, now framed rather than open. */
+	.proj-outro {
+		border-top: 1px solid var(--color-border-subtle);
+		/* Bottom stays modest — the footer already carries its own generous top breathing room, so a large
+		   bottom pad here would only double it and leave the return link stranded high above the footer. */
+		padding-block: var(--space-xl) var(--space-2xl);
+	}
 	.proj-back {
 		display: inline-flex;
 		align-items: center;
