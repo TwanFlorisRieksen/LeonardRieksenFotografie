@@ -1,6 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
-import { Image, Picture } from 'astro:assets';
+import { Image, Picture, getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 // ARCH-07 / 13.94: one static route per published project entry, generated from the CMS collection.
@@ -20,10 +20,19 @@ const data = project.data;
 // SEO-04/12.51-12.52: per-entry override with a quality fallback, never a blank tag.
 const seoTitle = data.seoTitle ?? data.title;
 const seoDescription = data.seoDescription ?? data.summary;
-const socialImage = data.socialImage ?? data.coverImage;
+
+// SEO-06 / image protection (12.3): og:image MUST be an optimized derivative, never the raw source
+// original. Passing `image.src` directly would emit AND publicly advertise the full-resolution source
+// JPG (byte-identical to the file in /assets) via a public meta tag — social scrapers would fetch it and
+// the original would be directly downloadable. getImage() produces a bounded, re-encoded derivative
+// instead. Width 1200 = the standard OG width; format jpeg for maximum scraper compatibility. The image
+// is not cropped to a fixed OG ratio here — arbitrary cropping of photography is forbidden (2.14/8.14);
+// curation-appropriate social crops are a later content-phase concern.
+const ogSourceImage = data.socialImage ?? data.coverImage;
+const ogImage = await getImage({ src: ogSourceImage, width: 1200, format: 'jpeg' });
 ---
 
-<BaseLayout title={seoTitle} description={seoDescription} socialImage={socialImage.src}>
+<BaseLayout title={seoTitle} description={seoDescription} socialImage={ogImage.src}>
 	<article>
 		<h1>{data.title}</h1>
 		<p>{data.summary}</p>
