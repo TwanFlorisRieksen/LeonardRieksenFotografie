@@ -1,0 +1,293 @@
+---
+/*
+ * SiteHeader — shared header + primary navigation (HDR-01/HDR-02 / blueprint 13.56–13.71).
+ *   - Wordmark links to Home (13.59); four primary destinations with clear Dutch labels, no
+ *     "Explore/Discover" (13.62–13.63); Contact is the emphasised action (13.58 contactmogelijkheid).
+ *   - Active/current-page state via aria-current + a gold hairline (13.70), not colour alone (A11Y-09).
+ *   - Desktop: static, visually calm, zero client JS, no hover-dependency (13.64, UX-11). A static header
+ *     never covers the photography and never "irritates" (13.69); intelligent hide-on-scroll is a later,
+ *     separately-justified enhancement (MOT-10), deliberately NOT auto-added here.
+ *   - Mobile: a <details> disclosure = fully working WITHOUT JS (keyboard + no-JS baseline, MOT-08).
+ *     A tiny progressive-enhancement script adds Escape-to-close, close-on-navigate, focus move and
+ *     scroll-lock. The menu/close icon swap is pure CSS (details[open]). Reduced motion respected globally.
+ */
+import Wordmark from './Wordmark.astro';
+import Icon from './Icon.astro';
+
+const pathname = Astro.url.pathname;
+const isActive = (href: string) =>
+	href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href);
+
+const navItems = [
+	{ label: 'Portfolio', href: '/portfolio/' },
+	{ label: 'Diensten', href: '/diensten/' },
+	{ label: 'Over mij', href: '/over-mij/' },
+];
+const contact = { label: 'Contact', href: '/contact/' };
+---
+
+<header class="site-header">
+	<div class="site-header__inner u-container u-container--wide">
+		<Wordmark class="site-header__brand" />
+
+		<!-- Desktop navigation -->
+		<nav class="site-header__nav" aria-label="Hoofdnavigatie">
+			<ul class="site-header__list">
+				{
+					navItems.map((item) => (
+						<li>
+							<a
+								class="nav-link"
+								href={item.href}
+								aria-current={isActive(item.href) ? 'page' : undefined}
+							>
+								{item.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+			<a
+				class="nav-contact"
+				href={contact.href}
+				aria-current={isActive(contact.href) ? 'page' : undefined}
+			>
+				{contact.label}
+			</a>
+		</nav>
+
+		<!-- Mobile navigation (no-JS disclosure, JS-enhanced) -->
+		<details class="mnav" id="mobile-nav">
+			<summary class="mnav__trigger" aria-label="Hoofdmenu">
+				<Icon name="menu" class="mnav__icon mnav__icon--open" size={24} />
+				<Icon name="close" class="mnav__icon mnav__icon--close" size={24} />
+			</summary>
+			<div class="mnav__panel">
+				<nav aria-label="Mobiele navigatie">
+					<ul class="mnav__list">
+						{
+							[...navItems, contact].map((item) => (
+								<li>
+									<a
+										class="mnav__link"
+										href={item.href}
+										aria-current={isActive(item.href) ? 'page' : undefined}
+									>
+										{item.label}
+									</a>
+								</li>
+							))
+						}
+					</ul>
+				</nav>
+			</div>
+		</details>
+	</div>
+</header>
+
+<style>
+	.site-header {
+		border-bottom: 1px solid var(--color-border-subtle);
+		background: var(--color-bg);
+		position: relative;
+		z-index: var(--z-header);
+	}
+	.site-header__inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-lg);
+		min-height: 4.75rem;
+	}
+
+	/* --- desktop nav --- */
+	.site-header__nav {
+		display: flex;
+		align-items: center;
+		gap: var(--space-xl);
+	}
+	.site-header__list {
+		display: flex;
+		align-items: center;
+		gap: var(--space-xl);
+	}
+	.nav-link {
+		position: relative;
+		display: inline-block;
+		padding-block: var(--space-2xs);
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-medium);
+		color: var(--color-text-secondary);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.nav-link::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -0.35rem;
+		height: 1px;
+		background: var(--color-accent);
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform var(--dur-interaction) var(--ease-out);
+	}
+	.nav-link:hover {
+		color: var(--color-text);
+	}
+	.nav-link:hover::after {
+		transform: scaleX(1);
+	}
+	/* Current page: gold hairline is persistent AND text is full-strength (not colour-only). */
+	.nav-link[aria-current='page'] {
+		color: var(--color-text);
+	}
+	.nav-link[aria-current='page']::after {
+		transform: scaleX(1);
+	}
+
+	.nav-contact {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.6rem;
+		padding: 0.55rem 1.15rem;
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--color-text);
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-xs);
+		transition: border-color var(--dur-interaction) var(--ease-standard),
+			background-color var(--dur-interaction) var(--ease-standard);
+	}
+	.nav-contact:hover {
+		border-color: var(--color-accent);
+		background: var(--color-surface-interactive);
+	}
+	.nav-contact[aria-current='page'] {
+		border-color: var(--color-accent);
+	}
+
+	/* --- mobile nav (hidden on desktop) --- */
+	.mnav {
+		display: none;
+	}
+	.mnav__trigger {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.9rem;
+		height: 2.9rem;
+		margin-right: calc(-0.6rem);
+		color: var(--color-text);
+		list-style: none;
+		border-radius: var(--radius-sm);
+	}
+	.mnav__trigger::-webkit-details-marker {
+		display: none;
+	}
+	/* Icons are rendered by the child <Icon> component, so scoped selectors can't reach them —
+	   target them globally but keep them anchored under the scoped .mnav element. */
+	.mnav :global(.mnav__icon--close) {
+		display: none;
+	}
+	.mnav[open] :global(.mnav__icon--open) {
+		display: none;
+	}
+	.mnav[open] :global(.mnav__icon--close) {
+		display: inline-block;
+	}
+	.mnav__panel {
+		position: fixed;
+		inset: 4.75rem 0 0 0;
+		z-index: var(--z-overlay);
+		background: var(--color-bg-deep);
+		border-top: 1px solid var(--color-border-subtle);
+		padding: var(--space-xl) var(--gutter);
+		overflow-y: auto;
+	}
+	.mnav__list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+	.mnav__link {
+		display: block;
+		padding: var(--space-md) 0;
+		font-family: var(--font-display);
+		font-size: 1.9rem;
+		line-height: 1.1;
+		color: var(--color-text-secondary);
+		border-bottom: 1px solid var(--color-border-subtle);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.mnav__link:hover,
+	.mnav__link[aria-current='page'] {
+		color: var(--color-text);
+	}
+	.mnav__link[aria-current='page'] {
+		padding-left: var(--space-md);
+		box-shadow: inset 2px 0 0 var(--color-accent);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.mnav[open] .mnav__link {
+			animation: mnav-item var(--dur-component) var(--ease-out) both;
+			animation-delay: calc(var(--i, 0) * 45ms);
+		}
+		@keyframes mnav-item {
+			from {
+				opacity: 0;
+				transform: translateY(0.6rem);
+			}
+		}
+	}
+
+	/* Breakpoint: switch desktop nav ↔ mobile disclosure by available space (6.86). */
+	@media (max-width: 52rem) {
+		.site-header__nav {
+			display: none;
+		}
+		.mnav {
+			display: block;
+		}
+	}
+</style>
+
+<script>
+	// Progressive enhancement only — the <details> menu already works without this.
+	const details = document.getElementById('mobile-nav') as HTMLDetailsElement | null;
+	if (details) {
+		const summary = details.querySelector('summary');
+		const panel = details.querySelector('.mnav__panel');
+		const links = Array.from(details.querySelectorAll<HTMLAnchorElement>('.mnav__link'));
+		links.forEach((l, i) => l.style.setProperty('--i', String(i)));
+
+		const setOpen = (open: boolean) => {
+			details.open = open;
+			document.documentElement.style.overflow = open ? 'hidden' : '';
+			if (open) {
+				links[0]?.focus({ preventScroll: true });
+			}
+		};
+
+		details.addEventListener('toggle', () => {
+			document.documentElement.style.overflow = details.open ? 'hidden' : '';
+		});
+		// Close on navigate so the panel doesn't linger over the next page.
+		links.forEach((link) => link.addEventListener('click', () => setOpen(false)));
+		// Close on Escape and return focus to the trigger.
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && details.open) {
+				setOpen(false);
+				(summary as HTMLElement | null)?.focus();
+			}
+		});
+		// Close when the viewport grows past the mobile breakpoint.
+		const mq = window.matchMedia('(min-width: 52rem)');
+		mq.addEventListener('change', (e) => {
+			if (e.matches && details.open) setOpen(false);
+		});
+		panel?.addEventListener('click', (e) => {
+			if (e.target === panel) setOpen(false);
+		});
+	}
+</script>

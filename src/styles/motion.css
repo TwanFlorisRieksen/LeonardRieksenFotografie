@@ -1,0 +1,63 @@
+/*
+ * MOTION SYSTEM (MOT-03 / blueprint 13.129, 7.152) — the central motion *language*, not page spectacle.
+ * P2 establishes tokens + conventions + reduced-motion safety only; richer scroll/signature motion is P4.
+ *
+ * Two hard rules (MOT-07 / MOT-08, blueprint 13.148 / 13.174 / 7.151#24):
+ *   1. Every reveal is OPT-IN under `prefers-reduced-motion: no-preference`. The default (and reduced)
+ *      state is the FINAL, fully-visible state — so content is never hidden waiting on animation or JS.
+ *   2. `prefers-reduced-motion: reduce` removes non-essential movement globally.
+ *
+ * Character (7.152): scarce, precise, geometric. Reveals use a short mask/clip + small translate, not a
+ * generic global fade. Hover/focus feedback is quick and controlled.
+ */
+
+/* --- Global reduced-motion guard: collapse all animation/transition to near-instant. --- */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/*
+ * On-load reveal utility. Elements carry the final style by default; only when motion is allowed do we
+ * animate FROM a hidden state TO that final state. `.u-reveal` on a container + optional inline
+ * `style="--reveal-index: N"` on children produces a controlled geometric stagger.
+ */
+@media (prefers-reduced-motion: no-preference) {
+	.u-reveal > * {
+		animation: reveal-rise var(--dur-transition) var(--ease-out) both;
+		animation-delay: calc(var(--reveal-index, 0) * var(--stagger-step));
+	}
+
+	.u-reveal-clip {
+		animation: reveal-clip var(--dur-transition) var(--ease-emphasized) both;
+	}
+
+	@keyframes reveal-rise {
+		from {
+			opacity: 0;
+			transform: translateY(1.1rem);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* Geometric mask reveal — a key motion direction in the blueprint (7.152 "geometrische mask animations"). */
+	@keyframes reveal-clip {
+		from {
+			opacity: 0;
+			clip-path: inset(0 0 100% 0);
+		}
+		to {
+			opacity: 1;
+			clip-path: inset(0 0 0 0);
+		}
+	}
+}

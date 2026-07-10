@@ -1,0 +1,266 @@
+---
+/*
+ * DESIGN-SYSTEM SHOWCASE — DEVELOPMENT ONLY (P2 / P2.5). Not production.
+ * Renders the ACTUAL system (real tokens, components, real authorized photography) so it can be judged
+ * in a browser. It is: noindex, excluded from the sitemap (astro.config filter), and physically stripped
+ * from production output by scripts/postbuild-verify-assets.mjs. View it via `astro dev` → /styleguide.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import Media from '../components/Media.astro';
+
+import cover from '../content/projects/fixture-architectuur-scaffold/cover.jpg';
+import wide from '../content/projects/fixture-architectuur-scaffold/gallery-01-wide.jpg';
+import panorama from '../content/projects/fixture-architectuur-scaffold/gallery-02-panorama.jpg';
+import portrait from '../content/projects/fixture-architectuur-scaffold/gallery-03-portrait.jpg';
+
+const surfaces = [
+	{ name: 'bg-deep', v: '#090b0f', note: 'full-bleed / footer base' },
+	{ name: 'bg', v: '#0f131a', note: 'primary page background' },
+	{ name: 'surface', v: '#141922', note: 'stepped section' },
+	{ name: 'surface-raised', v: '#1a212c', note: 'raised / menu panel' },
+	{ name: 'surface-interactive', v: '#212a37', note: 'hover fill' },
+];
+const textTones = [
+	{ name: 'text', v: '#eceef2', ratio: '15.4:1' },
+	{ name: 'text-secondary', v: '#b3b9c4', ratio: '9.8:1' },
+	{ name: 'text-muted', v: '#8a91a0', ratio: '5.1:1' },
+];
+const accents = [
+	{ name: 'accent (gold)', v: '#c7a56a', ratio: '7.6:1', role: 'premium detail — selective' },
+	{ name: 'interactive (blue)', v: '#7aa2f5', ratio: '7.2:1', role: 'links · focus · current' },
+	{ name: 'success', v: '#57b98a', ratio: '7.1:1', role: 'state' },
+	{ name: 'warning', v: '#e2a24a', ratio: '9.1:1', role: 'state' },
+	{ name: 'error', v: '#ec6f7e', ratio: '6.4:1', role: 'state' },
+	{ name: 'info', v: '#6fb4d6', ratio: '8.3:1', role: 'state' },
+];
+const typeScale = [
+	{ cls: 't-display', label: 'Display', sample: 'Architectuur in avondlicht' },
+	{ cls: 't-h1', label: 'H1', sample: 'Heading niveau 1' },
+	{ cls: 't-h2', label: 'H2', sample: 'Heading niveau 2' },
+	{ cls: 't-h3', label: 'H3', sample: 'Heading niveau 3' },
+	{ cls: 't-h4', label: 'H4', sample: 'Heading niveau 4' },
+];
+const icons = ['arrow-right', 'arrow-up-right', 'menu', 'close', 'mail', 'phone', 'chevron-down', 'instagram', 'check', 'alert', 'info'] as const;
+---
+
+<BaseLayout
+	title="Styleguide (dev)"
+	description="Interne design-system showcase — niet voor productie."
+	noindex={true}
+>
+	<!-- Hero: a big image moment + text-over-image (6.26) — proves the UI frames rather than competes -->
+	<div class="sg-hero">
+		<Media src={cover} alt="Twee kantoorttorens met gekleurde gevels tegen een roze avondlucht, Arnhem." priority={true} sizes="100vw" widths={[800, 1200, 1700]} class="sg-hero__media" />
+		<div class="sg-hero__scrim"></div>
+		<div class="sg-hero__content u-container u-container--wide">
+			<p class="t-eyebrow t-eyebrow--accent">Design system · P2</p>
+			<h1 class="t-display sg-hero__title">Leonard&nbsp;Rieksen<br />Fotografie</h1>
+			<p class="t-lead">
+				Een donkere, architectonisch precieze en fotografisch rustige omgeving waarin de
+				fotografie de lichtbron is en de interface zich terugtrekt.
+			</p>
+			<div class="sg-hero__actions">
+				<Button href="#" variant="primary" trailingArrow>Bekijk portfolio</Button>
+				<Button href="#" variant="secondary">Over Leo</Button>
+			</div>
+		</div>
+	</div>
+
+	<Section>
+		<p class="t-eyebrow t-eyebrow--accent">Kleur &amp; oppervlak</p>
+		<h2 class="t-h2 sg-h">Donkere neutralen — hiërarchie via tint, niet via lijnen</h2>
+		<div class="sg-swatches">
+			{surfaces.map((s) => (
+				<div class="sg-swatch">
+					<div class="sg-swatch__chip" style={`background:${s.v}`}></div>
+					<code class="sg-swatch__name">--color-{s.name}</code>
+					<span class="t-caption">{s.v} · {s.note}</span>
+				</div>
+			))}
+		</div>
+
+		<h3 class="t-h4 sg-sub">Tekst — off-white, nooit puur wit (AA getest)</h3>
+		<div class="sg-swatches sg-swatches--text">
+			{textTones.map((s) => (
+				<div class="sg-tone" style={`color:${s.v}`}>
+					<span class="sg-tone__sample">Aa</span>
+					<div>
+						<code class="sg-swatch__name">--color-{s.name}</code>
+						<span class="t-caption">{s.v} · {s.ratio}</span>
+					</div>
+				</div>
+			))}
+		</div>
+
+		<h3 class="t-h4 sg-sub">Accenten &amp; states — rollen gescheiden</h3>
+		<div class="sg-swatches">
+			{accents.map((s) => (
+				<div class="sg-swatch">
+					<div class="sg-swatch__chip" style={`background:${s.v}`}></div>
+					<code class="sg-swatch__name">{s.name}</code>
+					<span class="t-caption">{s.v} · {s.ratio} · {s.role}</span>
+				</div>
+			))}
+		</div>
+	</Section>
+
+	<Section surface="surface">
+		<p class="t-eyebrow t-eyebrow--accent">Typografie</p>
+		<h2 class="t-h2 sg-h">Twee registers — Instrument Serif &amp; Instrument Sans</h2>
+		<div class="sg-type">
+			{typeScale.map((t) => (
+				<div class="sg-type__row">
+					<span class="t-caption sg-type__label">{t.label}</span>
+					<span class={t.cls}>{t.sample}</span>
+				</div>
+			))}
+			<div class="sg-type__row">
+				<span class="t-caption sg-type__label">Lead</span>
+				<p class="t-lead">Introductietekst met een gecontroleerde regelbreedte, geoptimaliseerd voor rustige leesbaarheid.</p>
+			</div>
+			<div class="sg-type__row">
+				<span class="t-caption sg-type__label">Body</span>
+				<div class="prose">
+					<p>
+						Bodytekst is geoptimaliseerd voor leesbaarheid: 17px, ruime regelafstand en een
+						beperkte regelbreedte van circa 68 tekens. Een <a href="#">tekstlink</a> gebruikt
+						koningsblauw — herkenbaar en functioneel gescheiden van het gouden premium-accent.
+						<strong>Nadruk</strong> ontstaat uit gewicht, niet uit kleur.
+					</p>
+				</div>
+			</div>
+			<div class="sg-type__row">
+				<span class="t-caption sg-type__label">Labels</span>
+				<div class="sg-inline">
+					<span class="t-eyebrow">Eyebrow</span>
+					<span class="t-eyebrow t-eyebrow--accent">Accent eyebrow</span>
+					<span class="t-caption">Caption / metadata</span>
+				</div>
+			</div>
+		</div>
+	</Section>
+
+	<Section>
+		<p class="t-eyebrow t-eyebrow--accent">Componenten</p>
+		<h2 class="t-h2 sg-h">Buttons — duidelijke hiërarchie, volledige states</h2>
+		<div class="sg-row">
+			<Button variant="primary" trailingArrow>Primair</Button>
+			<Button variant="secondary">Secundair</Button>
+			<Button variant="tertiary" trailingArrow>Tertiair</Button>
+			<Button variant="primary" disabled>Uitgeschakeld</Button>
+		</div>
+		<p class="t-caption sg-note">Hover / focus-visible / active zijn interactief — test met muis en toetsenbord (Tab).</p>
+
+		<h3 class="t-h4 sg-sub">Formuliervelden — labels zichtbaar, foutstatus niet kleur-alleen</h3>
+		<div class="sg-form">
+			<div class="field">
+				<label class="field__label" for="sg-name">Naam</label>
+				<input class="field__control" id="sg-name" type="text" placeholder="Uw naam" />
+			</div>
+			<div class="field">
+				<label class="field__label" for="sg-tel">Telefoon <span class="field__optional">(optioneel)</span></label>
+				<input class="field__control" id="sg-tel" type="tel" placeholder="+31 6 …" />
+			</div>
+			<div class="field">
+				<label class="field__label" for="sg-mail">E-mail</label>
+				<input class="field__control" id="sg-mail" type="email" aria-invalid="true" aria-describedby="sg-mail-err" value="ongeldig@" />
+				<span class="field__message" id="sg-mail-err"><Icon name="alert" size={15} /> Vul een geldig e-mailadres in.</span>
+			</div>
+			<div class="field">
+				<label class="field__label" for="sg-msg">Bericht</label>
+				<textarea class="field__control" id="sg-msg" placeholder="Vertel kort over uw project…"></textarea>
+			</div>
+		</div>
+
+		<h3 class="t-h4 sg-sub">Iconografie — consistent lijnwerk, geen emoji</h3>
+		<div class="sg-icons">
+			{icons.map((n) => (
+				<div class="sg-icon"><Icon name={n} size={22} /><span class="t-caption">{n}</span></div>
+			))}
+		</div>
+	</Section>
+
+	<Section surface="surface">
+		<p class="t-eyebrow t-eyebrow--accent">Fotografie</p>
+		<h2 class="t-h2 sg-h">Ratio-flexibel — geen universele crop</h2>
+
+		<h3 class="t-h4 sg-sub">Gecureerde grid (opt-in 3:2 kader)</h3>
+		<div class="sg-grid">
+			<Media src={cover} alt="Kantoortorens Arnhem in avondlicht." ratio="3/2" widths={[400, 800]} sizes="(min-width:52rem) 33vw, 100vw" />
+			<Media src={wide} alt="Detail van een gevel in avondlicht." ratio="3/2" widths={[400, 800]} sizes="(min-width:52rem) 33vw, 100vw" />
+			<Media src={portrait} alt="Verticale architectuurcompositie." ratio="3/2" widths={[400, 800]} sizes="(min-width:52rem) 33vw, 100vw" />
+		</div>
+
+		<h3 class="t-h4 sg-sub">Portret — intrinsieke verhouding, volledig getoond</h3>
+		<div class="sg-portrait">
+			<Media src={portrait} alt="Verticale architectuurcompositie, volledig in beeld." widths={[400, 800]} sizes="(min-width:52rem) 420px, 80vw" />
+		</div>
+
+		<h3 class="t-h4 sg-sub">Panorama 5.6:1 — breed beeldmoment</h3>
+		<Media src={panorama} alt="Panoramische opname van een architectonisch plein." widths={[800, 1200, 1700]} sizes="100vw" />
+	</Section>
+
+	<Section>
+		<p class="t-eyebrow t-eyebrow--accent">Ruimte &amp; motion</p>
+		<h2 class="t-h2 sg-h">Spacingritme &amp; reduced motion</h2>
+		<div class="sg-space">
+			{['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'].map((s) => (
+				<div class="sg-space__row">
+					<span class="t-caption sg-type__label">--space-{s}</span>
+					<span class="sg-space__bar" style={`inline-size:var(--space-${s})`}></span>
+				</div>
+			))}
+		</div>
+		<div class="u-reveal sg-reveal">
+			<p style="--reveal-index:0" class="t-secondary">Reveals zijn opt-in onder “no-preference”.</p>
+			<p style="--reveal-index:1" class="t-secondary">Bij <code>prefers-reduced-motion: reduce</code> verschijnt alles direct.</p>
+			<p style="--reveal-index:2" class="t-secondary">Content is nooit verborgen zonder JS of animatie (MOT-08).</p>
+		</div>
+	</Section>
+</BaseLayout>
+
+<style>
+	.sg-h { margin-block: var(--space-sm) var(--space-xl); max-width: 24ch; }
+	.sg-sub { margin-block: var(--space-2xl) var(--space-lg); color: var(--color-text); }
+	.sg-note { margin-top: var(--space-md); }
+
+	.sg-hero { position: relative; min-height: min(88vh, 760px); display: flex; align-items: flex-end; padding-block: var(--space-3xl); overflow: clip; }
+	.sg-hero__media { position: absolute; inset: 0; }
+	.sg-hero__media :global(img) { width: 100%; height: 100%; object-fit: cover; }
+	.sg-hero__scrim { position: absolute; inset: 0; background: var(--color-image-scrim-corner); }
+	.sg-hero__content { position: relative; }
+	.sg-hero__title { margin-block: var(--space-sm) var(--space-lg); }
+	.sg-hero__actions { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-xl); }
+
+	.sg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: var(--space-lg); }
+	.sg-swatch__chip { height: 4.5rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle); margin-bottom: var(--space-xs); }
+	.sg-swatch__name { display: block; font-size: var(--fs-caption); color: var(--color-text); margin-bottom: 2px; }
+	.sg-swatches--text { grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+	.sg-tone { display: flex; align-items: center; gap: var(--space-md); }
+	.sg-tone__sample { font-family: var(--font-display); font-size: 2.6rem; line-height: 1; }
+
+	.sg-type__row { display: grid; grid-template-columns: 6rem 1fr; gap: var(--space-lg); align-items: baseline; padding-block: var(--space-md); border-top: 1px solid var(--color-border-subtle); }
+	.sg-type__label { color: var(--color-text-muted); }
+	.sg-inline { display: flex; flex-wrap: wrap; gap: var(--space-lg); align-items: center; }
+
+	.sg-row { display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: center; }
+	.sg-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); max-width: 46rem; }
+	.sg-icons { display: flex; flex-wrap: wrap; gap: var(--space-lg); }
+	.sg-icon { display: flex; flex-direction: column; align-items: center; gap: var(--space-2xs); width: 5.5rem; color: var(--color-text-secondary); }
+
+	.sg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--grid-gap); }
+	.sg-portrait { max-width: 420px; }
+
+	.sg-space__row { display: grid; grid-template-columns: 8rem 1fr; gap: var(--space-md); align-items: center; padding-block: var(--space-2xs); }
+	.sg-space__bar { block-size: 0.9rem; background: var(--color-accent); border-radius: var(--radius-xs); }
+	.sg-reveal { margin-top: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm); }
+
+	@media (max-width: 40rem) {
+		.sg-form { grid-template-columns: 1fr; }
+		.sg-grid { grid-template-columns: 1fr; }
+		.sg-type__row { grid-template-columns: 1fr; gap: var(--space-2xs); }
+	}
+</style>

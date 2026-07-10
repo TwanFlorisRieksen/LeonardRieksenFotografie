@@ -1,0 +1,13 @@
+Self-hosted webfonts — licensing
+
+Both families are licensed under the SIL Open Font License 1.1 (OFL), which permits
+self-hosting, subsetting, and bundling. Files are the Latin subsets published by the
+Fontsource project (fontsource.org), re-hosted here so the site depends on NO external
+font host (see CSP/performance requirements, blueprint 9.97 / 11.48).
+
+- Instrument Serif — Copyright The Instrument Serif Project Authors. OFL-1.1.
+  https://fonts.google.com/specimen/Instrument+Serif
+- Instrument Sans — Copyright The Instrument Sans Project Authors. OFL-1.1.
+  https://fonts.google.com/specimen/Instrument+Sans
+
+Full OFL-1.1 text: https://openfontlicense.org

@@ -1,0 +1,73 @@
+/*
+ * FORM CONTROL FOUNDATIONS — shared baseline so the real contact form (P5, A11Y-08 / 13.50) inherits
+ * accessible, on-brand controls. P2 establishes the visual + state system; it does not build the form.
+ * Labels are permanent and visible (never placeholder-as-label). State is never colour-only (6.17/A11Y-09):
+ * the error state adds a border change + message + icon slot, not just red.
+ */
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2xs);
+}
+
+.field__label {
+	font-size: var(--fs-body-sm);
+	font-weight: var(--fw-medium);
+	color: var(--color-text);
+}
+.field__label .field__optional {
+	color: var(--color-text-muted);
+	font-weight: var(--fw-regular);
+}
+
+.field__control {
+	width: 100%;
+	padding: 0.7rem 0.85rem;
+	background: var(--color-surface);
+	color: var(--color-text);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	font-size: var(--fs-body);
+	line-height: 1.4;
+	transition: border-color var(--dur-interaction) var(--ease-standard),
+		background-color var(--dur-interaction) var(--ease-standard);
+}
+.field__control::placeholder {
+	color: var(--color-text-muted);
+}
+.field__control:hover {
+	border-color: var(--color-border-strong);
+}
+.field__control:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 1px;
+	border-color: var(--color-focus);
+}
+textarea.field__control {
+	min-height: 7.5rem;
+	resize: vertical;
+}
+
+/* Invalid state — flagged by aria-invalid so styling and semantics stay in sync (A11Y-09). */
+.field__control[aria-invalid='true'] {
+	border-color: var(--color-error);
+}
+
+.field__message {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2xs);
+	font-size: var(--fs-caption);
+	color: var(--color-error);
+}
+
+.field__hint {
+	font-size: var(--fs-caption);
+	color: var(--color-text-muted);
+}
+
+.field__control:disabled {
+	opacity: var(--opacity-disabled);
+	cursor: not-allowed;
+}

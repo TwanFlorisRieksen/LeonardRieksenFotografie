@@ -1,0 +1,54 @@
+---
+/*
+ * Section — the one shared layout primitive (ARCH-03 / blueprint 13.110–13.111). Semantic <section>
+ * with vertical rhythm, a container width, and an optional stepped surface. Container width otherwise
+ * comes from the `.u-container` utility, so this stays a thin wrapper — no god component (13.104).
+ */
+interface Props {
+	width?: 'default' | 'narrow' | 'wide' | 'flush';
+	surface?: 'none' | 'surface' | 'deep';
+	tight?: boolean;
+	as?: 'section' | 'div' | 'article' | 'header' | 'footer';
+	class?: string;
+	[key: string]: unknown;
+}
+
+const {
+	width = 'default',
+	surface = 'none',
+	tight = false,
+	as: Tag = 'section',
+	class: className,
+	...rest
+} = Astro.props;
+
+const widthClass =
+	width === 'narrow'
+		? 'u-container--narrow'
+		: width === 'wide'
+			? 'u-container--wide'
+			: width === 'flush'
+				? 'u-container--flush'
+				: '';
+---
+
+<Tag class:list={['section', `section--${surface}`, { 'section--tight': tight }, className]} {...rest}>
+	<div class:list={['u-container', widthClass]}>
+		<slot />
+	</div>
+</Tag>
+
+<style>
+	.section {
+		padding-block: var(--section-gap);
+	}
+	.section--tight {
+		padding-block: var(--space-2xl);
+	}
+	.section--surface {
+		background: var(--color-surface);
+	}
+	.section--deep {
+		background: var(--color-bg-deep);
+	}
+</style>

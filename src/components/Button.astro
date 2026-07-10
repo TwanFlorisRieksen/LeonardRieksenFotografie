@@ -1,0 +1,139 @@
+---
+/*
+ * Button — action hierarchy (VIS-15 / blueprint 6.34–6.37, 6.95#10) with the FULL state system
+ * (VIS-14 / 6.95#8): default · hover · focus-visible · active · disabled.
+ *   primary   — the single most important action per view (CTA-01). A calm light "pill" on dark:
+ *               maximum affordance, unmistakable, and it keeps GOLD free for selective detail (6.11).
+ *   secondary — supporting action. Neutral hairline frame; hover reveals the gold hairline (premium detail).
+ *   tertiary  — inline/low-emphasis action. Text + geometric arrow that nudges on hover.
+ * Renders <a> when `href` is set, else <button>. Gold is NOT used as a flood fill anywhere.
+ */
+interface Props {
+	variant?: 'primary' | 'secondary' | 'tertiary';
+	href?: string;
+	type?: 'button' | 'submit' | 'reset';
+	disabled?: boolean;
+	trailingArrow?: boolean;
+	class?: string;
+	[key: string]: unknown;
+}
+
+const {
+	variant = 'primary',
+	href,
+	type = 'button',
+	disabled = false,
+	trailingArrow = false,
+	class: className,
+	...rest
+} = Astro.props;
+
+const Tag = href && !disabled ? 'a' : 'button';
+const tagProps = href && !disabled ? { href } : { type, disabled };
+---
+
+<Tag class:list={['btn', `btn--${variant}`, className]} {...tagProps} {...rest}>
+	<span class="btn__label"><slot /></span>
+	{
+		trailingArrow && (
+			<svg
+				class="btn__arrow"
+				width="18"
+				height="18"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.75"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+				focusable="false"
+			>
+				<path d="M4 12h15M13 6l6 6-6 6" />
+			</svg>
+		)
+	}
+</Tag>
+
+<style>
+	.btn {
+		--btn-arrow-shift: 0px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-xs);
+		padding: 0.72rem 1.4rem;
+		font-family: var(--font-sans);
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: 0.01em;
+		line-height: 1;
+		border-radius: var(--radius-xs);
+		border: 1px solid transparent;
+		text-align: center;
+		min-height: 2.9rem; /* comfortable target size (A11Y-07) */
+		transition: background-color var(--dur-interaction) var(--ease-standard),
+			border-color var(--dur-interaction) var(--ease-standard),
+			color var(--dur-interaction) var(--ease-standard),
+			transform var(--dur-feedback) var(--ease-standard);
+	}
+	.btn__arrow {
+		transition: transform var(--dur-interaction) var(--ease-out);
+		transform: translateX(var(--btn-arrow-shift));
+	}
+
+	/* --- primary: light pill on dark --- */
+	.btn--primary {
+		background: var(--color-text);
+		color: var(--color-text-on-accent);
+		border-color: var(--color-text);
+	}
+	.btn--primary:hover {
+		background: #fff;
+		border-color: #fff;
+		--btn-arrow-shift: 3px;
+	}
+
+	/* --- secondary: neutral hairline frame; gold reveals on hover --- */
+	.btn--secondary {
+		background: transparent;
+		color: var(--color-text);
+		border-color: var(--color-border-strong);
+	}
+	.btn--secondary:hover {
+		border-color: var(--color-accent);
+		background: var(--color-surface-interactive);
+		--btn-arrow-shift: 3px;
+	}
+
+	/* --- tertiary: text + arrow --- */
+	.btn--tertiary {
+		background: transparent;
+		color: var(--color-text);
+		padding-inline: 0;
+		min-height: 2.4rem;
+		border: none;
+	}
+	.btn--tertiary .btn__label {
+		box-shadow: inset 0 -1px 0 var(--color-border-strong);
+		transition: box-shadow var(--dur-interaction) var(--ease-standard);
+	}
+	.btn--tertiary:hover {
+		color: var(--color-accent);
+		--btn-arrow-shift: 4px;
+	}
+	.btn--tertiary:hover .btn__label {
+		box-shadow: inset 0 -1px 0 var(--color-accent);
+	}
+
+	/* --- shared active / disabled --- */
+	.btn:active {
+		transform: translateY(1px);
+	}
+	.btn:disabled,
+	.btn[aria-disabled='true'] {
+		opacity: var(--opacity-disabled);
+		cursor: not-allowed;
+		pointer-events: none;
+	}
+</style>

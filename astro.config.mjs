@@ -14,5 +14,11 @@ export default defineConfig({
 	output: 'static',
 	// Blueprint 13.90/13.98: one consistent URL convention across the site (all sitemap routes end in "/").
 	trailingSlash: 'always',
-	integrations: [sitemap()],
+	integrations: [
+		sitemap({
+			// Exclude the dev-only design-system showcase from the sitemap (it is also noindex and is
+			// stripped from production output by scripts/postbuild-verify-assets.mjs).
+			filter: (page) => !page.includes('/styleguide'),
+		}),
+	],
 });

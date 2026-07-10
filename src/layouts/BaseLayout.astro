@@ -1,5 +1,8 @@
 ---
 import { pageTitle, canonicalURL, SITE_NAME } from '../lib/seo';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import '../styles/global.css';
 
 interface Props {
 	/** Page-specific title (without the site-name suffix — pageTitle() adds it). Required per page (SEO-04). */
@@ -8,9 +11,13 @@ interface Props {
 	description: string;
 	/** Absolute URL to a social preview image; falls back to no og:image tag when omitted (no invented default). */
 	socialImage?: string;
+	/** Suppress indexing (dev-only pages such as the styleguide). */
+	noindex?: boolean;
+	/** Optional extra class on <body> (e.g. the styleguide surface). */
+	bodyClass?: string;
 }
 
-const { title, description, socialImage } = Astro.props;
+const { title, description, socialImage, noindex = false, bodyClass } = Astro.props;
 const canonical = canonicalURL(Astro.site, Astro.url);
 // OG spec requires an absolute image URL; page authors may pass either a relative build path or
 // an already-absolute URL, so resolve defensively rather than assuming.
@@ -24,9 +31,28 @@ const absoluteSocialImage = socialImage
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="dark" />
+		<meta name="theme-color" content="#0f131a" />
 		<title>{pageTitle(title)}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
+		{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+		<!-- Preload the two critical font faces (display-400 + sans-400) to cut first-paint swap (PERF-07). -->
+		<link
+			rel="preload"
+			href="/fonts/instrument-serif-latin-400-normal.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href="/fonts/instrument-sans-latin-400-normal.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
 
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content={SITE_NAME} />
@@ -37,51 +63,12 @@ const absoluteSocialImage = socialImage
 
 		<meta name="generator" content={Astro.generator} />
 	</head>
-	<body>
+	<body class:list={[bodyClass]}>
 		<a class="skip-link" href="#main-content">Direct naar inhoud</a>
-		<header>
-			<slot name="header">
-				<p>
-					<a href="/">{SITE_NAME}</a>
-				</p>
-				<nav aria-label="Hoofdnavigatie">
-					<ul>
-						<li><a href="/portfolio/">Portfolio</a></li>
-						<li><a href="/diensten/">Diensten</a></li>
-						<li><a href="/over-mij/">Over mij</a></li>
-						<li><a href="/contact/">Contact</a></li>
-					</ul>
-				</nav>
-			</slot>
-		</header>
+		<SiteHeader />
 		<main id="main-content">
 			<slot />
 		</main>
-		<footer>
-			<slot name="footer">
-				<p>&copy; {new Date().getFullYear()} {SITE_NAME}</p>
-				<nav aria-label="Footernavigatie">
-					<ul>
-						<li><a href="/privacy/">Privacyverklaring</a></li>
-					</ul>
-				</nav>
-			</slot>
-		</footer>
+		<SiteFooter />
 	</body>
 </html>
-
-<style>
-	/*
-	 * Technical scaffold only — no design-system styling belongs here (P2). This exists solely so the
-	 * skip link is not permanently invisible/unusable during P1 route validation.
-	 */
-	.skip-link {
-		position: absolute;
-		left: -9999px;
-		top: 0;
-	}
-	.skip-link:focus {
-		left: 0;
-		z-index: 1000;
-	}
-</style>

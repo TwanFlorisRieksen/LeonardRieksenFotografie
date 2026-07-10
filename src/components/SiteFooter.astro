@@ -1,0 +1,153 @@
+---
+/*
+ * SiteFooter — shared footer foundation (FTR-01 / blueprint 13.72–13.79).
+ * Contains: brand + short positioning, secondary navigation, contact, legal link, copyright + photo
+ * rights (11.42). Intentional columns, NOT an overloaded dump (13.74). No social icons: the old-site
+ * Instagram/Facebook presence is unconfirmed as actively maintained (A-03) and 13.78–13.79 forbid empty
+ * or speculative social icons — they are added in a later phase only once confirmed.
+ *
+ * CONTENT NOTE: the contact values below are MIGRATED factual data extracted from the old site
+ * (A-02, OLD_WEBSITE_CONTENT_INVENTORY), still owner-confirm. They are real extracted facts, not
+ * invented (CLAUDE §9.2). Final content validation/typography is P5/P6.
+ */
+import Wordmark from './Wordmark.astro';
+import Icon from './Icon.astro';
+
+const year = new Date().getFullYear();
+
+const primaryLinks = [
+	{ label: 'Home', href: '/' },
+	{ label: 'Portfolio', href: '/portfolio/' },
+	{ label: 'Diensten', href: '/diensten/' },
+	{ label: 'Over mij', href: '/over-mij/' },
+	{ label: 'Contact', href: '/contact/' },
+];
+const legalLinks = [{ label: 'Privacyverklaring', href: '/privacy/' }];
+
+// Migrated factual contact data (owner-confirm — A-02).
+const email = 'fotorieksen@hotmail.com';
+const region = 'Midden-Nederland';
+---
+
+<footer class="site-footer">
+	<div class="u-container u-container--wide">
+		<div class="site-footer__grid">
+			<div class="site-footer__brand">
+				<Wordmark />
+				<p class="site-footer__positioning t-secondary">
+					Architectuur- en interieurfotografie in {region}.
+				</p>
+			</div>
+
+			<nav class="site-footer__col" aria-label="Footernavigatie">
+				<h2 class="t-eyebrow site-footer__heading">Navigatie</h2>
+				<ul class="site-footer__list">
+					{primaryLinks.map((link) => (
+						<li><a class="site-footer__link" href={link.href}>{link.label}</a></li>
+					))}
+				</ul>
+			</nav>
+
+			<nav class="site-footer__col" aria-label="Juridisch">
+				<h2 class="t-eyebrow site-footer__heading">Juridisch</h2>
+				<ul class="site-footer__list">
+					{legalLinks.map((link) => (
+						<li><a class="site-footer__link" href={link.href}>{link.label}</a></li>
+					))}
+				</ul>
+			</nav>
+
+			<div class="site-footer__col">
+				<h2 class="t-eyebrow site-footer__heading">Contact</h2>
+				<ul class="site-footer__list">
+					<li>
+						<a class="site-footer__link site-footer__contact" href={`mailto:${email}`}>
+							<Icon name="mail" size={17} />
+							<span>{email}</span>
+						</a>
+					</li>
+					<li>
+						<a class="site-footer__link site-footer__contact" href="/contact/">
+							<Icon name="arrow-right" size={17} />
+							<span>Neem contact op</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="site-footer__base">
+			<p class="t-caption">&copy; {year} Leonard Rieksen Fotografie</p>
+			<p class="t-caption site-footer__rights">
+				Alle fotografie &copy; Leonard Rieksen. Gebruik uitsluitend met toestemming.
+			</p>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		background: var(--color-bg-deep);
+		border-top: 1px solid var(--color-border-subtle);
+		padding-block: clamp(3rem, 2rem + 4vw, 5.5rem) var(--space-2xl);
+		margin-top: var(--space-4xl);
+	}
+	.site-footer__grid {
+		display: grid;
+		grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
+		gap: var(--space-2xl) var(--space-xl);
+	}
+	.site-footer__positioning {
+		margin-top: var(--space-md);
+		max-width: 26ch;
+		font-size: var(--fs-body-sm);
+	}
+	.site-footer__heading {
+		margin-bottom: var(--space-md);
+	}
+	.site-footer__list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+	}
+	.site-footer__link {
+		color: var(--color-text-secondary);
+		font-size: var(--fs-body-sm);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.site-footer__link:hover {
+		color: var(--color-text);
+	}
+	.site-footer__contact {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+	}
+	.site-footer__base {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--space-sm);
+		margin-top: clamp(2.5rem, 2rem + 3vw, 4rem);
+		padding-top: var(--space-lg);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+	.site-footer__rights {
+		color: var(--color-text-disabled);
+	}
+
+	@media (max-width: 52rem) {
+		.site-footer__grid {
+			grid-template-columns: 1fr 1fr;
+		}
+		.site-footer__brand {
+			grid-column: 1 / -1;
+		}
+	}
+	@media (max-width: 30rem) {
+		.site-footer__grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-xl);
+		}
+	}
+</style>

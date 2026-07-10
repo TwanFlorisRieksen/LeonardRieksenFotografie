@@ -1,0 +1,61 @@
+---
+/*
+ * Wordmark — TEMPORARY typographic identity (ID-07 / CLAUDE Temporary Logo Protocol; blueprint 2.10).
+ * The definitive LRF logo does not exist yet. This is a restrained, on-brand type treatment of the
+ * authorized business name — NOT a pretended final logo. It is deliberately isolated in this one
+ * component and behind a stable API (a link to home), so replacing it with the real logo artwork later
+ * is a single-file change with no architectural dependency elsewhere.
+ */
+interface Props {
+	class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<a class:list={['wordmark', className]} href="/" aria-label="Leonard Rieksen Fotografie — naar de homepagina">
+	<span class="wordmark__name">Leonard Rieksen</span>
+	<span class="wordmark__rule" aria-hidden="true"></span>
+	<span class="wordmark__suffix">Fotografie</span>
+</a>
+
+<style>
+	.wordmark {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		color: var(--color-text);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.wordmark__name {
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		line-height: 1;
+		letter-spacing: -0.01em;
+	}
+	/* The single gold detail in the identity — a hairline rule, echoing warm light in the photography. */
+	.wordmark__rule {
+		align-self: center;
+		width: 1px;
+		height: 1.1rem;
+		background: var(--color-accent);
+		opacity: 0.7;
+	}
+	.wordmark__suffix {
+		font-family: var(--font-sans);
+		font-size: var(--fs-eyebrow);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-eyebrow);
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.wordmark:hover .wordmark__suffix {
+		color: var(--color-text-secondary);
+	}
+
+	@media (max-width: 26rem) {
+		.wordmark__name {
+			font-size: 1.3rem;
+		}
+	}
+</style>

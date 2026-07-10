@@ -1,0 +1,9 @@
+/*
+ * GLOBAL STYLESHEET — single import for the whole site (imported once in BaseLayout).
+ * Order matters: fonts → tokens → base → forms → motion.
+ */
+@import './fonts.css';
+@import './tokens.css';
+@import './base.css';
+@import './forms.css';
+@import './motion.css';

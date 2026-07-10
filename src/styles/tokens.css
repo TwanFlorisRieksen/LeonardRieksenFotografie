@@ -1,0 +1,215 @@
+/*
+ * DESIGN TOKENS — single source of truth for the visual system (VIS-01/02/17; blueprint 6.75–6.87, 6.95).
+ *
+ * Three-level hierarchy (blueprint 6.77):
+ *   1. PRIMITIVE tokens  (--p-*)  raw, un-semantic values. Never referenced directly by components.
+ *   2. SEMANTIC tokens   (--color-*, --fs-*, --space-*, …)  functional meaning. Components use these.
+ *   3. COMPONENT tokens  (--btn-*, --nav-*, …)  specific applications, defined next to their component.
+ *
+ * Direction: a cool-neutral, near-black "nocturne" environment (faint blue undertone ~hue 218) so the
+ * saturated architecture/interior photography reads as the light source and the UI recedes (6.16). Gold
+ * is a warm hairline/detail accent ONLY (6.11). Koningsblauw is the functional interaction colour,
+ * cool and separated from gold (6.13). Contrast ratios below are vs the primary background --p-ink-900
+ * (#0F131A) and were chosen to meet WCAG 2.2 AA (A11Y-04 / 6.17); see /styleguide for the live check.
+ */
+
+:root {
+	/* ============================================================= *
+	 * 1. PRIMITIVE TOKENS
+	 * ============================================================= */
+
+	/* --- Dark neutrals: cool charcoal scale, faint blue undertone (6.8–6.9). NOT pure black. --- */
+	--p-ink-950: #090b0f; /* deepest — behind full-bleed imagery, footer base */
+	--p-ink-900: #0f131a; /* primary page background */
+	--p-ink-850: #141922; /* secondary surface / sections that step forward */
+	--p-ink-800: #1a212c; /* raised surface (selective cards, menu panel) */
+	--p-ink-750: #212a37; /* interactive surface (hover fill) */
+	--p-ink-700: #2a3341; /* strong border / divider on dark */
+	--p-ink-650: #3a4552; /* hairline on lighter surfaces */
+	--p-ink-600: #4c5766;
+
+	/* --- Light neutrals: warm-cool off-whites, never pure #fff for large text (6.10). --- */
+	--p-paper-50: #eceef2; /* primary text — ~15.4:1 on ink-900 */
+	--p-paper-200: #c3c8d1; /* strong secondary */
+	--p-paper-300: #b3b9c4; /* secondary text — ~9.8:1 */
+	--p-paper-500: #8a91a0; /* muted / metadata — ~5.1:1 (AA normal text) */
+	--p-paper-700: #5b6270; /* disabled text (exempt from contrast) */
+
+	/* --- Gold: restrained warm "digital gold" (6.12) — muted champagne, not bright yellow. --- */
+	--p-gold-500: #c7a56a; /* accent — ~7.6:1 on ink-900 (AA for text + UI) */
+	--p-gold-400: #d8bd84; /* hover / brighter highlight */
+	--p-gold-700: #8a6f3f; /* deep gold — hairline rules on light-ish surfaces */
+
+	/* --- Koningsblauw: royal-azure interaction colour, lifted for on-dark legibility (6.13). --- */
+	--p-blue-600: #2f52c4; /* brand-deep — large fills only (rare) */
+	--p-blue-500: #4a72e0;
+	--p-blue-400: #7aa2f5; /* interactive text/icon on dark — ~7.2:1 */
+	--p-blue-300: #a3c0fa; /* hover */
+
+	/* --- Functional state colours: distinct hues, AA on dark; meaning never colour-only (6.14/6.17). --- */
+	--p-success: #57b98a; /* ~7.1:1 */
+	--p-warning: #e2a24a; /* ~9.1:1 */
+	--p-error: #ec6f7e; /* ~6.4:1 */
+	--p-info: #6fb4d6; /* ~8.3:1 */
+
+	/* --- Alpha primitives (borders / overlays over unknown surfaces incl. photography). --- */
+	--p-white-a08: rgba(236, 238, 242, 0.08);
+	--p-white-a14: rgba(236, 238, 242, 0.14);
+	--p-white-a24: rgba(236, 238, 242, 0.24);
+	--p-black-a40: rgba(6, 8, 11, 0.4);
+	--p-black-a72: rgba(6, 8, 11, 0.72);
+
+	/* ============================================================= *
+	 * 2. SEMANTIC TOKENS
+	 * ============================================================= */
+
+	/* Surfaces (6.8: hierarchy via tint, not borders/shadow) */
+	--color-bg-deep: var(--p-ink-950);
+	--color-bg: var(--p-ink-900);
+	--color-surface: var(--p-ink-850);
+	--color-surface-raised: var(--p-ink-800);
+	--color-surface-interactive: var(--p-ink-750);
+
+	/* Text */
+	--color-text: var(--p-paper-50);
+	--color-text-secondary: var(--p-paper-300);
+	--color-text-muted: var(--p-paper-500);
+	--color-text-disabled: var(--p-paper-700);
+	--color-text-on-accent: var(--p-ink-950); /* text on a gold/blue fill */
+
+	/* Brand accents — role-separated (6.11–6.13) */
+	--color-accent: var(--p-gold-500); /* GOLD: premium detail, selective emphasis */
+	--color-accent-strong: var(--p-gold-400);
+	--color-accent-hairline: var(--p-gold-700);
+	--color-interactive: var(--p-blue-400); /* BLUE: recognition + interaction */
+	--color-interactive-hover: var(--p-blue-300);
+	--color-interactive-deep: var(--p-blue-600);
+
+	/* Borders / dividers (6.82) */
+	--color-border-subtle: var(--p-white-a08);
+	--color-border: var(--p-white-a14);
+	--color-border-strong: var(--p-white-a24);
+
+	/* Focus (A11Y-03 / 13.147) — blue ring, high contrast on every surface */
+	--color-focus: var(--p-blue-400);
+
+	/* State (6.14) */
+	--color-success: var(--p-success);
+	--color-warning: var(--p-warning);
+	--color-error: var(--p-error);
+	--color-info: var(--p-info);
+
+	/* Overlays / scrims (6.85) */
+	--color-overlay: var(--p-black-a72);
+	/* Reusable scrim for text over photography (6.26). Strong enough that light text stays legible even
+	   over a bright image (A11Y-04); the paired corner variant additionally darkens the anchor side. */
+	--color-image-scrim: linear-gradient(
+		to top,
+		rgba(6, 8, 11, 0.82) 0%,
+		rgba(6, 8, 11, 0.5) 30%,
+		rgba(6, 8, 11, 0.12) 58%,
+		rgba(6, 8, 11, 0) 82%
+	);
+	--color-image-scrim-corner: linear-gradient(
+			to top,
+			rgba(6, 8, 11, 0.9) 4%,
+			rgba(6, 8, 11, 0.52) 40%,
+			rgba(6, 8, 11, 0.1) 70%,
+			transparent 92%
+		),
+		linear-gradient(to right, rgba(6, 8, 11, 0.72) 0%, rgba(6, 8, 11, 0.24) 44%, transparent 74%);
+
+	/* --- Typography (6.18–6.26, 6.79) --- */
+	--font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+	--font-sans: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+
+	/* Fluid type scale (6.22) — controlled min→max; strong scale contrast (VIS-18). */
+	--fs-display: clamp(2.9rem, 1.55rem + 5.8vw, 6.25rem);
+	--fs-h1: clamp(2.25rem, 1.6rem + 2.8vw, 3.75rem);
+	--fs-h2: clamp(1.7rem, 1.35rem + 1.5vw, 2.5rem);
+	--fs-h3: clamp(1.32rem, 1.18rem + 0.62vw, 1.72rem);
+	--fs-h4: clamp(1.12rem, 1.04rem + 0.34vw, 1.32rem);
+	--fs-lead: clamp(1.18rem, 1.08rem + 0.46vw, 1.42rem);
+	--fs-body: 1.0625rem; /* 17px — readable, not the "tiny luxury" antipattern (6.24) */
+	--fs-body-sm: 0.9375rem; /* 15px */
+	--fs-caption: 0.8125rem; /* 13px */
+	--fs-eyebrow: 0.75rem; /* 12px — uppercase label */
+
+	--lh-display: 1.02;
+	--lh-heading: 1.12;
+	--lh-snug: 1.3;
+	--lh-body: 1.65;
+	--lh-lead: 1.5;
+
+	--ls-display: -0.028em;
+	--ls-heading: -0.015em;
+	--ls-body: 0em;
+	--ls-eyebrow: 0.16em;
+
+	--fw-regular: 400;
+	--fw-medium: 500;
+	--fw-semibold: 600;
+
+	--measure: 68ch; /* max readable line length (6.24) */
+	--measure-lead: 58ch;
+
+	/* --- Spacing scale (6.80) — limited, rhythmic --- */
+	--space-3xs: 0.25rem;
+	--space-2xs: 0.375rem;
+	--space-xs: 0.5rem;
+	--space-sm: 0.75rem;
+	--space-md: 1rem;
+	--space-lg: 1.5rem;
+	--space-xl: 2.5rem;
+	--space-2xl: 4rem;
+	--space-3xl: 6rem;
+	--space-4xl: 9rem;
+	--section-gap: clamp(4rem, 3rem + 5vw, 8.5rem);
+
+	/* --- Layout / containers --- */
+	--container-max: 1400px; /* default content frame */
+	--container-narrow: 46rem; /* reading measure blocks */
+	--container-wide: 1680px; /* big image moments */
+	--gutter: clamp(1.25rem, 1rem + 3.5vw, 4rem);
+	--grid-gap: clamp(1rem, 0.5rem + 1.6vw, 2rem);
+
+	/* --- Radii (6.81) — architectural precision = mostly sharp --- */
+	--radius-none: 0;
+	--radius-xs: 2px;
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-pill: 999px;
+
+	/* --- Borders (6.82) --- */
+	--border-width: 1px;
+	--border-hairline: 1px solid var(--color-border-subtle);
+	--border-default: 1px solid var(--color-border);
+
+	/* --- Shadows (6.83) — minimal; prefer surfaces/borders. Reserved for true overlays. --- */
+	--shadow-none: none;
+	--shadow-raised: 0 1px 2px rgba(6, 8, 11, 0.4), 0 8px 24px -12px rgba(6, 8, 11, 0.5);
+	--shadow-overlay: 0 24px 64px -20px rgba(6, 8, 11, 0.78);
+
+	/* --- Opacity (6.85) --- */
+	--opacity-disabled: 0.45;
+	--opacity-muted: 0.72;
+
+	/* --- Z-index / depth hierarchy (6.87) — no arbitrary extreme values --- */
+	--z-base: 0;
+	--z-raised: 10;
+	--z-sticky: 100;
+	--z-header: 200;
+	--z-overlay: 800;
+	--z-modal: 900;
+	--z-skiplink: 1000;
+
+	/* --- Motion tokens (6.84) — see motion.css for reduced-motion handling --- */
+	--dur-feedback: 120ms; /* very short feedback */
+	--dur-interaction: 220ms; /* standard interaction / hover */
+	--dur-component: 400ms; /* component transition */
+	--dur-transition: 680ms; /* reveal / page-level moment */
+	--ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+	--ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* expressive settle (reveals) */
+	--ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+	--stagger-step: 70ms;
+}

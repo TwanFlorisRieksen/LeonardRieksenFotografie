@@ -1,0 +1,90 @@
+---
+/*
+ * Media — the central image component (ARCH-06 / blueprint 13.132–13.135, 8.83, PH-03/04/05/06).
+ * Wraps astro:assets <Picture> so every image on the site gets, consistently:
+ *   - responsive AVIF/WebP + fallback derivatives (never the source master — PH-08; the build also
+ *     purges any unreferenced original, see scripts/postbuild-verify-assets.mjs)
+ *   - reserved intrinsic width/height → CLS protection (PH-04)
+ *   - priority control: `priority` = eager + high fetchpriority (LCP hero, PH-05); default = lazy (PH-06)
+ *   - ratio-FLEXIBLE by default (image shown whole, fit-over-fill — no universal crop, 2.14/8.14).
+ *     A `ratio` may be opted into for grid tiles; even then `fit` defaults to cover but is overridable.
+ *   - alt required; pass alt="" for a genuinely decorative image (PH-14).
+ * Extra classes/attributes pass through to the wrapper, so callers extend without duplicating markup.
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+	src: ImageMetadata;
+	alt: string;
+	widths?: number[];
+	sizes?: string;
+	priority?: boolean;
+	formats?: ('avif' | 'webp' | 'png' | 'jpeg')[];
+	ratio?: string; /* e.g. "3/2", "16/9" — opt-in framing for grids; omit for intrinsic ratio */
+	fit?: 'cover' | 'contain';
+	position?: string; /* object-position when framed, default "center" */
+	class?: string;
+	[key: string]: unknown;
+}
+
+const {
+	src,
+	alt,
+	widths = [400, 800, 1200, 1700],
+	sizes = '100vw',
+	priority = false,
+	formats = ['avif', 'webp'],
+	ratio,
+	fit = 'cover',
+	position = 'center',
+	class: className,
+	...rest
+} = Astro.props;
+
+// Never request widths larger than the source (prevents upscaling — R-04). astro:assets already caps,
+// but filtering keeps the generated srcset honest for the pre-1700px assets.
+const cappedWidths = widths.filter((w) => w <= src.width);
+const effectiveWidths = cappedWidths.length ? cappedWidths : [src.width];
+
+const styleVars = ratio ? `--media-ratio:${ratio};--media-fit:${fit};--media-pos:${position};` : undefined;
+---
+
+<div
+	class:list={['media', { 'media--framed': !!ratio }, className]}
+	style={styleVars}
+	{...rest}
+>
+	<Picture
+		src={src}
+		alt={alt}
+		widths={effectiveWidths}
+		sizes={sizes}
+		formats={formats}
+		loading={priority ? 'eager' : 'lazy'}
+		decoding={priority ? 'auto' : 'async'}
+		fetchpriority={priority ? 'high' : 'auto'}
+	/>
+</div>
+
+<style>
+	.media {
+		display: block;
+		overflow: clip;
+		background: var(--color-surface); /* calm holding colour before decode (no flashing skeleton, PH-07) */
+	}
+	.media :global(img) {
+		width: 100%;
+		height: auto;
+	}
+	/* Opt-in framed mode for grid tiles: fixed ratio box, image fits inside it. */
+	.media--framed {
+		aspect-ratio: var(--media-ratio);
+	}
+	.media--framed :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: var(--media-fit);
+		object-position: var(--media-pos);
+	}
+</style>
