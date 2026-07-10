@@ -17,3 +17,15 @@ never modified. Copy, not move — CLAUDE §2.5/§9.3 (source assets stay in `/a
 
 Deliberately chosen for ratio spread (3:2 landscape, 2.4:1 wide, 5.6:1 panorama, 3:4 portrait) to prove the
 pipeline and template do not assume a universal crop (blueprint 2.14/8.14).
+
+## P3 status update (2026-07-10)
+
+This entry's `draft` flag was flipped to `true` in P3. Reason: its `index.md` copy is explicit placeholder
+text ("GEEN definitieve content") which must not remain live once real content exists (ID-06 — no
+unauthorized placeholder in production). P3 independently selected the *same* underlying photography
+(this fixture's `cover.jpg`/`gallery-01-wide.jpg` are the identical Arnhem 7490/7562 files) as the strongest
+real-content candidate for the representative vertical slice — see the real
+`src/content/projects/arnhem-stadsarchitectuur/` entry, which supersedes this fixture for all
+production/portfolio purposes. The fixture folder itself is kept (not deleted) because `styleguide.astro`
+still imports its files directly (bypassing the collection, so `draft` does not affect it) as its ratio-demo
+imagery — deleting it would break the P2 design-system showcase for no P3-scope reason.

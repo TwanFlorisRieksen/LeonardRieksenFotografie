@@ -13,6 +13,13 @@ import { glob } from 'astro/loaders';
  * - title           — H1 / nav label / fallback SEO title source.
  * - category        — drives the Portfolio filter (Alles/Architectuur/Interieur, PH-11)
  *                      and which Diensten page cross-links here.
+ * - location/year   — ADDED IN P3: blueprint 12.41 names these as *possible* fields; they were
+ *                      withheld at P1 because no real values existed yet (CLAUDE §4.6/§9.2). P3's
+ *                      representative-project selection surfaced real evidence for both (the
+ *                      photographer's own consistent shoot-folder naming convention, e.g.
+ *                      "20140914 , Architectuurfotografie , Arnhem" — a real authored record, not
+ *                      an invention), so they are added now as optional metadata tags. Left empty
+ *                      for entries where no such evidence exists (never guessed).
  * - summary         — short storytelling intro (12.42); also the SEO description fallback.
  * - coverImage(+Alt)— used on the Portfolio grid and as the social-image fallback.
  * - gallery         — ordered image set; list order IS the curated sequence (PH-15);
@@ -42,6 +49,8 @@ const projects = defineCollection({
 		z.object({
 			title: z.string(),
 			category: z.enum(['architectuur', 'interieur']),
+			location: z.string().optional(),
+			year: z.number().optional(),
 			summary: z.string(),
 			coverImage: image(),
 			coverImageAlt: z.string(),

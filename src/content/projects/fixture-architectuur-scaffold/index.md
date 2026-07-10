@@ -16,5 +16,5 @@ gallery:
     alt: "Placeholder alt-tekst (portretformaat) — wordt vervangen bij contentintegratie."
 featured: false
 order: 0
-draft: false
+draft: true
 ---

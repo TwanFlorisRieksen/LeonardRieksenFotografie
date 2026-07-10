@@ -1,7 +1,16 @@
 ---
+/*
+ * Project detail (P3 vertical slice — D-08/D-19). One template, reused by every published project
+ * (ARCH-07/13.94). Layout intent: a big lead-image moment (PH-01/VIS-18), a short editorial "spec +
+ * text" intro, then a curated image sequence where each photo's own ratio decides its treatment — wide
+ * shots run full-bleed, the portrait closing shot gets a contained, paired-with-text ending (no universal
+ * crop, 2.14/8.14). Real content only; no invented facts (CLAUDE §4.6/§9.2).
+ */
 import { getCollection, render } from 'astro:content';
-import { Image, Picture, getImage } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import Media from '../../components/Media.astro';
 
 // ARCH-07 / 13.94: one static route per published project entry, generated from the CMS collection.
 // Draft entries (12.90) never generate a public route — this is the enforcement point, not just a filter.
@@ -17,58 +26,258 @@ const { project } = Astro.props;
 const { Content } = await render(project);
 const data = project.data;
 
+const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
+
 // SEO-04/12.51-12.52: per-entry override with a quality fallback, never a blank tag.
 const seoTitle = data.seoTitle ?? data.title;
 const seoDescription = data.seoDescription ?? data.summary;
 
 // SEO-06 / image protection (12.3): og:image MUST be an optimized derivative, never the raw source
-// original. Passing `image.src` directly would emit AND publicly advertise the full-resolution source
-// JPG (byte-identical to the file in /assets) via a public meta tag — social scrapers would fetch it and
-// the original would be directly downloadable. getImage() produces a bounded, re-encoded derivative
-// instead. Width 1200 = the standard OG width; format jpeg for maximum scraper compatibility. The image
-// is not cropped to a fixed OG ratio here — arbitrary cropping of photography is forbidden (2.14/8.14);
-// curation-appropriate social crops are a later content-phase concern.
+// original — see D-09. Width 1200 = standard OG width; not cropped to a fixed ratio (2.14/8.14 forbid
+// arbitrary cropping of photography).
 const ogSourceImage = data.socialImage ?? data.coverImage;
 const ogImage = await getImage({ src: ogSourceImage, width: 1200, format: 'jpeg' });
+
+// The portrait/tall closing image (if any) gets the paired "ending" treatment instead of running
+// full-bleed like the wide shots — a deliberate curation decision, not an accident of markup order.
+const lastIndex = data.gallery.length - 1;
 ---
 
 <BaseLayout title={seoTitle} description={seoDescription} socialImage={ogImage.src}>
 	<article>
-		<h1>{data.title}</h1>
-		<p>{data.summary}</p>
+		<!-- Lead image moment: full-bleed cover + scrim title panel (proven pattern from /styleguide's
+		     hero — not experimental here). This is the page's LCP candidate: eager + high priority. -->
+		<div class="proj-hero">
+			<Media
+				src={data.coverImage}
+				alt={data.coverImageAlt}
+				priority={true}
+				widths={[480, 800, 1200, 1700]}
+				sizes="100vw"
+				class="proj-hero__media"
+			/>
+			<div class="proj-hero__scrim"></div>
+			<div class="proj-hero__content u-container u-container--wide">
+				<p class="t-eyebrow t-eyebrow--accent">
+					{categoryLabel[data.category]}
+					{data.location && <> &middot; {data.location}</>}
+					{data.year && <> &middot; {data.year}</>}
+				</p>
+				<h1 class="t-display proj-hero__title">{data.title}</h1>
+			</div>
+		</div>
 
+		<!-- Editorial intro: a small "spec" column beside the storytelling text (13.30-35) — real
+		     metadata only, no fields shown when the project has no evidence for them (CLAUDE §4.6). -->
+		<Section tight>
+			<div class="proj-intro">
+				<dl class="proj-meta">
+					<div class="proj-meta__row">
+						<dt class="t-caption">Categorie</dt>
+						<dd>{categoryLabel[data.category]}</dd>
+					</div>
+					{
+						data.location && (
+							<div class="proj-meta__row">
+								<dt class="t-caption">Locatie</dt>
+								<dd>{data.location}</dd>
+							</div>
+						)
+					}
+					{
+						data.year && (
+							<div class="proj-meta__row">
+								<dt class="t-caption">Jaar</dt>
+								<dd>{data.year}</dd>
+							</div>
+						)
+					}
+				</dl>
+				<div class="prose proj-intro__text">
+					<p class="t-lead proj-intro__lead">{data.summary}</p>
+					<Content />
+				</div>
+			</div>
+		</Section>
+
+		<!-- Curated image sequence — each photo's own ratio decides its treatment (no universal crop). -->
 		{
-			/* PH-05: the project's own cover/hero image is LCP-critical — eager, high priority, never
-			   lazy-loaded. Below-fold gallery images stay lazy (PH-06). Width/height are reserved
-			   automatically by astro:assets to protect CLS (PH-04). */
+			data.gallery.length > 0 && (
+				<Section width="wide" as="div">
+					<div class="proj-gallery">
+					{data.gallery.map((item, i) =>
+						i === lastIndex && lastIndex > 0 ? (
+							<div class="proj-gallery__ending">
+								<Media
+									src={item.image}
+									alt={item.alt}
+									widths={[400, 800, 1200]}
+									sizes="(min-width: 48rem) 32rem, 80vw"
+									class="proj-gallery__ending-media"
+								/>
+								{item.caption && <p class="t-caption proj-gallery__caption">{item.caption}</p>}
+							</div>
+						) : (
+							<figure class="proj-gallery__item">
+								<Media
+									src={item.image}
+									alt={item.alt}
+									widths={[480, 800, 1200, 1700]}
+									sizes="100vw"
+								/>
+								{item.caption && (
+									<figcaption class="t-caption proj-gallery__caption">{item.caption}</figcaption>
+								)}
+							</figure>
+						),
+					)}
+					</div>
+				</Section>
+			)
 		}
-		<Image
-			src={data.coverImage}
-			alt={data.coverImageAlt}
-			widths={[400, 800, 1200, 1700]}
-			sizes="(min-width: 1024px) 800px, 100vw"
-			loading="eager"
-			fetchpriority="high"
-		/>
 
-		<Content />
-
-		<ul>
-			{
-				data.gallery.map((item) => (
-					<li>
-						<Picture
-							src={item.image}
-							alt={item.alt}
-							formats={['avif', 'webp']}
-							widths={[400, 800, 1200, 1700]}
-							sizes="(min-width: 1024px) 800px, 100vw"
-							loading="lazy"
-						/>
-						{item.caption && <p>{item.caption}</p>}
-					</li>
-				))
-			}
-		</ul>
+		<!-- Ending / navigation (UX-03: never a dead end). -->
+		<Section tight>
+			<a class="proj-back" href="/portfolio/">
+				<svg
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+					focusable="false"
+				>
+					<path d="M20 12H5M11 6l-6 6 6 6" />
+				</svg>
+				Terug naar portfolio
+			</a>
+		</Section>
 	</article>
 </BaseLayout>
+
+<style>
+	.proj-hero {
+		position: relative;
+		min-height: min(74vh, 720px);
+		display: flex;
+		align-items: flex-end;
+		padding-block: var(--space-3xl);
+		overflow: clip;
+	}
+	.proj-hero__media {
+		position: absolute;
+		inset: 0;
+	}
+	.proj-hero__media :global(picture) {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	.proj-hero__media :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center 60%;
+	}
+	.proj-hero__scrim {
+		position: absolute;
+		inset: 0;
+		background: var(--color-image-scrim-corner);
+	}
+	.proj-hero__content {
+		position: relative;
+	}
+	.proj-hero__title {
+		margin-top: var(--space-sm);
+		max-width: 20ch;
+	}
+	@media (max-width: 40rem) {
+		.proj-hero {
+			min-height: min(64vh, 560px);
+		}
+	}
+
+	/* --- Editorial intro: metadata column + text --- */
+	.proj-intro {
+		display: grid;
+		grid-template-columns: 13rem 1fr;
+		gap: var(--space-2xl);
+	}
+	.proj-meta {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		padding-top: var(--space-2xs);
+	}
+	.proj-meta__row dt {
+		color: var(--color-text-muted);
+		margin-bottom: 2px;
+	}
+	.proj-meta__row dd {
+		margin: 0;
+		font-family: var(--font-sans);
+		font-weight: var(--fw-medium);
+		color: var(--color-text);
+	}
+	.proj-intro__lead {
+		color: var(--color-text);
+		margin-bottom: var(--space-md);
+	}
+	@media (max-width: 40rem) {
+		.proj-intro {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+		}
+		.proj-meta {
+			flex-direction: row;
+			flex-wrap: wrap;
+			gap: var(--space-xl);
+		}
+	}
+
+	/* --- Gallery sequence --- */
+	.proj-gallery {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3xl);
+	}
+	.proj-gallery__item {
+		display: block;
+	}
+	.proj-gallery__caption {
+		margin-top: var(--space-sm);
+	}
+
+	/* The closing portrait image is a deliberate ending beat, not another full-bleed slab: contained,
+	   with room to breathe either side so the sequence visibly slows down before the page ends. */
+	.proj-gallery__ending {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.proj-gallery__ending-media {
+		max-width: 32rem;
+		width: 100%;
+	}
+	.proj-gallery__ending .proj-gallery__caption {
+		text-align: center;
+	}
+
+	/* --- Back navigation --- */
+	.proj-back {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--color-text-secondary);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.proj-back:hover {
+		color: var(--color-text);
+	}
+</style>

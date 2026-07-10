@@ -1,35 +1,215 @@
 ---
+/*
+ * Portfolio overview (P3 vertical slice — D-08/D-19). Real content, real photography, real content
+ * architecture (getCollection over the projects collection; draft entries never render, ARCH-07).
+ *
+ * Layout intent (PH-09/PH-12/VIS-18): a curated index, not an undirected equal-card grid. The
+ * curator-flagged project (featured:true / lowest order) gets a large "lead" treatment — a big image
+ * moment paired with an asymmetric text panel — the remaining projects follow in a ratio-flexible
+ * 2-column index that scales cleanly as more projects are added later (P6). No image is force-cropped
+ * to a uniform tile ratio (2.14/8.14); each keeps its own intrinsic aspect ratio.
+ */
 import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import Media from '../../components/Media.astro';
 
-// PH-06/CLS: below-fold list thumbnails stay lazy (Image default); only a detail page's own cover
-// image is marked eager (see [project].astro). Draft entries (12.90 workflow states) never render here.
+// PH-06/CLS: only the lead project's cover is priority-loaded (it is the page's LCP candidate); every
+// other cover stays lazy. Draft entries (12.90 workflow states) never render here.
 const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 const projects = allProjects.sort((a, b) => a.data.order - b.data.order);
+const [lead, ...rest] = projects;
+
+const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
 ---
 
 <BaseLayout
 	title="Portfolio"
-	description="Portfolio van Leonard Rieksen Fotografie — architectuur- en interieurfotografie."
+	description="Portfolio van Leonard Rieksen Fotografie — gecureerde architectuur- en interieurfotografie, per project gepresenteerd."
 >
-	<h1>Portfolio</h1>
-	<p>
-		Technische P1-scaffold: bewijst dat projectpagina's dynamisch uit de CMS-collectie worden
-		gegenereerd (ARCH-07). Filters (Alles/Architectuur/Interieur, PH-11) en het grid-ontwerp volgen in
-		P5.
-	</p>
-	<ul>
-		{
-			projects.map((project) => (
-				<li>
-					<a href={`/portfolio/${project.id}/`}>
-						<Image src={project.data.coverImage} alt={project.data.coverImageAlt} width={400} />
-						<span>{project.data.title}</span>
-						<span> — {project.data.category}</span>
-					</a>
-				</li>
-			))
-		}
-	</ul>
+	<Section tight>
+		<p class="t-eyebrow t-eyebrow--accent">Architectuur- &amp; interieurfotografie</p>
+		<h1 class="t-display port-title">Portfolio</h1>
+		<p class="t-lead port-intro">
+			Een selectie van projecten, elk als geheel gefotografeerd — van een enkel gebouw tot een dag
+			in een stad. Open een project voor de volledige beeldreeks.
+		</p>
+
+		<ul class="port-index">
+			{
+				lead && (
+					<li class="port-index__item port-index__item--lead">
+						<a class="port-lead" href={`/portfolio/${lead.id}/`}>
+							<Media
+								src={lead.data.coverImage}
+								alt={lead.data.coverImageAlt}
+								priority={true}
+								widths={[480, 800, 1200, 1700]}
+								sizes="(min-width: 56rem) 60vw, 100vw"
+								class="port-lead__media"
+							/>
+							<div class="port-lead__panel">
+								<p class="t-eyebrow">
+									{categoryLabel[lead.data.category]}
+									{lead.data.location && <> &middot; {lead.data.location}</>}
+									{lead.data.year && <> &middot; {lead.data.year}</>}
+								</p>
+								<h2 class="t-h2 port-lead__title">{lead.data.title}</h2>
+								<p class="t-secondary port-lead__summary">{lead.data.summary}</p>
+								<span class="port-cta">
+									Bekijk project
+									<svg
+										class="port-cta__arrow"
+										width="18"
+										height="18"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="1.75"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										aria-hidden="true"
+										focusable="false"
+									>
+										<path d="M4 12h15M13 6l6 6-6 6" />
+									</svg>
+								</span>
+							</div>
+						</a>
+					</li>
+				)
+			}
+			{
+				rest.map((project) => (
+					<li class="port-index__item">
+						<a class="port-card" href={`/portfolio/${project.id}/`}>
+							<Media
+								src={project.data.coverImage}
+								alt={project.data.coverImageAlt}
+								widths={[400, 800, 1200]}
+								sizes="(min-width: 56rem) 48vw, 100vw"
+								class="port-card__media"
+							/>
+							<div class="port-card__caption">
+								<p class="t-eyebrow">
+									{categoryLabel[project.data.category]}
+									{project.data.location && <> &middot; {project.data.location}</>}
+								</p>
+								<h2 class="t-h3 port-card__title">{project.data.title}</h2>
+							</div>
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</Section>
 </BaseLayout>
+
+
+<style>
+	.port-title {
+		margin-block: var(--space-sm) var(--space-lg);
+	}
+	.port-intro {
+		max-width: 46ch;
+	}
+
+	.port-index {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		align-items: start;
+		gap: var(--space-3xl) var(--space-2xl);
+		margin-top: clamp(3rem, 2rem + 4vw, 5.5rem);
+	}
+	.port-index__item {
+		min-width: 0;
+	}
+	.port-index__item--lead {
+		grid-column: 1 / -1;
+	}
+
+	/* --- Lead entry: big image moment + asymmetric text panel (VIS-18) --- */
+	.port-lead {
+		display: grid;
+		grid-template-columns: 1.5fr 1fr;
+		gap: var(--space-2xl);
+		align-items: end;
+	}
+	.port-lead__media {
+		grid-row: 1;
+	}
+	.port-lead__panel {
+		grid-row: 1;
+		padding-bottom: var(--space-sm);
+	}
+	.port-lead__title {
+		margin-block: var(--space-sm) var(--space-md);
+	}
+	.port-lead__summary {
+		max-width: 40ch;
+	}
+
+	/* --- Shared "view project" affordance (UX-05 — visible, not hover-only) --- */
+	.port-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		margin-top: var(--space-xl);
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--color-text);
+	}
+	.port-cta__arrow {
+		transition: transform var(--dur-interaction) var(--ease-out);
+	}
+	.port-lead:hover .port-cta__arrow,
+	.port-lead:focus-visible .port-cta__arrow {
+		transform: translateX(3px);
+	}
+	.port-lead:hover .port-lead__title,
+	.port-lead:focus-visible .port-lead__title {
+		color: var(--color-accent);
+	}
+	.port-lead__title {
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+
+	/* --- Remaining projects: ratio-flexible 2-col index --- */
+	.port-card {
+		display: block;
+	}
+	.port-card__caption {
+		margin-top: var(--space-md);
+	}
+	.port-card__title {
+		margin-top: var(--space-2xs);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.port-card:hover .port-card__title,
+	.port-card:focus-visible .port-card__title {
+		color: var(--color-accent);
+	}
+
+	@media (max-width: 56rem) {
+		.port-lead {
+			grid-template-columns: 1fr;
+			align-items: start;
+		}
+		/* Desktop pins media/panel into the same row (side-by-side, end-aligned); a 1-column grid must
+		   release that back to normal flow or the two children overlap instead of stacking. */
+		.port-lead__media,
+		.port-lead__panel {
+			grid-row: auto;
+		}
+		.port-lead__panel {
+			padding-bottom: 0;
+			margin-top: var(--space-xl);
+		}
+	}
+	@media (max-width: 40rem) {
+		.port-index {
+			grid-template-columns: 1fr;
+			gap: var(--space-2xl);
+		}
+	}
+</style>
