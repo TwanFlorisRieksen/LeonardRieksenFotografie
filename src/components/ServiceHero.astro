@@ -1,0 +1,85 @@
+---
+/*
+ * ServiceHero — full-bleed scrim hero for the two service-detail pages (D-19). Same proven pattern as the
+ * project-detail hero (a full-bleed cover + corner scrim + eyebrow/title panel), extracted here because it
+ * recurs identically on both service pages — only the photograph, labels and focal position differ. This
+ * is the page's LCP candidate: the image is priority-loaded. Not the homepage hero (that is bespoke and
+ * sits under the transparent header); these sit below the solid header, like the project hero.
+ */
+import type { ImageMetadata } from 'astro';
+import Media from './Media.astro';
+
+interface Props {
+	image: ImageMetadata;
+	alt: string;
+	eyebrow: string;
+	title: string;
+	sub?: string;
+	/** object-position for the cover crop (composition-aware, no universal crop). */
+	position?: string;
+}
+const { image, alt, eyebrow, title, sub, position = 'center' } = Astro.props;
+---
+
+<header class="svc-hero" style={`--svc-hero-pos:${position}`}>
+	<Media
+		src={image}
+		alt={alt}
+		priority={true}
+		widths={[480, 800, 1200, 1700]}
+		sizes="100vw"
+		class="svc-hero__media"
+	/>
+	<div class="svc-hero__scrim"></div>
+	<div class="svc-hero__content u-container u-container--wide">
+		<p class="t-eyebrow t-eyebrow--accent">{eyebrow}</p>
+		<h1 class="t-display svc-hero__title">{title}</h1>
+		{sub && <p class="t-lead svc-hero__sub">{sub}</p>}
+	</div>
+</header>
+
+<style>
+	.svc-hero {
+		position: relative;
+		min-height: min(72vh, 680px);
+		display: flex;
+		align-items: flex-end;
+		padding-block: var(--space-3xl);
+		overflow: clip;
+		isolation: isolate;
+	}
+	.svc-hero__media {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+	}
+	.svc-hero__media :global(picture),
+	.svc-hero__media :global(img) {
+		width: 100%;
+		height: 100%;
+	}
+	.svc-hero__media :global(img) {
+		object-fit: cover;
+		object-position: var(--svc-hero-pos);
+	}
+	.svc-hero__scrim {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: var(--color-image-scrim-corner);
+	}
+	.svc-hero__title {
+		margin-top: var(--space-sm);
+		max-width: 16ch;
+	}
+	.svc-hero__sub {
+		margin-top: var(--space-lg);
+		max-width: 44ch;
+		color: var(--color-text);
+	}
+	@media (max-width: 40rem) {
+		.svc-hero {
+			min-height: min(62vh, 520px);
+		}
+	}
+</style>

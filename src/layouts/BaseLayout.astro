@@ -15,9 +15,15 @@ interface Props {
 	noindex?: boolean;
 	/** Optional extra class on <body> (e.g. the styleguide surface). */
 	bodyClass?: string;
+	/**
+	 * Render the header transparent, overlaid on a full-bleed hero that starts at the top of the page,
+	 * transitioning to the solid functional state on scroll (P4 homepage — see DECISIONS.md D-19). Pages
+	 * without a hero-behind-header layout leave this false and keep the solid in-flow header.
+	 */
+	heroHeader?: boolean;
 }
 
-const { title, description, socialImage, noindex = false, bodyClass } = Astro.props;
+const { title, description, socialImage, noindex = false, bodyClass, heroHeader = false } = Astro.props;
 const canonical = canonicalURL(Astro.site, Astro.url);
 // OG spec requires an absolute image URL; page authors may pass either a relative build path or
 // an already-absolute URL, so resolve defensively rather than assuming.
@@ -33,6 +39,12 @@ const absoluteSocialImage = socialImage
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="dark" />
 		<meta name="theme-color" content="#0f131a" />
+		<!-- Set the JS flag before first paint so scroll-reveal elements start hidden only when JS can
+		     actually reveal them (no-JS ships the final visible state — MOT-08). Tiny + render-blocking
+		     by design to prevent a reveal flash. -->
+		<script is:inline>
+			document.documentElement.classList.add('js');
+		</script>
 		<title>{pageTitle(title)}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
@@ -63,12 +75,43 @@ const absoluteSocialImage = socialImage
 
 		<meta name="generator" content={Astro.generator} />
 	</head>
-	<body class:list={[bodyClass]}>
+	<body class:list={[bodyClass, { 'has-hero-header': heroHeader }]}>
 		<a class="skip-link" href="#main-content">Direct naar inhoud</a>
-		<SiteHeader />
+		<SiteHeader transparent={heroHeader} />
 		<main id="main-content">
 			<slot />
 		</main>
 		<SiteFooter />
+
+		<!-- Scroll-reveal observer (P4 signature motion, D-19). Progressive enhancement: reveals `.u-inview`
+		     beats as they enter the viewport. Content is already visible without this (no-JS) and for
+		     reduced-motion users (the CSS hidden state is excluded under `reduce`); this only animates the
+		     entrance when motion is welcome. Once revealed, an element is unobserved (one-shot, cheap). -->
+		<script is:inline>
+			(function () {
+				var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+				var els = document.querySelectorAll('.u-inview');
+				if (reduce || !('IntersectionObserver' in window) || !els.length) {
+					els.forEach(function (el) {
+						el.classList.add('is-inview');
+					});
+					return;
+				}
+				var io = new IntersectionObserver(
+					function (entries) {
+						entries.forEach(function (entry) {
+							if (entry.isIntersecting) {
+								entry.target.classList.add('is-inview');
+								io.unobserve(entry.target);
+							}
+						});
+					},
+					{ rootMargin: '0px 0px -12% 0px', threshold: 0.12 }
+				);
+				els.forEach(function (el) {
+					io.observe(el);
+				});
+			})();
+		</script>
 	</body>
 </html>

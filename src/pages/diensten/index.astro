@@ -1,15 +1,209 @@
 ---
+/*
+ * Diensten overzicht (P4 — D-19). The navigation hub that translates visual quality into business
+ * relevance (13.36) and lets a visitor tell the two disciplines apart and choose a path (13.39:
+ * introductie · vergelijking · navigatiehub). NOT two equal cards — two alternating discipline "spreads"
+ * with different photography, weight and emphasis. Copy transformed from Leo's own diensten page; no
+ * invented facts, no commercial overstatement (13.41). Representative photography (real, PH-08 derivatives).
+ */
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import Media from '../../components/Media.astro';
+import ContactCta from '../../components/ContactCta.astro';
+
+const projects = await getCollection('projects', ({ data }) => !data.draft);
+const archImg = projects.find((p) => p.id === 'rotterdam-skyline-kubuswoningen');
+const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 ---
 
 <BaseLayout
 	title="Diensten"
-	description="Diensten van Leonard Rieksen Fotografie: architectuurfotografie en interieurfotografie."
+	description="Architectuur- en interieurfotografie op locatie door Leo Rieksen. Twee disciplines, één rustige en nauwkeurige benadering — kies de dienst die bij uw project past."
 >
-	<h1>Diensten</h1>
-	<p>Technische P1-scaffold. Volledige dienstenpresentatie volgt in P5 (blueprint 13.36–13.41).</p>
-	<ul>
-		<li><a href="/diensten/architectuurfotografie/">Architectuurfotografie</a></li>
-		<li><a href="/diensten/interieurfotografie/">Interieurfotografie</a></li>
-	</ul>
+	<!-- Page intro -->
+	<Section tight>
+		<p class="t-eyebrow t-eyebrow--accent">Diensten</p>
+		<h1 class="t-display dien-title">Fotografie die het ontwerp recht doet.</h1>
+		<p class="t-lead dien-intro">
+			Leo Rieksen is gespecialiseerd in architectuur- en interieurfotografie op locatie. Elk project
+			wordt zorgvuldig voorbereid, met veel aandacht voor licht, lijnen en sfeer — zodat de beelden de
+			kwaliteit van het werk overtuigend laten zien.
+		</p>
+	</Section>
+
+	<!-- Two disciplines as alternating spreads (13.37/13.39) -->
+	<Section as="div" width="wide" class="dien-spreads">
+		{
+			archImg && (
+				<article class="spread spread--arch u-inview">
+					<a class="spread__media-link" href="/diensten/architectuurfotografie/" tabindex="-1" aria-hidden="true">
+						<Media
+							src={archImg.data.coverImage}
+							alt=""
+							widths={[480, 800, 1200]}
+							sizes="(min-width: 56rem) 55vw, 100vw"
+							class="spread__media"
+						/>
+					</a>
+					<div class="spread__text">
+						<p class="t-eyebrow t-eyebrow--accent">Architectuur</p>
+						<h2 class="t-h2 spread__name">Architectuurfotografie</h2>
+						<p class="spread__desc">
+							Gebouwen en exterieurs waarin structuur, proportie, licht en lijn samenkomen — van
+							monumenten en historische gevels tot moderne architectuur en stedelijke overzichten,
+							waar nodig ook op hoogte.
+						</p>
+						<p class="spread__for">
+							Voor architecten, makelaars, bedrijven en eigenaren die hun gebouw professioneel willen
+							presenteren.
+						</p>
+						<a class="link-arrow spread__link" href="/diensten/architectuurfotografie/">
+							Bekijk architectuurfotografie
+							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+						</a>
+					</div>
+				</article>
+			)
+		}
+		{
+			intImg && (
+				<article class="spread spread--int u-inview">
+					<a class="spread__media-link" href="/diensten/interieurfotografie/" tabindex="-1" aria-hidden="true">
+						<Media
+							src={intImg.data.coverImage}
+							alt=""
+							widths={[480, 800, 1200]}
+							sizes="(min-width: 56rem) 55vw, 100vw"
+							class="spread__media"
+						/>
+					</a>
+					<div class="spread__text">
+						<p class="t-eyebrow t-eyebrow--accent">Interieur</p>
+						<h2 class="t-h2 spread__name">Interieurfotografie</h2>
+						<p class="spread__desc">
+							Ruimtes waarin sfeer, materiaal, licht en functie tot hun recht komen — van woningen en
+							kantoren tot horeca, zorginstellingen en publieke gebouwen, in bestaand en zorgvuldig
+							aangevuld licht.
+						</p>
+						<p class="spread__for">
+							Voor interieurontwerpers, makelaars en bedrijven die hun ruimtes op hun best willen
+							laten zien.
+						</p>
+						<a class="link-arrow spread__link" href="/diensten/interieurfotografie/">
+							Bekijk interieurfotografie
+							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+						</a>
+					</div>
+				</article>
+			)
+		}
+	</Section>
+
+	<!-- Shared approach — a short comparison note, not a duplicate of the detail pages (13.39). -->
+	<Section as="section" surface="light" class="dien-approach">
+		<div class="approach">
+			<div class="approach__lead">
+				<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
+				<h2 class="t-h2 approach__title">Voor beide disciplines dezelfde aanpak.</h2>
+			</div>
+			<p class="approach__text">
+				Fotografie op locatie, doordacht voorbereid en rustig uitgevoerd. Vooraf bespreken we welke
+				ruimtes in beeld komen en waarvoor de beelden worden gebruikt; op basis daarvan bepalen we
+				routing, belichting en het beste moment van de dag. Tijdens de opnames worden lijnen
+				rechtgezet en wordt het aanwezige licht waar nodig aangevuld met gericht kunstlicht.
+			</p>
+		</div>
+	</Section>
+
+	<ContactCta
+		heading="Een project in gedachten?"
+		text="Neem contact op om kort door te spreken wat u zoekt. Op basis daarvan maak ik een passend voorstel."
+		primaryLabel="Neem contact op"
+		primaryHref="/contact/"
+		secondaryLabel="Bekijk het portfolio"
+		secondaryHref="/portfolio/"
+	/>
 </BaseLayout>
+
+<style>
+	.dien-title {
+		margin-block: var(--space-sm) var(--space-lg);
+		max-width: 18ch;
+	}
+	.dien-intro {
+		max-width: 52ch;
+	}
+
+	/* --- Alternating discipline spreads --- */
+	.dien-spreads :global(.u-container) {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(3.5rem, 2rem + 7vw, 7rem);
+	}
+	.spread {
+		display: grid;
+		grid-template-columns: 1.25fr 1fr;
+		gap: var(--space-2xl) var(--space-3xl);
+		align-items: center;
+	}
+	/* Interior spread reverses — text left, image right — so the page reads as a comparison, not a list. */
+	.spread--int {
+		grid-template-columns: 1fr 1.25fr;
+	}
+	.spread--int .spread__media-link {
+		order: 2;
+	}
+	.spread__media-link {
+		display: block;
+	}
+	.spread__name {
+		margin-block: var(--space-xs) var(--space-md);
+	}
+	.spread__desc {
+		color: var(--color-text-secondary);
+		max-width: 44ch;
+	}
+	.spread__for {
+		margin-top: var(--space-md);
+		color: var(--color-text-muted);
+		font-size: var(--fs-body-sm);
+		max-width: 40ch;
+	}
+	.spread__link {
+		margin-top: var(--space-lg);
+	}
+	@media (max-width: 56rem) {
+		.spread,
+		.spread--int {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+		}
+		.spread--int .spread__media-link {
+			order: 0;
+		}
+	}
+
+	/* --- Shared approach (light register) --- */
+	.approach {
+		display: grid;
+		grid-template-columns: 1fr 1.2fr;
+		gap: var(--space-xl) var(--space-3xl);
+		align-items: start;
+	}
+	.approach__title {
+		margin-top: var(--space-sm);
+		color: var(--color-text-on-light);
+		max-width: 16ch;
+	}
+	.approach__text {
+		color: var(--color-text-on-light-secondary);
+		max-width: 56ch;
+	}
+	@media (max-width: 52rem) {
+		.approach {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+		}
+	}
+</style>

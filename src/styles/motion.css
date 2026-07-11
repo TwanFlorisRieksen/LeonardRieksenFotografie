@@ -60,4 +60,27 @@
 			clip-path: inset(0 0 0 0);
 		}
 	}
+
+	/*
+	 * Scroll-reveal (P4 signature motion, D-19). A calm, geometric entrance for major content beats as
+	 * they enter the viewport — a small rise + settle, never a bouncy global fade. Guarded three ways so
+	 * content is NEVER trapped behind animation (MOT-08):
+	 *   1. only armed when JS is present (html.js) AND motion is allowed (this media query);
+	 *   2. without JS, the element ships in its final visible state (no `.u-inview` hidden state applies);
+	 *   3. `prefers-reduced-motion: reduce` excludes this whole block, so reduced-motion users get the
+	 *      final state immediately.
+	 * The IntersectionObserver (BaseLayout) adds `.is-inview`; a per-element `--reveal-index` staggers
+	 * grouped children. clip-path keeps photography edges crisp as they resolve (architectural precision).
+	 */
+	html.js .u-inview {
+		opacity: 0;
+		transform: translateY(1.4rem);
+		transition: opacity var(--dur-transition) var(--ease-out),
+			transform var(--dur-transition) var(--ease-out);
+		transition-delay: calc(var(--reveal-index, 0) * var(--stagger-step));
+	}
+	html.js .u-inview.is-inview {
+		opacity: 1;
+		transform: none;
+	}
 }

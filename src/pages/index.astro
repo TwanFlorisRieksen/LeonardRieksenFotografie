@@ -1,15 +1,621 @@
 ---
+/*
+ * Homepage (P4 — D-19). The brand + conversion experience, not a section checklist. Built on the proven
+ * P2/P3 foundation (nocturne tokens, Archivo/Instrument Sans, Media pipeline, shared shell). Concept: a
+ * "dark architectural monograph" — a full-bleed photographic hero, then a small number of asymmetric
+ * editorial beats connected by gold hairlines and carried by monumental Archivo scale-contrast. The
+ * blueprint's 10-beat recommended flow (13.13) is deliberately consolidated into fewer, stronger sections
+ * (progressive disclosure — 13.12): hero → positionering+Leo → geselecteerd werk → specialisaties →
+ * werkwijze → contact. Photography structures the page; the interface recedes (2.2 fotografie-first).
+ *
+ * Content authority (CLAUDE §9.2): the hero line, positioning prose and working-method copy are
+ * TRANSFORMED from Leo's own current site (reference/old-website index.html + diensten.html + site-text.json);
+ * no business facts are invented. Bio "owner-confirm" facts (experience/HDR/long-exposure/education) are
+ * deliberately NOT asserted here (D-19 content audit). Photography is real, selected by visual inspection
+ * (CLAUDE §9.3), byte-identical to the /assets masters (served as derivatives — PH-08).
+ */
+import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import Media from '../components/Media.astro';
+import ContactCta from '../components/ContactCta.astro';
+import heroImg from '../assets/static/hero.jpeg';
+import amersfoortImg from '../assets/static/amersfoort-toren.jpg';
+import eemhuisImg from '../assets/static/eemhuis-bibliotheek.jpg';
+
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+	(a, b) => a.data.order - b.data.order
+);
+const selected = projects.slice(0, 3);
+const [featured, ...secondary] = selected;
+const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
+
+// SEO-06 / image protection (D-09): og:image MUST be an optimized derivative, never `heroImg.src`
+// (the raw source master — the PH-08 gate correctly fails that). Width 1200 = standard OG; no fixed crop.
+const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 ---
 
 <BaseLayout
-	title="Home"
-	description="Leonard Rieksen Fotografie — architectuur- en interieurfotografie."
+	title="Architectuur- & interieurfotografie"
+	description="Leo Rieksen fotografeert architectuur en interieurs met rust, precisie en perfect licht — voor architecten, interieurontwerpers, makelaars en bedrijven in Midden-Nederland."
+	socialImage={ogImage.src}
+	heroHeader
 >
-	<h1>Leonard Rieksen Fotografie</h1>
-	<p>
-		Technische P1-scaffold. Deze pagina bewijst routing/layout/SEO-architectuur; de definitieve
-		homepagina-flow (hero, positionering, geselecteerde fotografie, specialisaties, projecten, Leo,
-		vertrouwen, contact-CTA — blueprint 13.13) wordt gebouwd in P4/P5.
-	</p>
+	<!-- HERO — the first large contact moment (13.14). Photography full-bleed and central; identity,
+	     positioning and one logical next step over it; no competing CTAs or long text (13.16). -->
+	<header class="home-hero">
+		<Media
+			src={heroImg}
+			alt="De Reitdiephaven in Groningen tijdens het blauwe uur — kleurrijke houten woningen weerspiegeld in stil water."
+			priority={true}
+			widths={[640, 1024, 1400, 1920]}
+			sizes="100vw"
+			class="home-hero__media"
+		/>
+		<div class="home-hero__scrim"></div>
+		<div class="home-hero__content u-container u-container--wide u-reveal">
+			<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 0">
+				Architectuur- &amp; interieurfotografie
+			</p>
+			<h1 class="t-display home-hero__title" style="--reveal-index: 1">
+				Fotografie met rust, precisie en perfect licht.
+			</h1>
+			<p class="t-lead home-hero__sub" style="--reveal-index: 2">
+				Leo Rieksen legt gebouwen en interieurs vast met oog voor sfeer, lijnen en belichting — van
+				het blauwe uur tot zorgvuldig opgebouwd kunstlicht.
+			</p>
+			<div class="home-hero__actions" style="--reveal-index: 3">
+				<a class="home-hero__cta" href="/portfolio/">
+					Bekijk het portfolio
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+						focusable="false"
+					>
+						<path d="M4 12h15M13 6l6 6-6 6" />
+					</svg>
+				</a>
+			</div>
+		</div>
+		<a class="home-hero__scroll" href="#positionering" aria-label="Verder naar de introductie">
+			<span></span>
+		</a>
+	</header>
+
+	<!-- POSITIONERING + INTRODUCTIE LEO (13.17 / 13.20). Asymmetric: a monumental statement against the
+	     transformed intro prose + a brief, factual introduction of Leo. Progressive disclosure — the full
+	     background lives on Over mij. -->
+	<Section as="section" id="positionering">
+		<div class="pos">
+			<div class="pos__lead">
+				<p class="t-eyebrow t-eyebrow--accent">Positionering</p>
+				<h2 class="t-display pos__statement">Architectuur en interieur in balans.</h2>
+			</div>
+			<div class="pos__body u-inview">
+				<p class="t-lead pos__intro">
+					Een goed gebouw of interieur is zorgvuldig ontworpen. De fotografie moet dat verhaal
+					versterken, niet verstoren.
+				</p>
+				<p>
+					Leo werkt rustig, nauwkeurig en in goed overleg met de opdrachtgever — met aandacht voor
+					het beste moment van de dag, de juiste invalshoeken en de belichting. Het resultaat: strakke,
+					rustige beelden met veel oog voor licht, lijnen en materiaal.
+				</p>
+				<p class="pos__audience">
+					Beelden voor architecten, interieurontwerpers, makelaars en bedrijven die hun ruimtes
+					professioneel willen laten zien — in Midden-Nederland en daarbuiten.
+				</p>
+				<p class="pos__more">
+					<a class="link-arrow" href="/over-mij/">
+						Maak kennis met Leo
+						<svg
+							width="17"
+							height="17"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+							focusable="false"
+						>
+							<path d="M4 12h15M13 6l6 6-6 6" />
+						</svg>
+					</a>
+				</p>
+			</div>
+		</div>
+	</Section>
+
+	<!-- GESELECTEERD WERK (13.18). A curated glimpse, not the full portfolio — one large featured plate
+	     beside a stacked pair, each opening its project. Composed as an editorial spread (distinct from the
+	     portfolio overview's own lead+index layout) so the two pages don't share a structure. -->
+	<Section as="section" width="wide" class="work">
+		<div class="work__head">
+			<div>
+				<p class="t-eyebrow t-eyebrow--accent">Geselecteerd werk</p>
+				<h2 class="t-h2 work__title">Elk project als geheel gefotografeerd.</h2>
+			</div>
+			<a class="link-arrow work__all" href="/portfolio/">
+				Volledig portfolio
+				<svg
+					width="17"
+					height="17"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+					focusable="false"
+				>
+					<path d="M4 12h15M13 6l6 6-6 6" />
+				</svg>
+			</a>
+		</div>
+
+		<div class="work__spread">
+			{
+				featured && (
+					<a class="work-plate work-plate--lead u-inview" href={`/portfolio/${featured.id}/`}>
+						<Media
+							src={featured.data.coverImage}
+							alt={featured.data.coverImageAlt}
+							widths={[480, 800, 1200, 1700]}
+							sizes="(min-width: 60rem) 62vw, 100vw"
+							class="work-plate__media"
+						/>
+						<div class="work-plate__caption">
+							<p class="t-eyebrow">
+								{categoryLabel[featured.data.category]}
+								{featured.data.location && <> &middot; {featured.data.location}</>}
+							</p>
+							<h3 class="t-h3 work-plate__name">{featured.data.title}</h3>
+						</div>
+					</a>
+				)
+			}
+			<div class="work__stack">
+				{
+					secondary.map((project, i) => (
+						<a
+							class="work-plate u-inview"
+							href={`/portfolio/${project.id}/`}
+							style={`--reveal-index: ${i + 1}`}
+						>
+							<Media
+								src={project.data.coverImage}
+								alt={project.data.coverImageAlt}
+								widths={[400, 800, 1200]}
+								sizes="(min-width: 60rem) 34vw, 100vw"
+								class="work-plate__media"
+							/>
+							<div class="work-plate__caption">
+								<p class="t-eyebrow">
+									{categoryLabel[project.data.category]}
+									{project.data.location && <> &middot; {project.data.location}</>}
+								</p>
+								<h3 class="t-h3 work-plate__name">{project.data.title}</h3>
+							</div>
+						</a>
+					))
+				}
+			</div>
+		</div>
+	</Section>
+
+	<!-- SPECIALISATIES (13.17 / 13.19). The two disciplines as an asymmetric diptych — different ratios,
+	     different weights, a shared approach — NOT two equal cards. Each opens its service page. -->
+	<Section as="section" surface="light" class="spec">
+		<p class="t-eyebrow t-eyebrow--accent">Specialisaties</p>
+		<h2 class="t-display spec__title">Twee disciplines, één benadering.</h2>
+		<div class="spec__grid">
+			<a class="spec-card spec-card--arch u-inview" href="/diensten/architectuurfotografie/">
+				<Media
+					src={amersfoortImg}
+					alt="Een historische torenspits met de Onze Lieve Vrouwetoren van Amersfoort erachter, tegen een dramatische bewolkte lucht."
+					widths={[400, 700, 900]}
+					sizes="(min-width: 60rem) 38vw, 100vw"
+					ratio="3/4"
+					position="center"
+					class="spec-card__media"
+				/>
+				<div class="spec-card__text">
+					<h3 class="t-h3 spec-card__name">Architectuurfotografie</h3>
+					<p class="spec-card__desc">
+						Gebouwen en exterieurs, waarin structuur, proportie, licht en lijn tot hun recht komen —
+						van monumenten tot moderne architectuur.
+					</p>
+					<span class="link-arrow spec-card__link">
+						Bekijk architectuurfotografie
+						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+					</span>
+				</div>
+			</a>
+			<a class="spec-card spec-card--int u-inview" href="/diensten/interieurfotografie/" style="--reveal-index: 1">
+				<Media
+					src={eemhuisImg}
+					alt="De leeszaal van het Eemhuis in Amersfoort met een golvend, verlicht plafond boven warme houten leestafels."
+					widths={[400, 800, 1100]}
+					sizes="(min-width: 60rem) 50vw, 100vw"
+					ratio="4/3"
+					position="center"
+					class="spec-card__media"
+				/>
+				<div class="spec-card__text">
+					<h3 class="t-h3 spec-card__name">Interieurfotografie</h3>
+					<p class="spec-card__desc">
+						Ruimtes waarin sfeer, materiaal en functie samenkomen — van woningen en kantoren tot
+						publieke gebouwen, in bestaand en zorgvuldig aangevuld licht.
+					</p>
+					<span class="link-arrow spec-card__link">
+						Bekijk interieurfotografie
+						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+					</span>
+				</div>
+			</a>
+		</div>
+	</Section>
+
+	<!-- WERKWIJZE / VERTROUWEN (13.13 vertrouwen en werkwijze). Transformed from Leo's own on-location
+	     service copy — a restrained enumerated method, not icon cards. -->
+	<Section as="section" class="method">
+		<div class="method__head">
+			<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
+			<h2 class="t-h2 method__title">Rustig, precies, altijd op locatie.</h2>
+		</div>
+		<ol class="method__list">
+			<li class="method__item u-inview">
+				<span class="method__num">01</span>
+				<div>
+					<h3 class="t-h4 method__name">Fotografie op locatie</h3>
+					<p class="method__desc">
+						De opnames vinden altijd plaats bij de opdrachtgever — van particuliere woning tot kantoor,
+						horeca, zorginstelling of publiek gebouw.
+					</p>
+				</div>
+			</li>
+			<li class="method__item u-inview" style="--reveal-index: 1">
+				<span class="method__num">02</span>
+				<div>
+					<h3 class="t-h4 method__name">Doordacht voorbereid</h3>
+					<p class="method__desc">
+						Vooraf bespreken we welke ruimtes in beeld komen en waarvoor de beelden worden gebruikt. Op
+						basis daarvan wordt routing, belichting en het beste tijdstip van de dag bepaald.
+					</p>
+				</div>
+			</li>
+			<li class="method__item u-inview" style="--reveal-index: 2">
+				<span class="method__num">03</span>
+				<div>
+					<h3 class="t-h4 method__name">Nauwkeurig vastgelegd</h3>
+					<p class="method__desc">
+						Tijdens de shoot wordt rustig gewerkt: lijnen worden rechtgezet en het aanwezige licht
+						waar nodig aangevuld met gericht kunstlicht — indien gewenst ook op hoogte.
+					</p>
+				</div>
+			</li>
+		</ol>
+	</Section>
+
+	<ContactCta
+		heading="Klaar voor nieuwe beelden?"
+		text="Een project, interieur of gebouw dat gefotografeerd moet worden? Neem vrijblijvend contact op voor een voorstel."
+		primaryLabel="Neem contact op"
+		primaryHref="/contact/"
+		secondaryLabel="Bekijk de diensten"
+		secondaryHref="/diensten/"
+	/>
 </BaseLayout>
+
+<style>
+	/* ============================================================= *
+	 * HERO — full-bleed under the transparent header
+	 * ============================================================= */
+	.home-hero {
+		position: relative;
+		min-height: 100svh;
+		display: flex;
+		align-items: flex-end;
+		padding-block: var(--space-4xl) clamp(3.5rem, 2rem + 8vw, 7rem);
+		overflow: clip;
+		isolation: isolate;
+	}
+	.home-hero__media {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+	}
+	.home-hero__media :global(picture),
+	.home-hero__media :global(img) {
+		width: 100%;
+		height: 100%;
+	}
+	.home-hero__media :global(img) {
+		object-fit: cover;
+		object-position: center 42%;
+	}
+	.home-hero__scrim {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: var(--color-image-scrim-corner);
+	}
+	.home-hero__title {
+		margin-top: var(--space-md);
+		max-width: 16ch;
+	}
+	.home-hero__sub {
+		margin-top: var(--space-lg);
+		max-width: 46ch;
+		color: var(--color-text);
+	}
+	.home-hero__actions {
+		margin-top: var(--space-xl);
+	}
+	.home-hero__cta {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-sm);
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: var(--color-text);
+		padding-bottom: var(--space-2xs);
+		border-bottom: 1px solid var(--color-accent);
+		transition: gap var(--dur-interaction) var(--ease-out), color var(--dur-interaction) var(--ease-standard);
+	}
+	.home-hero__cta:hover {
+		gap: var(--space-md);
+		color: var(--color-accent-strong);
+	}
+	/* Scroll cue — a slim descending hairline, calm and non-distracting. */
+	.home-hero__scroll {
+		position: absolute;
+		bottom: var(--space-lg);
+		left: 50%;
+		transform: translateX(-50%);
+		width: 2.4rem;
+		height: 3rem;
+		display: grid;
+		place-items: center;
+	}
+	.home-hero__scroll span {
+		width: 1px;
+		height: 2.4rem;
+		background: linear-gradient(to bottom, transparent, var(--color-text));
+		opacity: 0.7;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.home-hero__scroll span {
+			animation: hero-scroll 2.4s var(--ease-standard) infinite;
+			transform-origin: top;
+		}
+		@keyframes hero-scroll {
+			0%,
+			100% {
+				transform: scaleY(0.4);
+				opacity: 0.3;
+			}
+			50% {
+				transform: scaleY(1);
+				opacity: 0.8;
+			}
+		}
+	}
+	@media (max-width: 40rem) {
+		.home-hero {
+			min-height: 92svh;
+		}
+		.home-hero__scroll {
+			display: none;
+		}
+	}
+
+	/* ============================================================= *
+	 * POSITIONERING
+	 * ============================================================= */
+	.pos {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-2xl) var(--space-3xl);
+		align-items: start;
+	}
+	.pos__statement {
+		margin-top: var(--space-md);
+		font-size: clamp(2.2rem, 1.3rem + 3.4vw, 3.6rem);
+		max-width: 12ch;
+	}
+	.pos__body {
+		max-width: var(--measure);
+		color: var(--color-text-secondary);
+	}
+	.pos__body > * + * {
+		margin-top: var(--space-md);
+	}
+	.pos__intro {
+		color: var(--color-text);
+		max-width: none;
+	}
+	.pos__audience {
+		color: var(--color-text-muted);
+	}
+	.pos__more {
+		margin-top: var(--space-xl);
+	}
+	@media (max-width: 52rem) {
+		.pos {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+		}
+		.pos__statement {
+			max-width: 16ch;
+		}
+	}
+
+	/* ============================================================= *
+	 * GESELECTEERD WERK
+	 * ============================================================= */
+	.work__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: end;
+		justify-content: space-between;
+		gap: var(--space-md) var(--space-xl);
+		margin-bottom: clamp(2.5rem, 1.5rem + 4vw, 4.5rem);
+	}
+	.work__title {
+		margin-top: var(--space-sm);
+		max-width: 20ch;
+	}
+	.work__all {
+		padding-bottom: 2px;
+	}
+	.work__spread {
+		display: grid;
+		grid-template-columns: 1.55fr 1fr;
+		gap: var(--space-xl);
+		align-items: start;
+	}
+	.work__stack {
+		display: grid;
+		gap: var(--space-xl);
+	}
+	.work-plate {
+		display: block;
+	}
+	.work-plate__caption {
+		margin-top: var(--space-md);
+	}
+	.work-plate__name {
+		margin-top: var(--space-2xs);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.work-plate:hover .work-plate__name,
+	.work-plate:focus-visible .work-plate__name {
+		color: var(--color-accent);
+	}
+	@media (max-width: 52rem) {
+		.work__spread {
+			grid-template-columns: 1fr;
+			gap: var(--space-2xl);
+		}
+	}
+
+	/* ============================================================= *
+	 * SPECIALISATIES (light register — a deliberate "different paper stock" break, D-16/D-19)
+	 * ============================================================= */
+	.spec__title {
+		margin-top: var(--space-sm);
+		max-width: 16ch;
+		font-size: clamp(2.1rem, 1.3rem + 3vw, 3.4rem);
+	}
+	.spec__grid {
+		display: grid;
+		grid-template-columns: 0.85fr 1.15fr;
+		gap: var(--space-2xl) var(--space-3xl);
+		align-items: end;
+		margin-top: clamp(2.5rem, 1.5rem + 4vw, 4.5rem);
+	}
+	.spec-card {
+		display: block;
+	}
+	/* Architecture card sits a step lower than the interior card — asymmetry, not a mirrored pair. */
+	.spec-card--arch {
+		align-self: end;
+	}
+	.spec-card--int {
+		margin-top: var(--space-3xl);
+	}
+	.spec-card__text {
+		margin-top: var(--space-lg);
+		max-width: 40ch;
+	}
+	.spec-card__name {
+		color: var(--color-text-on-light);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.spec-card__desc {
+		margin-top: var(--space-sm);
+		color: var(--color-text-on-light-secondary);
+	}
+	.spec-card__link {
+		margin-top: var(--space-md);
+		color: var(--color-interactive-on-light);
+	}
+	.spec-card:hover .spec-card__name,
+	.spec-card:focus-visible .spec-card__name {
+		color: var(--color-accent-on-light);
+	}
+	/* On the light stone surface the generic gold hover would fail AA — keep the on-light accent. */
+	.spec .link-arrow:hover,
+	.spec-card:hover .spec-card__link,
+	.spec-card:focus-visible .spec-card__link {
+		color: var(--color-accent-on-light);
+	}
+	@media (max-width: 52rem) {
+		.spec__grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-2xl);
+			align-items: start;
+		}
+		.spec-card--int {
+			margin-top: 0;
+		}
+	}
+
+	/* ============================================================= *
+	 * WERKWIJZE
+	 * ============================================================= */
+	.method__head {
+		max-width: 40ch;
+		margin-bottom: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+	}
+	.method__title {
+		margin-top: var(--space-sm);
+	}
+	.method__list {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--space-2xl);
+	}
+	.method__item {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		padding-top: var(--space-lg);
+		border-top: 1px solid var(--color-border);
+	}
+	.method__num {
+		font-family: var(--font-display);
+		font-weight: var(--fw-display);
+		font-size: var(--fs-h3);
+		color: var(--color-accent);
+		letter-spacing: var(--ls-heading);
+	}
+	.method__name {
+		margin-bottom: var(--space-xs);
+	}
+	.method__desc {
+		color: var(--color-text-secondary);
+		font-size: var(--fs-body-sm);
+	}
+	@media (max-width: 52rem) {
+		.method__list {
+			grid-template-columns: 1fr;
+			gap: var(--space-xl);
+		}
+	}
+
+</style>

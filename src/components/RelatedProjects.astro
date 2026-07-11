@@ -1,0 +1,93 @@
+---
+/*
+ * RelatedProjects — "gerelateerde/relevante projecten" block (blueprint 13.35 / 13.40). Shared by the two
+ * service-detail pages: internal linking + discovery into the real portfolio (ARCH-07). Takes already-loaded
+ * project entries (the page decides which are relevant) and renders a small ratio-flexible strip. No
+ * invented projects; covers are real photography served as derivatives (PH-08).
+ */
+import type { CollectionEntry } from 'astro:content';
+import Media from './Media.astro';
+
+interface Props {
+	title?: string;
+	projects: CollectionEntry<'projects'>[];
+}
+const { title = 'Relevante projecten', projects } = Astro.props;
+const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
+---
+
+{
+	projects.length > 0 && (
+		<section class="section rel" aria-labelledby="rel-heading">
+			<div class="u-container u-container--wide">
+				<div class="rel__head">
+					<p class="t-eyebrow t-eyebrow--accent">Portfolio</p>
+					<h2 id="rel-heading" class="t-h2 rel__title">{title}</h2>
+				</div>
+				<ul class="rel__grid">
+					{projects.map((project) => (
+						<li class="rel__item u-inview">
+							<a class="rel-card" href={`/portfolio/${project.id}/`}>
+								<Media
+									src={project.data.coverImage}
+									alt={project.data.coverImageAlt}
+									widths={[400, 800, 1100]}
+									sizes="(min-width: 48rem) 45vw, 100vw"
+									class="rel-card__media"
+								/>
+								<div class="rel-card__caption">
+									<p class="t-eyebrow">
+										{categoryLabel[project.data.category]}
+										{project.data.location && <> &middot; {project.data.location}</>}
+									</p>
+									<h3 class="t-h3 rel-card__name">{project.data.title}</h3>
+								</div>
+							</a>
+						</li>
+					))}
+				</ul>
+			</div>
+		</section>
+	)
+}
+
+<style>
+	.rel {
+		border-top: 1px solid var(--color-border-subtle);
+	}
+	.rel__head {
+		margin-bottom: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+	}
+	.rel__title {
+		margin-top: var(--space-sm);
+	}
+	.rel__grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: var(--space-2xl);
+		align-items: start;
+	}
+	.rel__item {
+		min-width: 0;
+	}
+	.rel-card {
+		display: block;
+	}
+	.rel-card__caption {
+		margin-top: var(--space-md);
+	}
+	.rel-card__name {
+		margin-top: var(--space-2xs);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.rel-card:hover .rel-card__name,
+	.rel-card:focus-visible .rel-card__name {
+		color: var(--color-accent);
+	}
+	@media (max-width: 46rem) {
+		.rel__grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-2xl);
+		}
+	}
+</style>

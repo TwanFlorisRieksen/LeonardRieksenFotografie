@@ -33,6 +33,9 @@ const { class: className } = Astro.props;
 		font-size: 1.5rem;
 		line-height: 1;
 		letter-spacing: -0.02em;
+		/* The business name must never break mid-lockup (it wrapped at ≤26rem when name + tagline + menu
+		   trigger overflowed the row — P4/D-19 fix). Below 26rem the lockup stacks instead (see below). */
+		white-space: nowrap;
 	}
 	/* The single gold detail in the identity — a hairline rule, echoing warm light in the photography. */
 	.wordmark__rule {
@@ -55,9 +58,22 @@ const { class: className } = Astro.props;
 		color: var(--color-text-secondary);
 	}
 
+	/* Small screens: stack the name over the tagline as a compact lockup so the name stays on one line and
+	   the header row never overflows. The gold rule (a vertical divider) is dropped in the column layout. */
 	@media (max-width: 26rem) {
+		.wordmark {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.2rem;
+		}
 		.wordmark__name {
-			font-size: 1.3rem;
+			font-size: 1.28rem;
+		}
+		.wordmark__rule {
+			display: none;
+		}
+		.wordmark__suffix {
+			font-size: 0.6875rem;
 		}
 	}
 </style>

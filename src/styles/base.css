@@ -271,6 +271,29 @@ a {
 	max-width: var(--measure);
 }
 
+/* Inline arrow link — a recurring tertiary affordance across pages (P4). Visible (not hover-only, UX-05);
+   the arrow nudges and the label picks up gold on hover/focus. On-light surfaces re-point the hover to the
+   on-light accent locally (contrast). */
+.link-arrow {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-xs);
+	font-size: var(--fs-body-sm);
+	font-weight: var(--fw-semibold);
+	color: var(--color-text);
+}
+.link-arrow svg {
+	transition: transform var(--dur-interaction) var(--ease-out);
+}
+.link-arrow:hover,
+.link-arrow:focus-visible {
+	color: var(--color-accent);
+}
+.link-arrow:hover svg,
+.link-arrow:focus-visible svg {
+	transform: translateX(3px);
+}
+
 /* Section vertical rhythm */
 .u-section {
 	padding-block: var(--section-gap);

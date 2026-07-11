@@ -1,0 +1,96 @@
+---
+/*
+ * ContactCta — the shared closing conversion block (CTA-01 / blueprint 13.21, 13.40, 13.41).
+ * Used by the homepage, the diensten overview and both service-detail pages (justified shared surface:
+ * the same "never a dead end" conversion beat recurs on every P4 page — one component keeps the calm,
+ * non-aggressive tone and the hairline-terminated composition identical everywhere). Content is passed
+ * in so each page frames the invitation in its own words; no invented facts here.
+ *
+ * Composition: a restrained, asymmetric close on the base surface — a hairline top rule terminates the
+ * page (idiomatic to the design system), a monumental Archivo statement carries the left, the primary
+ * action sits at the right. One primary action; an optional low-emphasis secondary link. Gold stays a
+ * hairline detail (the eyebrow), never a fill.
+ */
+import Button from './Button.astro';
+
+interface Props {
+	eyebrow?: string;
+	heading: string;
+	text?: string;
+	primaryLabel: string;
+	primaryHref: string;
+	secondaryLabel?: string;
+	secondaryHref?: string;
+}
+
+const {
+	eyebrow = 'Contact',
+	heading,
+	text,
+	primaryLabel,
+	primaryHref,
+	secondaryLabel,
+	secondaryHref,
+} = Astro.props;
+---
+
+<section class="cta section" aria-labelledby="cta-heading">
+	<div class="u-container cta__inner">
+		<div class="cta__lead">
+			<p class="t-eyebrow t-eyebrow--accent">{eyebrow}</p>
+			<h2 id="cta-heading" class="t-display cta__heading">{heading}</h2>
+		</div>
+		<div class="cta__aside">
+			{text && <p class="t-lead cta__text">{text}</p>}
+			<div class="cta__actions">
+				<Button variant="primary" href={primaryHref} trailingArrow>{primaryLabel}</Button>
+				{
+					secondaryLabel && secondaryHref && (
+						<Button variant="tertiary" href={secondaryHref} trailingArrow>
+							{secondaryLabel}
+						</Button>
+					)
+				}
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.cta {
+		border-top: 1px solid var(--color-border-subtle);
+	}
+	.cta__inner {
+		display: grid;
+		grid-template-columns: 1.35fr 1fr;
+		gap: var(--space-2xl) var(--space-3xl);
+		align-items: end;
+	}
+	.cta__heading {
+		max-width: 14ch;
+		margin-top: var(--space-md);
+	}
+	.cta__aside {
+		padding-bottom: var(--space-2xs);
+	}
+	.cta__text {
+		margin-bottom: var(--space-xl);
+		max-width: 42ch;
+	}
+	.cta__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-lg) var(--space-xl);
+	}
+	@media (max-width: 52rem) {
+		.cta__inner {
+			grid-template-columns: 1fr;
+			gap: var(--space-xl);
+			align-items: start;
+		}
+		.cta__heading {
+			max-width: 18ch;
+		}
+	}
+</style>
