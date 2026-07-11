@@ -17,8 +17,11 @@ interface Props {
 	sub?: string;
 	/** object-position for the cover crop (composition-aware, no universal crop). */
 	position?: string;
+	/** Optional contextual parent route (P4 correction #3 — restrained "back to overview", not a breadcrumb). */
+	parentHref?: string;
+	parentLabel?: string;
 }
-const { image, alt, eyebrow, title, sub, position = 'center' } = Astro.props;
+const { image, alt, eyebrow, title, sub, position = 'center', parentHref, parentLabel } = Astro.props;
 ---
 
 <header class="svc-hero" style={`--svc-hero-pos:${position}`}>
@@ -32,6 +35,27 @@ const { image, alt, eyebrow, title, sub, position = 'center' } = Astro.props;
 	/>
 	<div class="svc-hero__scrim"></div>
 	<div class="svc-hero__content u-container u-container--wide">
+		{
+			parentHref && parentLabel && (
+				<a class="svc-hero__parent" href={parentHref}>
+					<svg
+						width="17"
+						height="17"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.75"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+						focusable="false"
+					>
+						<path d="M20 12H5M11 6l-6 6 6 6" />
+					</svg>
+					{parentLabel}
+				</a>
+			)
+		}
 		<p class="t-eyebrow t-eyebrow--accent">{eyebrow}</p>
 		<h1 class="t-display svc-hero__title">{title}</h1>
 		{sub && <p class="t-lead svc-hero__sub">{sub}</p>}
@@ -67,6 +91,33 @@ const { image, alt, eyebrow, title, sub, position = 'center' } = Astro.props;
 		inset: 0;
 		z-index: -1;
 		background: var(--color-image-scrim-corner);
+	}
+	/* Contextual parent route — restrained, subordinate to the title, in the existing premium link language
+	   (arrow nudges, gold on hover). Off-white on the corner scrim is AA. Padding gives a ≥44px touch target
+	   without visually enlarging the row (the negative top margin keeps the eyebrow spacing tight). */
+	.svc-hero__parent {
+		display: flex;
+		align-items: center;
+		gap: var(--space-xs);
+		width: fit-content;
+		margin-top: calc(-1 * var(--space-sm));
+		margin-bottom: var(--space-2xs);
+		padding-block: var(--space-sm);
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: 0.01em;
+		color: var(--color-text);
+	}
+	.svc-hero__parent svg {
+		transition: transform var(--dur-interaction) var(--ease-out);
+	}
+	.svc-hero__parent:hover,
+	.svc-hero__parent:focus-visible {
+		color: var(--color-accent);
+	}
+	.svc-hero__parent:hover svg,
+	.svc-hero__parent:focus-visible svg {
+		transform: translateX(-3px);
 	}
 	.svc-hero__title {
 		margin-top: var(--space-sm);

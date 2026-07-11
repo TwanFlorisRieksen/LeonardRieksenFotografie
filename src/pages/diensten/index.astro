@@ -21,14 +21,15 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 	title="Diensten"
 	description="Architectuur- en interieurfotografie op locatie door Leo Rieksen. Twee disciplines, één rustige en nauwkeurige benadering — kies de dienst die bij uw project past."
 >
-	<!-- LIGHT COVER (D-20). The overview opens on the warm-stone register — an editorial "cover page" of the
-	     monograph — a deliberately different light architecture from the other pages (home = mid chapter,
-	     service pages = mid/late), and the only page that opens on light. A 2-col cover (statement left,
-	     orientation right) fills the former empty right of the display heading. Per 13.39 the overview
-	     introduces and compares without duplicating the detail pages, so the approach is a short line here. -->
-	<Section as="header" surface="light" class="dien-cover">
+	<!-- OPENING (P4 correction #3 — D-22). Formerly a full-bleed light "cover" band. Now dark and light coexist
+	     in the opening composition: the eyebrow + display TITLE sit on a contained warm-stone plane (the "cover
+	     leaf"), while the orientation text reads on the DARK page beside it. This inverts the service pages'
+	     grammar (there a dark statement anchors a light elaboration; here a light title anchors a dark
+	     elaboration) — the overview keeps its distinct "opens on light" identity without the full-width band,
+	     and is not a generic image split hero (no photograph; asymmetric light-title / dark-text). -->
+	<Section as="header" class="dien-cover">
 		<div class="dien-cover__grid">
-			<div class="dien-cover__lead">
+			<div class="dien-cover__lead surface-light">
 				<p class="t-eyebrow t-eyebrow--accent">Diensten</p>
 				<h1 class="t-display dien-title">Fotografie die het ontwerp recht doet.</h1>
 			</div>
@@ -125,35 +126,55 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 </BaseLayout>
 
 <style>
-	/* --- Light editorial cover --- */
+	/* --- Opening: contained light title plane (left) + dark orientation text (right) --- */
 	.dien-cover__grid {
 		display: grid;
 		grid-template-columns: 1.15fr 1fr;
 		gap: var(--space-2xl) var(--space-3xl);
 		align-items: end;
 	}
+	/* The title "cover leaf" — a contained warm-stone plane holding the display title. On desktop the grid
+	   already contains it to the left column with the dark orientation text on the right; no radius/shadow. */
+	.dien-cover__lead {
+		padding: clamp(1.75rem, 1.2rem + 2.8vw, 3.5rem);
+	}
 	.dien-title {
 		margin-top: var(--space-sm);
 		max-width: 15ch;
 	}
+	.dien-cover__body {
+		padding-bottom: var(--space-md);
+	}
 	.dien-intro {
 		max-width: 40ch;
-		color: var(--color-text-on-light);
+		color: var(--color-text);
 	}
 	.dien-cover__note {
 		margin-top: var(--space-lg);
 		max-width: 46ch;
-		color: var(--color-text-on-light-secondary);
+		color: var(--color-text-secondary);
 		font-size: var(--fs-body-sm);
 	}
 	@media (max-width: 56rem) {
 		.dien-cover__grid {
 			grid-template-columns: 1fr;
-			gap: var(--space-lg);
+			gap: var(--space-xl);
 			align-items: start;
+		}
+		/* Mobile: the title leaf bleeds to the LEFT screen edge with a dark inset on the right — an offset
+		   register, not a full-width light slab (reliable at narrow widths where the container has no auto-margin). */
+		.dien-cover__lead {
+			margin-left: calc(-1 * var(--gutter));
+			margin-right: var(--space-xl);
+			padding-left: max(var(--gutter), clamp(1.75rem, 1.2rem + 2.8vw, 3.5rem));
 		}
 		.dien-title {
 			max-width: 18ch;
+		}
+	}
+	@media (max-width: 30rem) {
+		.dien-cover__lead {
+			margin-right: var(--space-md);
 		}
 	}
 

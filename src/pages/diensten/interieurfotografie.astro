@@ -46,6 +46,8 @@ const toepassingen = [
 		title="Interieurfotografie"
 		sub="Ruimtes waarin sfeer, materiaal, licht en functie samenkomen."
 		position="center 55%"
+		parentHref="/diensten/"
+		parentLabel="Alle diensten"
 	/>
 
 	<!-- Intro -->
@@ -114,12 +116,14 @@ const toepassingen = [
 		)
 	}
 
-	<!-- LIGHT CHAPTER (D-20) — placed LATE, and composed as a vertical, sequential werkwijze rather than a
-	     3-column grid. This is the interior page's deliberate contrast with the architecture page: there the
-	     light is a single mid block and the werkwijze is a dark structured grid; here uitleg + werkwijze form
-	     one warm-stone chapter near the end, and the method reads as a flowing sequence (space/atmosphere,
-	     not structure). Different light POSITION, different werkwijze LAYOUT — a macro distinction, not copy. -->
-	<Section as="section" surface="light" class="svc-light-chapter">
+	<!-- LATE CHAPTER (P4 correction #3 — D-22). Formerly one full-bleed warm-stone chapter; now dark and light
+	     coexist. The uitleg ("De dienst") reads on the DARK page (the atmospheric, reflective voice). The
+	     werkwijze then becomes the page's contained LIGHT moment — a vertical light COLUMN anchored to the LEFT
+	     with dark negative space to its right (the mirror of the architecture page, whose light plane anchors
+	     RIGHT). This preserves the interior page's late-light + vertical-sequence identity while breaking the
+	     full-width band, and keeps the two service pages distinct: arch = light uitleg band, dark grid werkwijze;
+	     interieur = dark uitleg, light vertical-column werkwijze. -->
+	<Section as="section" class="svc-uitleg-sec">
 		<div class="svc-scope">
 			<div class="svc-scope__text">
 				<p class="t-eyebrow t-eyebrow--accent">De dienst</p>
@@ -137,8 +141,10 @@ const toepassingen = [
 				</ul>
 			</div>
 		</div>
+	</Section>
 
-		<div class="svc-seq">
+	<Section as="section" width="wide" class="svc-seq-sec">
+		<div class="svc-seq surface-light">
 			<div class="svc-seq__head">
 				<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
 				<h2 class="t-h2 svc-seq__title">Van sfeer tot beeld.</h2>
@@ -246,7 +252,7 @@ const toepassingen = [
 		}
 	}
 
-	/* --- Uitleg + toepassingen (light) — shared look with the architecture page --- */
+	/* --- Uitleg + toepassingen: now on the DARK page (the reflective intro voice) --- */
 	.svc-scope {
 		display: grid;
 		grid-template-columns: 1.4fr 1fr;
@@ -255,15 +261,14 @@ const toepassingen = [
 	}
 	.svc-scope__title {
 		margin-block: var(--space-sm) var(--space-md);
-		color: var(--color-text-on-light);
 		max-width: 16ch;
 	}
 	.svc-scope__body {
-		color: var(--color-text-on-light-secondary);
+		color: var(--color-text-secondary);
 		max-width: 52ch;
 	}
 	.svc-scope__aside-label {
-		color: var(--color-accent-on-light);
+		color: var(--color-accent);
 	}
 	.svc-applist {
 		margin-top: var(--space-md);
@@ -272,12 +277,12 @@ const toepassingen = [
 	}
 	.svc-applist__item {
 		padding: var(--space-md) 0;
-		border-top: 1px solid var(--color-border-on-light);
-		color: var(--color-text-on-light);
+		border-top: 1px solid var(--color-border);
+		color: var(--color-text);
 		font-weight: var(--fw-medium);
 	}
 	.svc-applist__item:last-child {
-		border-bottom: 1px solid var(--color-border-on-light);
+		border-bottom: 1px solid var(--color-border);
 	}
 	@media (max-width: 52rem) {
 		.svc-scope {
@@ -286,11 +291,11 @@ const toepassingen = [
 		}
 	}
 
-	/* --- Werkwijze as a vertical sequence on light (deliberately NOT the architecture page's 3-col grid) --- */
+	/* --- Werkwijze: a contained vertical LIGHT COLUMN (.surface-light), left-anchored, dark to its right —
+	   the interior page's late light moment. Mirror of the architecture page's right-anchored light plane. --- */
 	.svc-seq {
-		margin-top: clamp(3rem, 2rem + 4vw, 5.5rem);
-		padding-top: clamp(2.5rem, 1.8rem + 3vw, 4rem);
-		border-top: 1px solid var(--color-accent-on-light);
+		max-width: 48rem;
+		padding: clamp(1.75rem, 1.2rem + 2.6vw, 3.25rem);
 	}
 	.svc-seq__head {
 		max-width: 40ch;
@@ -331,7 +336,19 @@ const toepassingen = [
 		color: var(--color-text-on-light-secondary);
 		font-size: var(--fs-body-sm);
 	}
+	@media (max-width: 52rem) {
+		/* Mobile mirror of the architecture page: the light column bleeds to the LEFT screen edge with a dark
+		   inset on the right — an asymmetric offset register, never a full-viewport light slab. */
+		.svc-seq {
+			max-width: none;
+			margin-left: calc(-1 * var(--gutter));
+			margin-right: var(--space-xl);
+		}
+	}
 	@media (max-width: 40rem) {
+		.svc-seq {
+			margin-right: var(--space-md);
+		}
 		.svc-seq__item {
 			grid-template-columns: 1fr;
 			gap: var(--space-xs);

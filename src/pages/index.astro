@@ -216,12 +216,13 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		</div>
 	</Section>
 
-	<!-- ATELIER — the single LIGHT CHAPTER of the homepage (D-20). Specialisaties + werkwijze share one
-	     continuous warm-stone surface (a "paper insert" in the dark monograph, 4.23/D-16), divided by a gold
-	     hairline — deliberately a substantial chapter rather than one isolated obligatory light block, and a
-	     different light architecture from the other pages (diensten stays dark; the service pages place light
-	     elsewhere). The werkwijze-on-light also reads differently from the service pages' dark werkwijze. -->
-	<Section as="section" surface="light" class="atelier">
+	<!-- ATELIER (P4 correction #3 — D-22). No longer one full-bleed light chapter. The section is DARK: the
+	     two discipline PHOTOGRAPHS now sit on dark (photography-first — the images are the light source, 6.16),
+	     and only the text-only werkwijze becomes the page's contained LIGHT moment — a wide, left-anchored
+	     "paper method insert" with dark negative space to its right. Light and dark coexist within the same
+	     composition (dark photographic diptych → light method plane), and the homepage's light lands on a
+	     different element (werkwijze) and in a different proportion (wide/short) than the service pages. -->
+	<Section as="section" class="atelier">
 		<!-- SPECIALISATIES (13.17 / 13.19). The two disciplines as an asymmetric diptych — different ratios,
 		     different weights, a shared approach — NOT two equal cards. Each opens its service page. -->
 		<div class="spec">
@@ -278,7 +279,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		<!-- WERKWIJZE / VERTROUWEN (13.13 vertrouwen en werkwijze). Transformed from Leo's own on-location
 		     service copy — a restrained enumerated method, not icon cards. Sits below the specialisaties on the
 		     same light surface (one chapter), divided by a gold hairline. -->
-		<div class="method">
+		<div class="method surface-light">
 		<div class="method__head">
 			<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
 			<h2 class="t-h2 method__title">Rustig, precies, altijd op locatie.</h2>
@@ -553,26 +554,23 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		max-width: 40ch;
 	}
 	.spec-card__name {
-		color: var(--color-text-on-light);
+		color: var(--color-text);
 		transition: color var(--dur-interaction) var(--ease-standard);
 	}
 	.spec-card__desc {
 		margin-top: var(--space-sm);
-		color: var(--color-text-on-light-secondary);
+		color: var(--color-text-secondary);
 	}
 	.spec-card__link {
 		margin-top: var(--space-md);
-		color: var(--color-interactive-on-light);
 	}
 	.spec-card:hover .spec-card__name,
 	.spec-card:focus-visible .spec-card__name {
-		color: var(--color-accent-on-light);
+		color: var(--color-accent);
 	}
-	/* On the light stone surface the generic gold hover would fail AA — keep the on-light accent. */
-	.spec .link-arrow:hover,
 	.spec-card:hover .spec-card__link,
 	.spec-card:focus-visible .spec-card__link {
-		color: var(--color-accent-on-light);
+		color: var(--color-accent);
 	}
 	@media (max-width: 52rem) {
 		.spec__grid {
@@ -585,11 +583,14 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		}
 	}
 
-	/* --- WERKWIJZE (lower half of the light chapter; divided from specialisaties by a gold hairline) --- */
+	/* --- WERKWIJZE: the homepage's contained LIGHT plane — a wide, left-anchored "paper method insert" with
+	   dark negative space to its right (.surface-light supplies the on-light colours). Text-only, so no
+	   photograph crosses the surface boundary. Wide-and-short proportion distinguishes it from the interior
+	   page's narrow-and-tall light column. --- */
 	.method {
 		margin-top: clamp(3rem, 2rem + 4vw, 5.5rem);
-		padding-top: clamp(2.5rem, 1.8rem + 3vw, 4rem);
-		border-top: 1px solid var(--color-accent-on-light);
+		max-width: 64rem;
+		padding: clamp(1.75rem, 1.2rem + 2.6vw, 3.25rem);
 	}
 	.method__head {
 		max-width: 40ch;
@@ -629,6 +630,18 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		.method__list {
 			grid-template-columns: 1fr;
 			gap: var(--space-xl);
+		}
+		/* The method plane bleeds to the LEFT screen edge with a dark inset on the right — a contained offset
+		   register on mobile, never a full-viewport light slab. */
+		.method {
+			max-width: none;
+			margin-left: calc(-1 * var(--gutter));
+			margin-right: var(--space-xl);
+		}
+	}
+	@media (max-width: 30rem) {
+		.method {
+			margin-right: var(--space-md);
 		}
 	}
 
