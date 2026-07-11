@@ -21,15 +21,29 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 	title="Diensten"
 	description="Architectuur- en interieurfotografie op locatie door Leo Rieksen. Twee disciplines, één rustige en nauwkeurige benadering — kies de dienst die bij uw project past."
 >
-	<!-- Page intro -->
-	<Section tight>
-		<p class="t-eyebrow t-eyebrow--accent">Diensten</p>
-		<h1 class="t-display dien-title">Fotografie die het ontwerp recht doet.</h1>
-		<p class="t-lead dien-intro">
-			Leo Rieksen is gespecialiseerd in architectuur- en interieurfotografie op locatie. Elk project
-			wordt zorgvuldig voorbereid, met veel aandacht voor licht, lijnen en sfeer — zodat de beelden de
-			kwaliteit van het werk overtuigend laten zien.
-		</p>
+	<!-- LIGHT COVER (D-20). The overview opens on the warm-stone register — an editorial "cover page" of the
+	     monograph — a deliberately different light architecture from the other pages (home = mid chapter,
+	     service pages = mid/late), and the only page that opens on light. A 2-col cover (statement left,
+	     orientation right) fills the former empty right of the display heading. Per 13.39 the overview
+	     introduces and compares without duplicating the detail pages, so the approach is a short line here. -->
+	<Section as="header" surface="light" class="dien-cover">
+		<div class="dien-cover__grid">
+			<div class="dien-cover__lead">
+				<p class="t-eyebrow t-eyebrow--accent">Diensten</p>
+				<h1 class="t-display dien-title">Fotografie die het ontwerp recht doet.</h1>
+			</div>
+			<div class="dien-cover__body">
+				<p class="t-lead dien-intro">
+					Leo Rieksen is gespecialiseerd in architectuur- en interieurfotografie op locatie. Twee
+					disciplines, één rustige en nauwkeurige benadering.
+				</p>
+				<p class="dien-cover__note">
+					Elk project wordt zorgvuldig voorbereid, met veel aandacht voor licht, lijnen en sfeer —
+					zodat de beelden de kwaliteit van het werk overtuigend laten zien. Kies hieronder de dienst
+					die bij uw project past.
+				</p>
+			</div>
+		</div>
 	</Section>
 
 	<!-- Two disciplines as alternating spreads (13.37/13.39) -->
@@ -100,22 +114,6 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		}
 	</Section>
 
-	<!-- Shared approach — a short comparison note, not a duplicate of the detail pages (13.39). -->
-	<Section as="section" surface="light" class="dien-approach">
-		<div class="approach">
-			<div class="approach__lead">
-				<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
-				<h2 class="t-h2 approach__title">Voor beide disciplines dezelfde aanpak.</h2>
-			</div>
-			<p class="approach__text">
-				Fotografie op locatie, doordacht voorbereid en rustig uitgevoerd. Vooraf bespreken we welke
-				ruimtes in beeld komen en waarvoor de beelden worden gebruikt; op basis daarvan bepalen we
-				routing, belichting en het beste moment van de dag. Tijdens de opnames worden lijnen
-				rechtgezet en wordt het aanwezige licht waar nodig aangevuld met gericht kunstlicht.
-			</p>
-		</div>
-	</Section>
-
 	<ContactCta
 		heading="Een project in gedachten?"
 		text="Neem contact op om kort door te spreken wat u zoekt. Op basis daarvan maak ik een passend voorstel."
@@ -127,12 +125,36 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 </BaseLayout>
 
 <style>
+	/* --- Light editorial cover --- */
+	.dien-cover__grid {
+		display: grid;
+		grid-template-columns: 1.15fr 1fr;
+		gap: var(--space-2xl) var(--space-3xl);
+		align-items: end;
+	}
 	.dien-title {
-		margin-block: var(--space-sm) var(--space-lg);
-		max-width: 18ch;
+		margin-top: var(--space-sm);
+		max-width: 15ch;
 	}
 	.dien-intro {
-		max-width: 52ch;
+		max-width: 40ch;
+		color: var(--color-text-on-light);
+	}
+	.dien-cover__note {
+		margin-top: var(--space-lg);
+		max-width: 46ch;
+		color: var(--color-text-on-light-secondary);
+		font-size: var(--fs-body-sm);
+	}
+	@media (max-width: 56rem) {
+		.dien-cover__grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+			align-items: start;
+		}
+		.dien-title {
+			max-width: 18ch;
+		}
 	}
 
 	/* --- Alternating discipline spreads --- */
@@ -181,29 +203,6 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		}
 		.spread--int .spread__media-link {
 			order: 0;
-		}
-	}
-
-	/* --- Shared approach (light register) --- */
-	.approach {
-		display: grid;
-		grid-template-columns: 1fr 1.2fr;
-		gap: var(--space-xl) var(--space-3xl);
-		align-items: start;
-	}
-	.approach__title {
-		margin-top: var(--space-sm);
-		color: var(--color-text-on-light);
-		max-width: 16ch;
-	}
-	.approach__text {
-		color: var(--color-text-on-light-secondary);
-		max-width: 56ch;
-	}
-	@media (max-width: 52rem) {
-		.approach {
-			grid-template-columns: 1fr;
-			gap: var(--space-lg);
 		}
 	}
 </style>

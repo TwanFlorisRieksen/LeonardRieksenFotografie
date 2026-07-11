@@ -88,7 +88,7 @@ const toepassingen = [
 	}
 	{
 		arnhem && (
-			<Section as="div" tight>
+			<Section as="div" surface="deep" tight class="svc-duo-section">
 				<div class="svc-duo">
 					<figure class="svc-duo__media u-inview">
 						<Media
@@ -114,8 +114,12 @@ const toepassingen = [
 		)
 	}
 
-	<!-- Uitleg + toepassingen -->
-	<Section as="section" surface="light">
+	<!-- LIGHT CHAPTER (D-20) — placed LATE, and composed as a vertical, sequential werkwijze rather than a
+	     3-column grid. This is the interior page's deliberate contrast with the architecture page: there the
+	     light is a single mid block and the werkwijze is a dark structured grid; here uitleg + werkwijze form
+	     one warm-stone chapter near the end, and the method reads as a flowing sequence (space/atmosphere,
+	     not structure). Different light POSITION, different werkwijze LAYOUT — a macro distinction, not copy. -->
+	<Section as="section" surface="light" class="svc-light-chapter">
 		<div class="svc-scope">
 			<div class="svc-scope__text">
 				<p class="t-eyebrow t-eyebrow--accent">De dienst</p>
@@ -133,40 +137,45 @@ const toepassingen = [
 				</ul>
 			</div>
 		</div>
-	</Section>
 
-	<!-- Werkwijze -->
-	<Section as="section">
-		<div class="svc-method__head">
-			<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
-			<h2 class="t-h2 svc-method__title">Van sfeer tot beeld.</h2>
+		<div class="svc-seq">
+			<div class="svc-seq__head">
+				<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
+				<h2 class="t-h2 svc-seq__title">Van sfeer tot beeld.</h2>
+			</div>
+			<ol class="svc-seq__list">
+				<li class="svc-seq__item u-inview">
+					<span class="svc-seq__num">01</span>
+					<div class="svc-seq__body">
+						<h3 class="t-h4 svc-seq__name">Voorbereiding</h3>
+						<p>
+							Vooraf bespreken we welke ruimtes in beeld komen, waarvoor de beelden worden gebruikt en
+							welke sfeer gewenst is. Daarop stemmen we routing, belichting en het tijdstip af.
+						</p>
+					</div>
+				</li>
+				<li class="svc-seq__item u-inview" style="--reveal-index: 1">
+					<span class="svc-seq__num">02</span>
+					<div class="svc-seq__body">
+						<h3 class="t-h4 svc-seq__name">Op locatie</h3>
+						<p>
+							Rustig en precies gewerkt: het aanwezige licht wordt aangevuld met gericht kunstlicht,
+							lijnen worden rechtgezet en storende elementen waar mogelijk verplaatst of weggehaald.
+						</p>
+					</div>
+				</li>
+				<li class="svc-seq__item u-inview" style="--reveal-index: 2">
+					<span class="svc-seq__num">03</span>
+					<div class="svc-seq__body">
+						<h3 class="t-h4 svc-seq__name">Nabewerking</h3>
+						<p>
+							Een terughoudende nabewerking waarin kleur, licht en materiaal natuurlijk blijven — de
+							ruimte blijft leidend, het beeld laat de sfeer spreken.
+						</p>
+					</div>
+				</li>
+			</ol>
 		</div>
-		<ol class="svc-method">
-			<li class="svc-method__item u-inview">
-				<span class="svc-method__num">01</span>
-				<h3 class="t-h4">Voorbereiding</h3>
-				<p>
-					Vooraf bespreken we welke ruimtes in beeld komen, waarvoor de beelden worden gebruikt en
-					welke sfeer gewenst is. Daarop stemmen we routing, belichting en het tijdstip af.
-				</p>
-			</li>
-			<li class="svc-method__item u-inview" style="--reveal-index: 1">
-				<span class="svc-method__num">02</span>
-				<h3 class="t-h4">Op locatie</h3>
-				<p>
-					Rustig en precies gewerkt: het aanwezige licht wordt aangevuld met gericht kunstlicht,
-					lijnen worden rechtgezet en storende elementen waar mogelijk verplaatst of weggehaald.
-				</p>
-			</li>
-			<li class="svc-method__item u-inview" style="--reveal-index: 2">
-				<span class="svc-method__num">03</span>
-				<h3 class="t-h4">Nabewerking</h3>
-				<p>
-					Een terughoudende nabewerking waarin kleur, licht en materiaal natuurlijk blijven — de
-					ruimte blijft leidend, het beeld laat de sfeer spreken.
-				</p>
-			</li>
-		</ol>
 	</Section>
 
 	<RelatedProjects projects={related} />
@@ -277,41 +286,55 @@ const toepassingen = [
 		}
 	}
 
-	/* --- Werkwijze --- */
-	.svc-method__head {
+	/* --- Werkwijze as a vertical sequence on light (deliberately NOT the architecture page's 3-col grid) --- */
+	.svc-seq {
+		margin-top: clamp(3rem, 2rem + 4vw, 5.5rem);
+		padding-top: clamp(2.5rem, 1.8rem + 3vw, 4rem);
+		border-top: 1px solid var(--color-accent-on-light);
+	}
+	.svc-seq__head {
 		max-width: 40ch;
-		margin-bottom: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+		margin-bottom: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
 	}
-	.svc-method__title {
+	.svc-seq__title {
 		margin-top: var(--space-sm);
+		color: var(--color-text-on-light);
 	}
-	.svc-method {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: var(--space-2xl);
-	}
-	.svc-method__item {
+	.svc-seq__list {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-sm);
-		padding-top: var(--space-lg);
-		border-top: 1px solid var(--color-border);
 	}
-	.svc-method__num {
+	.svc-seq__item {
+		display: grid;
+		grid-template-columns: minmax(0, 7rem) minmax(0, 44ch);
+		gap: var(--space-lg) var(--space-2xl);
+		padding-block: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+		border-top: 1px solid var(--color-border-on-light);
+		align-items: baseline;
+	}
+	.svc-seq__item:last-child {
+		border-bottom: 1px solid var(--color-border-on-light);
+	}
+	.svc-seq__num {
 		font-family: var(--font-display);
 		font-weight: var(--fw-display);
-		font-size: var(--fs-h3);
-		color: var(--color-accent);
+		font-size: var(--fs-h2);
+		line-height: 1;
+		color: var(--color-accent-on-light);
 		letter-spacing: var(--ls-heading);
 	}
-	.svc-method__item p {
-		color: var(--color-text-secondary);
+	.svc-seq__name {
+		color: var(--color-text-on-light);
+		margin-bottom: var(--space-sm);
+	}
+	.svc-seq__body p {
+		color: var(--color-text-on-light-secondary);
 		font-size: var(--fs-body-sm);
 	}
-	@media (max-width: 52rem) {
-		.svc-method {
+	@media (max-width: 40rem) {
+		.svc-seq__item {
 			grid-template-columns: 1fr;
-			gap: var(--space-xl);
+			gap: var(--space-xs);
 		}
 	}
 </style>

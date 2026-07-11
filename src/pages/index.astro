@@ -138,8 +138,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 
 	<!-- GESELECTEERD WERK (13.18). A curated glimpse, not the full portfolio — one large featured plate
 	     beside a stacked pair, each opening its project. Composed as an editorial spread (distinct from the
-	     portfolio overview's own lead+index layout) so the two pages don't share a structure. -->
-	<Section as="section" width="wide" class="work">
+	     portfolio overview's own lead+index layout) so the two pages don't share a structure. Stepped onto
+	     the DEEPEST surface (ink-950, blueprint 6.9) so the work reads as a distinct gallery chapter, tonally
+	     separated from the positionering above — a dark-scale boundary, not a light insert. -->
+	<Section as="section" surface="deep" width="wide" class="work">
 		<div class="work__head">
 			<div>
 				<p class="t-eyebrow t-eyebrow--accent">Geselecteerd werk</p>
@@ -214,9 +216,15 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		</div>
 	</Section>
 
-	<!-- SPECIALISATIES (13.17 / 13.19). The two disciplines as an asymmetric diptych — different ratios,
-	     different weights, a shared approach — NOT two equal cards. Each opens its service page. -->
-	<Section as="section" surface="light" class="spec">
+	<!-- ATELIER — the single LIGHT CHAPTER of the homepage (D-20). Specialisaties + werkwijze share one
+	     continuous warm-stone surface (a "paper insert" in the dark monograph, 4.23/D-16), divided by a gold
+	     hairline — deliberately a substantial chapter rather than one isolated obligatory light block, and a
+	     different light architecture from the other pages (diensten stays dark; the service pages place light
+	     elsewhere). The werkwijze-on-light also reads differently from the service pages' dark werkwijze. -->
+	<Section as="section" surface="light" class="atelier">
+		<!-- SPECIALISATIES (13.17 / 13.19). The two disciplines as an asymmetric diptych — different ratios,
+		     different weights, a shared approach — NOT two equal cards. Each opens its service page. -->
+		<div class="spec">
 		<p class="t-eyebrow t-eyebrow--accent">Specialisaties</p>
 		<h2 class="t-display spec__title">Twee disciplines, één benadering.</h2>
 		<div class="spec__grid">
@@ -265,11 +273,12 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 				</div>
 			</a>
 		</div>
-	</Section>
+		</div>
 
-	<!-- WERKWIJZE / VERTROUWEN (13.13 vertrouwen en werkwijze). Transformed from Leo's own on-location
-	     service copy — a restrained enumerated method, not icon cards. -->
-	<Section as="section" class="method">
+		<!-- WERKWIJZE / VERTROUWEN (13.13 vertrouwen en werkwijze). Transformed from Leo's own on-location
+		     service copy — a restrained enumerated method, not icon cards. Sits below the specialisaties on the
+		     same light surface (one chapter), divided by a gold hairline. -->
+		<div class="method">
 		<div class="method__head">
 			<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
 			<h2 class="t-h2 method__title">Rustig, precies, altijd op locatie.</h2>
@@ -306,6 +315,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 				</div>
 			</li>
 		</ol>
+		</div>
 	</Section>
 
 	<ContactCta
@@ -514,7 +524,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	}
 
 	/* ============================================================= *
-	 * SPECIALISATIES (light register — a deliberate "different paper stock" break, D-16/D-19)
+	 * ATELIER — the light chapter (specialisaties + werkwijze on one warm-stone surface, D-20)
 	 * ============================================================= */
 	.spec__title {
 		margin-top: var(--space-sm);
@@ -575,9 +585,12 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		}
 	}
 
-	/* ============================================================= *
-	 * WERKWIJZE
-	 * ============================================================= */
+	/* --- WERKWIJZE (lower half of the light chapter; divided from specialisaties by a gold hairline) --- */
+	.method {
+		margin-top: clamp(3rem, 2rem + 4vw, 5.5rem);
+		padding-top: clamp(2.5rem, 1.8rem + 3vw, 4rem);
+		border-top: 1px solid var(--color-accent-on-light);
+	}
 	.method__head {
 		max-width: 40ch;
 		margin-bottom: clamp(2rem, 1.4rem + 3vw, 3.5rem);
@@ -595,20 +608,21 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		flex-direction: column;
 		gap: var(--space-md);
 		padding-top: var(--space-lg);
-		border-top: 1px solid var(--color-border);
+		border-top: 1px solid var(--color-border-on-light);
 	}
 	.method__num {
 		font-family: var(--font-display);
 		font-weight: var(--fw-display);
 		font-size: var(--fs-h3);
-		color: var(--color-accent);
+		color: var(--color-accent-on-light);
 		letter-spacing: var(--ls-heading);
 	}
 	.method__name {
 		margin-bottom: var(--space-xs);
+		color: var(--color-text-on-light);
 	}
 	.method__desc {
-		color: var(--color-text-secondary);
+		color: var(--color-text-on-light-secondary);
 		font-size: var(--fs-body-sm);
 	}
 	@media (max-width: 52rem) {

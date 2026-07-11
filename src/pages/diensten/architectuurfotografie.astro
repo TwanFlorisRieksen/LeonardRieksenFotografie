@@ -66,8 +66,11 @@ const toepassingen = [
 		</div>
 	</Section>
 
-	<!-- Representatieve fotografie: historic + modern → the range of the discipline -->
-	<Section as="div" width="wide">
+	<!-- Representatieve fotografie: historic + modern → the range of the discipline. Stepped onto the deepest
+	     surface (ink-950, 6.9) as a distinct "gallery wall" chapter — an architectural, precise dark step that
+	     differentiates this page's rhythm from the interior page (which sequences a full-bleed plate instead). -->
+	<Section as="div" surface="deep" width="wide" class="svc-gallery">
+		<p class="t-eyebrow t-eyebrow--accent svc-gallery__label">Representatief werk</p>
 		<div class="svc-plates">
 			<figure class="svc-plate svc-plate--tall u-inview">
 				<Media
@@ -190,7 +193,11 @@ const toepassingen = [
 		}
 	}
 
-	/* --- Representative photography (asymmetric pair: portrait + landscape) --- */
+	/* --- Representative photography (asymmetric pair: portrait + landscape) on the deep gallery surface --- */
+	.svc-gallery__label {
+		display: block;
+		margin-bottom: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
+	}
 	.svc-plates {
 		display: grid;
 		grid-template-columns: 0.75fr 1.25fr;
