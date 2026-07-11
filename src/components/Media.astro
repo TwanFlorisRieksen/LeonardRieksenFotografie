@@ -82,9 +82,21 @@ const styleVars = ratio ? `--media-ratio:${ratio};--media-fit:${fit};--media-pos
 		width: 100%;
 		height: auto;
 	}
-	/* Opt-in framed mode for grid tiles: fixed ratio box, image fits inside it. */
+	/* Opt-in framed mode for grid tiles: fixed ratio box, image fits inside it.
+	   `picture`/`img` are positioned absolutely against this box rather than sized with height:100% — a
+	   box whose height comes only from `aspect-ratio` (not an explicit height) does not reliably give
+	   percentage-height descendants a definite height to resolve against, so `height:100%` on the img
+	   silently fell back to its intrinsic auto height: shorter images under-filled the frame (exposing
+	   the holding-colour background as a bar) and taller images silently overflowed past it (clipped by
+	   `overflow:clip` above, with object-position never actually engaging). Absolute positioning gives the
+	   picture/img a definite containing block regardless of how the parent's height was derived. */
 	.media--framed {
+		position: relative;
 		aspect-ratio: var(--media-ratio);
+	}
+	.media--framed :global(picture) {
+		position: absolute;
+		inset: 0;
 	}
 	.media--framed :global(img) {
 		width: 100%;

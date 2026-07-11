@@ -4,9 +4,24 @@
  * service-detail pages: internal linking + discovery into the real portfolio (ARCH-07). Takes already-loaded
  * project entries (the page decides which are relevant) and renders a small ratio-flexible strip. No
  * invented projects; covers are real photography served as derivatives (PH-08).
+ *
+ * P4 correction (2026-07-11, evidence-based follow-up to D-20): renders through the shared `Section`
+ * component instead of a hand-written `<section class="section rel">` — the same scoped-style defect as
+ * ContactCta (a literal `section` class never receives `Section.astro`'s scoped padding), which left this
+ * block with zero vertical section padding wherever it appeared.
+ *
+ * `surface="deep"` (2026-07-11, cross-page light/dark integration follow-up): both service pages closed
+ * with three consecutive flat-default-dark sections (werkwijze → this block → ContactCta) before the
+ * footer's own deep surface — reading as one undifferentiated dark slab regardless of where each page's
+ * light chapter sat earlier. This is the same "photography grid → deep gallery wall" idiom the pages
+ * already use for `representatief werk` (6.9 dark tonal stepping) applied to an analogous later beat
+ * (another photography grid) rather than a new pattern — it restores a stepped dark rhythm to the
+ * closing run without touching ContactCta (kept calm/consistent per D-20) or the per-page werkwijze
+ * treatment (deliberately distinct between the two service pages).
  */
 import type { CollectionEntry } from 'astro:content';
 import Media from './Media.astro';
+import Section from './Section.astro';
 
 interface Props {
 	title?: string;
@@ -18,36 +33,34 @@ const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', in
 
 {
 	projects.length > 0 && (
-		<section class="section rel" aria-labelledby="rel-heading">
-			<div class="u-container u-container--wide">
-				<div class="rel__head">
-					<p class="t-eyebrow t-eyebrow--accent">Portfolio</p>
-					<h2 id="rel-heading" class="t-h2 rel__title">{title}</h2>
-				</div>
-				<ul class="rel__grid">
-					{projects.map((project) => (
-						<li class="rel__item u-inview">
-							<a class="rel-card" href={`/portfolio/${project.id}/`}>
-								<Media
-									src={project.data.coverImage}
-									alt={project.data.coverImageAlt}
-									widths={[400, 800, 1100]}
-									sizes="(min-width: 48rem) 45vw, 100vw"
-									class="rel-card__media"
-								/>
-								<div class="rel-card__caption">
-									<p class="t-eyebrow">
-										{categoryLabel[project.data.category]}
-										{project.data.location && <> &middot; {project.data.location}</>}
-									</p>
-									<h3 class="t-h3 rel-card__name">{project.data.title}</h3>
-								</div>
-							</a>
-						</li>
-					))}
-				</ul>
+		<Section as="section" surface="deep" width="wide" class="rel" aria-labelledby="rel-heading">
+			<div class="rel__head">
+				<p class="t-eyebrow t-eyebrow--accent">Portfolio</p>
+				<h2 id="rel-heading" class="t-h2 rel__title">{title}</h2>
 			</div>
-		</section>
+			<ul class="rel__grid">
+				{projects.map((project) => (
+					<li class="rel__item u-inview">
+						<a class="rel-card" href={`/portfolio/${project.id}/`}>
+							<Media
+								src={project.data.coverImage}
+								alt={project.data.coverImageAlt}
+								widths={[400, 800, 1100]}
+								sizes="(min-width: 48rem) 45vw, 100vw"
+								class="rel-card__media"
+							/>
+							<div class="rel-card__caption">
+								<p class="t-eyebrow">
+									{categoryLabel[project.data.category]}
+									{project.data.location && <> &middot; {project.data.location}</>}
+								</p>
+								<h3 class="t-h3 rel-card__name">{project.data.title}</h3>
+							</div>
+						</a>
+					</li>
+				))}
+			</ul>
+		</Section>
 	)
 }
 

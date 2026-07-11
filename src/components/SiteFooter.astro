@@ -92,6 +92,14 @@ const region = 'Midden-Nederland';
 		padding-block: clamp(3rem, 2rem + 4vw, 5.5rem) var(--space-2xl);
 		margin-top: var(--space-4xl);
 	}
+	/* P4 correction (2026-07-11): ContactCta now renders through Section and carries its own
+	   `--section-gap` bottom padding (see ContactCta.astro / Section.astro). On every page that closes
+	   with ContactCta, stacking this footer's own generous top margin on top of that would double the
+	   gap. Pages that don't end in ContactCta (e.g. the portfolio pages) keep their own modest closing
+	   padding and still rely on this margin as their primary breathing room — untouched. */
+	:global(main:has(> .cta)) + .site-footer {
+		margin-top: 0;
+	}
 	.site-footer__grid {
 		display: grid;
 		grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
