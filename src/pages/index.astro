@@ -58,7 +58,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 0">
 				Architectuur- &amp; interieurfotografie
 			</p>
-			<h1 class="t-display home-hero__title" style="--reveal-index: 1">
+			<h1 class="t-display home-hero__title u-reveal-mask" style="--reveal-index: 1">
 				Fotografie met rust, precisie en perfect licht.
 			</h1>
 			<p class="t-lead home-hero__sub" style="--reveal-index: 2">
@@ -141,8 +141,8 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	     portfolio overview's own lead+index layout) so the two pages don't share a structure. Stepped onto
 	     the DEEPEST surface (ink-950, blueprint 6.9) so the work reads as a distinct gallery chapter, tonally
 	     separated from the positionering above — a dark-scale boundary, not a light insert. -->
-	<Section as="section" surface="deep" width="wide" class="work">
-		<div class="work__head">
+	<Section as="section" surface="deep" width="flush" class="work">
+		<div class="u-container work__head">
 			<div>
 				<p class="t-eyebrow t-eyebrow--accent">Geselecteerd werk</p>
 				<h2 class="t-h2 work__title">Elk project als geheel gefotografeerd.</h2>
@@ -166,53 +166,70 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			</a>
 		</div>
 
-		<div class="work__spread">
+		{
+			/* THE BIG IMAGE MOMENT (P4.5). The featured project reprises the hero's immersive full-bleed
+			   grammar — the first container break since the hero — so photography regains commanding scale
+			   and the interface recedes (blueprint 4.58 "grote beeldmomenten", 8.3 scale/negative-space). It
+			   is revealed by the geometric image mask (`u-inview--mask`), the loud counterpart to the calm
+			   text rise used elsewhere. Static-first: a plain <a> with a real caption; the mask only enhances. */
+		}
+		{
+			featured && (
+				<a class="work-immersive u-inview" href={`/portfolio/${featured.id}/`}>
+					<Media
+						src={featured.data.coverImage}
+						alt={featured.data.coverImageAlt}
+						widths={[768, 1200, 1600, 1700]}
+						sizes="100vw"
+						class="work-immersive__media"
+					/>
+					<div class="work-immersive__scrim" />
+					<div class="work-immersive__caption u-container">
+						<div class="work-immersive__caption-inner">
+							<p class="t-eyebrow t-eyebrow--accent">
+								{categoryLabel[featured.data.category]}
+								{featured.data.location && <> &middot; {featured.data.location}</>}
+							</p>
+							<h3 class="t-display work-immersive__name">{featured.data.title}</h3>
+							<span class="link-arrow work-immersive__cue">
+								Bekijk project
+								<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+							</span>
+						</div>
+					</div>
+				</a>
+			)
+		}
+
+		{
+			/* Quiet counterpoint: the remaining projects drop to a small contained pair, so the scale
+			   contrast with the immersive plate above is the point (loud → quiet), not two equal grids. */
+		}
+		<div class="u-container work__stack">
 			{
-				featured && (
-					<a class="work-plate work-plate--lead u-inview" href={`/portfolio/${featured.id}/`}>
+				secondary.map((project, i) => (
+					<a
+						class="work-plate u-inview"
+						href={`/portfolio/${project.id}/`}
+						style={`--reveal-index: ${i}`}
+					>
 						<Media
-							src={featured.data.coverImage}
-							alt={featured.data.coverImageAlt}
-							widths={[480, 800, 1200, 1700]}
-							sizes="(min-width: 60rem) 62vw, 100vw"
+							src={project.data.coverImage}
+							alt={project.data.coverImageAlt}
+							widths={[400, 700, 1000]}
+							sizes="(min-width: 52rem) 46vw, 100vw"
 							class="work-plate__media"
 						/>
 						<div class="work-plate__caption">
 							<p class="t-eyebrow">
-								{categoryLabel[featured.data.category]}
-								{featured.data.location && <> &middot; {featured.data.location}</>}
+								{categoryLabel[project.data.category]}
+								{project.data.location && <> &middot; {project.data.location}</>}
 							</p>
-							<h3 class="t-h3 work-plate__name">{featured.data.title}</h3>
+							<h3 class="t-h3 work-plate__name">{project.data.title}</h3>
 						</div>
 					</a>
-				)
+				))
 			}
-			<div class="work__stack">
-				{
-					secondary.map((project, i) => (
-						<a
-							class="work-plate u-inview"
-							href={`/portfolio/${project.id}/`}
-							style={`--reveal-index: ${i + 1}`}
-						>
-							<Media
-								src={project.data.coverImage}
-								alt={project.data.coverImageAlt}
-								widths={[400, 800, 1200]}
-								sizes="(min-width: 60rem) 34vw, 100vw"
-								class="work-plate__media"
-							/>
-							<div class="work-plate__caption">
-								<p class="t-eyebrow">
-									{categoryLabel[project.data.category]}
-									{project.data.location && <> &middot; {project.data.location}</>}
-								</p>
-								<h3 class="t-h3 work-plate__name">{project.data.title}</h3>
-							</div>
-						</a>
-					))
-				}
-			</div>
 		</div>
 	</Section>
 
@@ -477,6 +494,11 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	/* ============================================================= *
 	 * GESELECTEERD WERK
 	 * ============================================================= */
+	/* The full-bleed breakout can spill a sub-pixel past the viewport on some scrollbar models; clip the
+	   chapter horizontally so the immersive plate never introduces a horizontal scroll. */
+	.work {
+		overflow-x: clip;
+	}
 	.work__head {
 		display: flex;
 		flex-wrap: wrap;
@@ -492,15 +514,117 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	.work__all {
 		padding-bottom: 2px;
 	}
-	.work__spread {
-		display: grid;
-		grid-template-columns: 1.55fr 1fr;
-		gap: var(--space-xl);
-		align-items: start;
+
+	/* --- The big image moment: hero-grammar reprise, full section (= viewport) width. --- */
+	.work-immersive {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		min-height: clamp(26rem, 66svh, 44rem);
+		isolation: isolate;
+		background: var(--color-bg-deep);
 	}
+	/* Inset focus ring — the plate is edge-to-edge, so an outset ring would sit at the viewport edge; an
+	   inset ring stays fully visible without risking horizontal overflow. */
+	.work-immersive:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: -4px;
+		border-radius: 0;
+	}
+	.work-immersive__media {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+	}
+	.work-immersive__media :global(picture),
+	.work-immersive__media :global(img) {
+		width: 100%;
+		height: 100%;
+	}
+	.work-immersive__media :global(img) {
+		object-fit: cover;
+		object-position: center 46%;
+	}
+	.work-immersive__scrim {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: var(--color-image-scrim-corner);
+	}
+	.work-immersive__caption {
+		width: 100%;
+		padding-block: clamp(2rem, 1.4rem + 3vw, 3.6rem);
+	}
+	.work-immersive__caption-inner {
+		max-width: 42ch;
+	}
+	.work-immersive__name {
+		margin-top: var(--space-sm);
+		font-size: clamp(2.4rem, 1.4rem + 3.7vw, 4.4rem);
+		color: var(--color-text);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.work-immersive__cue {
+		margin-top: var(--space-lg);
+		color: var(--color-text);
+	}
+	.work-immersive:hover .work-immersive__name,
+	.work-immersive:focus-visible .work-immersive__name,
+	.work-immersive:hover .work-immersive__cue,
+	.work-immersive:focus-visible .work-immersive__cue {
+		color: var(--color-accent);
+	}
+	.work-immersive:hover .work-immersive__cue svg,
+	.work-immersive:focus-visible .work-immersive__cue svg {
+		transform: translateX(3px);
+	}
+	/*
+	 * The big-image mask reveal (P4.5): a geometric curtain retracts upward to uncover the photograph — the
+	 * loud counterpart to the calm text rise used elsewhere (blueprint 7.152 "image reveals" / "geometrische
+	 * mask animations", architectonisch). The photograph loads normally UNDERNEATH the curtain (an overlay,
+	 * not a clip on the image's own box), so the reveal can never defer or trap the image — a lesson learned:
+	 * clipping the lazy image's container made Chrome skip loading it entirely. Static-first: without JS or
+	 * under reduced motion there is no curtain and the plate is simply shown at full opacity.
+	 */
+	.work-immersive::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		background: var(--color-bg-deep);
+		transform: scaleY(0);
+		transform-origin: top;
+		pointer-events: none;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		:global(html.js) .work-immersive.u-inview {
+			/* This plate reveals via the curtain, so cancel the generic `.u-inview` opacity/rise on it. */
+			opacity: 1;
+			transform: none;
+		}
+		:global(html.js) .work-immersive.u-inview::after {
+			transform: scaleY(1);
+			transition: transform 900ms var(--ease-emphasized);
+		}
+		:global(html.js) .work-immersive.u-inview.is-inview::after {
+			transform: scaleY(0);
+		}
+		:global(html.js) .work-immersive.u-inview :global(img) {
+			transform: scale(1.06);
+			transition: transform 1150ms var(--ease-emphasized);
+		}
+		:global(html.js) .work-immersive.u-inview.is-inview :global(img) {
+			transform: none;
+		}
+	}
+
+	/* --- Quiet counterpoint: a small contained pair, so the scale contrast with the plate is the point. --- */
 	.work__stack {
 		display: grid;
-		gap: var(--space-xl);
+		grid-template-columns: repeat(2, 1fr);
+		align-items: start; /* intrinsic-ratio covers, top-aligned — composition respected, not force-cropped */
+		gap: var(--space-xl) var(--grid-gap);
+		margin-top: clamp(2.5rem, 1.6rem + 4vw, 4.5rem);
 	}
 	.work-plate {
 		display: block;
@@ -517,7 +641,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		color: var(--color-accent);
 	}
 	@media (max-width: 52rem) {
-		.work__spread {
+		.work-immersive {
+			min-height: clamp(22rem, 60svh, 32rem);
+		}
+		.work__stack {
 			grid-template-columns: 1fr;
 			gap: var(--space-2xl);
 		}

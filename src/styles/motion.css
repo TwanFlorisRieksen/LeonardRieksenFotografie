@@ -83,4 +83,29 @@
 		opacity: 1;
 		transform: none;
 	}
+
+	/*
+	 * P4.5 — SIGNATURE TEXT MASK REVEAL (blueprint 7.152 "gecontroleerde text reveals" via a geometric mask).
+	 * Applied once, to the hero H1, so the title rises from behind an architectural edge instead of the plain
+	 * rise the rest of the hero uses — giving the hero its own internal motion hierarchy. It runs on-load and
+	 * above the fold, so it needs no observer; it overrides the `.u-reveal > *` rise for this one child. The
+	 * default (no-JS / reduced-motion) state remains the final, fully-legible title (this block is inside the
+	 * no-preference query and never hides content on its own).
+	 */
+	.u-reveal > .u-reveal-mask {
+		animation: reveal-title-mask var(--dur-transition) var(--ease-emphasized) both;
+		animation-delay: calc(var(--reveal-index, 0) * var(--stagger-step));
+	}
+	@keyframes reveal-title-mask {
+		from {
+			opacity: 0;
+			clip-path: inset(112% 0 -8% 0);
+			transform: translateY(0.5rem);
+		}
+		to {
+			opacity: 1;
+			clip-path: inset(0 0 0 0);
+			transform: translateY(0);
+		}
+	}
 }
