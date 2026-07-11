@@ -116,13 +116,13 @@ const toepassingen = [
 		)
 	}
 
-	<!-- LATE CHAPTER (P4 correction #3 — D-22). Formerly one full-bleed warm-stone chapter; now dark and light
-	     coexist. The uitleg ("De dienst") reads on the DARK page (the atmospheric, reflective voice). The
-	     werkwijze then becomes the page's contained LIGHT moment — a vertical light COLUMN anchored to the LEFT
-	     with dark negative space to its right (the mirror of the architecture page, whose light plane anchors
-	     RIGHT). This preserves the interior page's late-light + vertical-sequence identity while breaking the
-	     full-width band, and keeps the two service pages distinct: arch = light uitleg band, dark grid werkwijze;
-	     interieur = dark uitleg, light vertical-column werkwijze. -->
+	<!-- LATE CHAPTER (P4 correction #4 — D-23). The light column is retired. Both beats are now DARK, keeping the
+	     interior page deliberately CALMER than the architecture page (fewer tonal switches — its tonal depth
+	     comes from the deep B&W duo above and the deep related gallery below, not a stepped uitleg band). The
+	     uitleg ("De dienst") reads on the base-dark page (the atmospheric, reflective voice); the werkwijze
+	     becomes a dark two-column vertical SEQUENCE (head rail left, a slow numbered cadence right) — the
+	     interior page's late, sequential, spatial identity. Distinct from the architecture werkwijze (head-on-top
+	     + compact 3-col grid), so the two service pages stay compositionally different. -->
 	<Section as="section" class="svc-uitleg-sec">
 		<div class="svc-scope">
 			<div class="svc-scope__text">
@@ -143,8 +143,8 @@ const toepassingen = [
 		</div>
 	</Section>
 
-	<Section as="section" width="wide" class="svc-seq-sec">
-		<div class="svc-seq surface-light">
+	<Section as="section" class="svc-seq-sec">
+		<div class="svc-seq">
 			<div class="svc-seq__head">
 				<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
 				<h2 class="t-h2 svc-seq__title">Van sfeer tot beeld.</h2>
@@ -291,19 +291,20 @@ const toepassingen = [
 		}
 	}
 
-	/* --- Werkwijze: a contained vertical LIGHT COLUMN (.surface-light), left-anchored, dark to its right —
-	   the interior page's late light moment. Mirror of the architecture page's right-anchored light plane. --- */
+	/* --- Werkwijze: an all-dark two-column vertical SEQUENCE (D-23) — head rail left, a slow numbered cadence
+	   right, with generous vertical rhythm and negative space (the interior page's calm, sequential, spatial
+	   identity). No light column. Distinct from the architecture werkwijze's head-on-top + 3-col grid. --- */
 	.svc-seq {
-		max-width: 48rem;
-		padding: clamp(1.75rem, 1.2rem + 2.6vw, 3.25rem);
+		display: grid;
+		grid-template-columns: 0.85fr 1.15fr;
+		gap: var(--space-2xl) clamp(var(--space-3xl), 2rem + 5vw, var(--space-4xl));
+		align-items: start;
 	}
 	.svc-seq__head {
-		max-width: 40ch;
-		margin-bottom: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
+		max-width: 30ch;
 	}
 	.svc-seq__title {
 		margin-top: var(--space-sm);
-		color: var(--color-text-on-light);
 	}
 	.svc-seq__list {
 		display: flex;
@@ -311,44 +312,39 @@ const toepassingen = [
 	}
 	.svc-seq__item {
 		display: grid;
-		grid-template-columns: minmax(0, 7rem) minmax(0, 44ch);
+		grid-template-columns: minmax(0, 5rem) minmax(0, 46ch);
 		gap: var(--space-lg) var(--space-2xl);
-		padding-block: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
-		border-top: 1px solid var(--color-border-on-light);
+		padding-block: clamp(1.5rem, 1.1rem + 1.6vw, 2.5rem);
+		border-top: 1px solid var(--color-border);
 		align-items: baseline;
 	}
-	.svc-seq__item:last-child {
-		border-bottom: 1px solid var(--color-border-on-light);
+	.svc-seq__item:first-child {
+		padding-top: 0;
+		border-top: 0;
 	}
 	.svc-seq__num {
 		font-family: var(--font-display);
 		font-weight: var(--fw-display);
 		font-size: var(--fs-h2);
 		line-height: 1;
-		color: var(--color-accent-on-light);
+		color: var(--color-accent);
 		letter-spacing: var(--ls-heading);
 	}
 	.svc-seq__name {
-		color: var(--color-text-on-light);
+		color: var(--color-text);
 		margin-bottom: var(--space-sm);
 	}
 	.svc-seq__body p {
-		color: var(--color-text-on-light-secondary);
+		color: var(--color-text-secondary);
 		font-size: var(--fs-body-sm);
 	}
 	@media (max-width: 52rem) {
-		/* Mobile mirror of the architecture page: the light column bleeds to the LEFT screen edge with a dark
-		   inset on the right — an asymmetric offset register, never a full-viewport light slab. */
 		.svc-seq {
-			max-width: none;
-			margin-left: calc(-1 * var(--gutter));
-			margin-right: var(--space-xl);
+			grid-template-columns: 1fr;
+			gap: var(--space-xl);
 		}
 	}
 	@media (max-width: 40rem) {
-		.svc-seq {
-			margin-right: var(--space-md);
-		}
 		.svc-seq__item {
 			grid-template-columns: 1fr;
 			gap: var(--space-xs);

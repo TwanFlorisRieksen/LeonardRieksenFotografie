@@ -21,18 +21,15 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 	title="Diensten"
 	description="Architectuur- en interieurfotografie op locatie door Leo Rieksen. Twee disciplines, één rustige en nauwkeurige benadering — kies de dienst die bij uw project past."
 >
-	<!-- OPENING (P4 correction #3 — D-22). Formerly a full-bleed light "cover" band. Now dark and light coexist
-	     in the opening composition: the eyebrow + display TITLE sit on a contained warm-stone plane (the "cover
-	     leaf"), while the orientation text reads on the DARK page beside it. This inverts the service pages'
-	     grammar (there a dark statement anchors a light elaboration; here a light title anchors a dark
-	     elaboration) — the overview keeps its distinct "opens on light" identity without the full-width band,
-	     and is not a generic image split hero (no photograph; asymmetric light-title / dark-text). -->
+	<!-- OPENING (P4 correction #4 — D-23). The light "cover leaf" is retired. The overview keeps its distinct
+	     "editorial masthead" identity — but on dark: an eyebrow across the top, then a monumental display title
+	     baseline-aligned against the orientation text, opening with generous negative space (13.36/13.39). No
+	     photograph (that distinguishes it from the home hero and the service heroes), no light panel — the scale
+	     contrast of the display title and the calm dark field carry the open; the discipline photography follows. -->
 	<Section as="header" class="dien-cover">
+		<p class="t-eyebrow t-eyebrow--accent dien-cover__eyebrow">Diensten</p>
 		<div class="dien-cover__grid">
-			<div class="dien-cover__lead surface-light">
-				<p class="t-eyebrow t-eyebrow--accent">Diensten</p>
-				<h1 class="t-display dien-title">Fotografie die het ontwerp recht doet.</h1>
-			</div>
+			<h1 class="t-display dien-title">Fotografie die het ontwerp recht doet.</h1>
 			<div class="dien-cover__body">
 				<p class="t-lead dien-intro">
 					Leo Rieksen is gespecialiseerd in architectuur- en interieurfotografie op locatie. Twee
@@ -47,8 +44,10 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		</div>
 	</Section>
 
-	<!-- Two disciplines as alternating spreads (13.37/13.39) -->
-	<Section as="div" width="wide" class="dien-spreads">
+	<!-- Two disciplines as alternating spreads (13.37/13.39). Stepped onto the deepest surface (ink-950, 6.9) so
+	     the two large discipline PHOTOGRAPHS read as a gallery wall — the visual energy of the page — tonally
+	     separated from the dark masthead above and the base-dark CTA below (D-23 dark tonal rhythm, no light). -->
+	<Section as="div" surface="deep" width="wide" class="dien-spreads">
 		{
 			archImg && (
 				<article class="spread spread--arch u-inview">
@@ -126,24 +125,25 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 </BaseLayout>
 
 <style>
-	/* --- Opening: contained light title plane (left) + dark orientation text (right) --- */
+	/* --- Opening: a dark editorial masthead — eyebrow across the top, monumental display title baseline-aligned
+	   against the orientation text. Generous top space for a calm premium open (D-23). --- */
+	.dien-cover {
+		padding-top: clamp(2rem, 1rem + 5vw, 5rem);
+	}
+	.dien-cover__eyebrow {
+		margin-bottom: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+	}
 	.dien-cover__grid {
 		display: grid;
-		grid-template-columns: 1.15fr 1fr;
-		gap: var(--space-2xl) var(--space-3xl);
+		grid-template-columns: 1.2fr 1fr;
+		gap: var(--space-2xl) clamp(var(--space-3xl), 2rem + 5vw, var(--space-4xl));
 		align-items: end;
 	}
-	/* The title "cover leaf" — a contained warm-stone plane holding the display title. On desktop the grid
-	   already contains it to the left column with the dark orientation text on the right; no radius/shadow. */
-	.dien-cover__lead {
-		padding: clamp(1.75rem, 1.2rem + 2.8vw, 3.5rem);
-	}
 	.dien-title {
-		margin-top: var(--space-sm);
 		max-width: 15ch;
 	}
 	.dien-cover__body {
-		padding-bottom: var(--space-md);
+		padding-bottom: var(--space-sm);
 	}
 	.dien-intro {
 		max-width: 40ch;
@@ -161,20 +161,8 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 			gap: var(--space-xl);
 			align-items: start;
 		}
-		/* Mobile: the title leaf bleeds to the LEFT screen edge with a dark inset on the right — an offset
-		   register, not a full-width light slab (reliable at narrow widths where the container has no auto-margin). */
-		.dien-cover__lead {
-			margin-left: calc(-1 * var(--gutter));
-			margin-right: var(--space-xl);
-			padding-left: max(var(--gutter), clamp(1.75rem, 1.2rem + 2.8vw, 3.5rem));
-		}
 		.dien-title {
 			max-width: 18ch;
-		}
-	}
-	@media (max-width: 30rem) {
-		.dien-cover__lead {
-			margin-right: var(--space-md);
 		}
 	}
 

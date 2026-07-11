@@ -105,31 +105,31 @@ const toepassingen = [
 		</div>
 	</Section>
 
-	<!-- Uitleg + toepassingen (P4 correction #3 — D-22). No longer a full-bleed light band. The section stays
-	     DARK; the eyebrow + statement live on the dark page (a dark typographic rail), and a CONTAINED warm-stone
-	     plane holds the elaboration + toepassingen. Light and dark share one asymmetric composition on the
-	     architectural grid: the plane is edge-anchored to the container's right (aligned with the wide gallery
-	     plate directly above — photography → paper, 4.23), with dark negative space to its left. A contained
-	     light field within a predominantly dark composition — not a slab, not a card. -->
-	<Section as="section" width="wide" class="svc-scope-sec">
+	<!-- Uitleg + toepassingen (P4 correction #4 — D-23). The light plane is retired. Dark dominance is now the
+	     compositional register (blueprint 6.8/6.9/6.15: predominantly dark neutrals, light neutrals for TEXT
+	     only — never obligatory light surfaces). This "specification wall" steps up ONE dark tint to ink-850
+	     (`surface`) — a subtle full-bleed tonal lift that reads as a distinct chapter without borders/shadows
+	     (6.9), between the deepest gallery above (ink-950) and the base-dark werkwijze below (ink-900). Hierarchy
+	     comes from the tonal step + an asymmetric grid (statement/body left, a precise gold-hairline toepassingen
+	     index right) + scale contrast, all aligned to the wide representative-gallery grid so the photography
+	     structures the composition (4.23). No card, no panel — a full-width dark tonal chapter. -->
+	<Section as="section" surface="surface" width="wide" class="svc-scope-sec">
 		<div class="svc-scope">
-			<div class="svc-scope__rail">
+			<div class="svc-scope__main">
 				<p class="t-eyebrow t-eyebrow--accent">De dienst</p>
 				<h2 class="t-h2 svc-scope__title">Wat architectuurfotografie oplevert.</h2>
-			</div>
-			<div class="svc-scope__plane surface-light">
 				<p class="svc-scope__body">
 					Sterke beelden van een gebouw werken jarenlang door: op de website, in het portfolio, bij
 					verkoop of publicatie. Ze laten zien hoe een ontwerp in elkaar zit en hoe het zich verhoudt
 					tot zijn omgeving — met de rust en precisie die passen bij professioneel vastgoed en
 					architectuur.
 				</p>
-				<div class="svc-scope__apps">
-					<p class="t-eyebrow svc-scope__aside-label">Toepassingen</p>
-					<ul class="svc-applist">
-						{toepassingen.map((t) => <li class="svc-applist__item">{t}</li>)}
-					</ul>
-				</div>
+			</div>
+			<div class="svc-scope__apps">
+				<p class="t-eyebrow svc-scope__aside-label">Toepassingen</p>
+				<ul class="svc-applist">
+					{toepassingen.map((t) => <li class="svc-applist__item">{t}</li>)}
+				</ul>
 			</div>
 		</div>
 	</Section>
@@ -226,67 +226,53 @@ const toepassingen = [
 		}
 	}
 
-	/* --- Uitleg + toepassingen: dark rail + contained light plane (D-22) --- */
+	/* --- Uitleg + toepassingen: an all-dark "specification wall" on the ink-850 tonal step (D-23). Statement +
+	   body on the left, a precise gold-hairline toepassingen index on the right — an asymmetric grid aligned to
+	   the wide representative-gallery above, so photography structures the composition. No light plane. --- */
 	.svc-scope {
 		display: grid;
-		grid-template-columns: 0.92fr 1.08fr;
-		gap: var(--space-2xl) var(--space-3xl);
+		grid-template-columns: 1.35fr 1fr;
+		gap: var(--space-2xl) clamp(var(--space-3xl), 2rem + 6vw, var(--space-4xl));
 		align-items: start;
 	}
-	/* The statement stays on the dark page — a dark typographic anchor beside the light plane. Its left edge
-	   and the plane's right edge align with the wide representative-gallery above, locking light + dark into
-	   the same architectural grid as the photography (not a floating panel). */
 	.svc-scope__title {
 		margin-top: var(--space-sm);
-		max-width: 14ch;
-	}
-	/* The contained warm-stone plane (.surface-light supplies the colours) — edge-anchored to the container
-	   right, generous internal padding, no radius/shadow: a paper insert, not a card. */
-	.svc-scope__plane {
-		padding: clamp(1.75rem, 1.2rem + 2.6vw, 3.25rem);
+		max-width: 15ch;
 	}
 	.svc-scope__body {
-		color: var(--color-text-on-light-secondary);
-		max-width: 48ch;
+		margin-top: var(--space-lg);
+		color: var(--color-text-secondary);
+		max-width: 50ch;
 	}
+	/* Toepassingen — a precise architectural index: gold-accent label, hairline-ruled rows on dark. Deliberately
+	   unnumbered so it stays distinct from the numbered werkwijze below. Aligned to the top of the statement. */
 	.svc-scope__apps {
-		margin-top: clamp(1.75rem, 1.3rem + 2vw, 2.75rem);
-		padding-top: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
-		border-top: 1px solid var(--color-accent-on-light);
+		padding-top: var(--space-sm);
 	}
 	.svc-scope__aside-label {
-		color: var(--color-accent-on-light);
+		color: var(--color-accent);
 	}
 	.svc-applist {
-		margin-top: var(--space-md);
+		margin-top: var(--space-lg);
 		display: flex;
 		flex-direction: column;
 	}
 	.svc-applist__item {
 		padding: var(--space-md) 0;
-		border-top: 1px solid var(--color-border-on-light);
-		color: var(--color-text-on-light);
+		border-top: 1px solid var(--color-border);
+		color: var(--color-text);
 		font-weight: var(--fw-medium);
 	}
 	.svc-applist__item:last-child {
-		border-bottom: 1px solid var(--color-border-on-light);
+		border-bottom: 1px solid var(--color-border);
 	}
 	@media (max-width: 52rem) {
 		.svc-scope {
 			grid-template-columns: 1fr;
-			gap: var(--space-lg);
+			gap: var(--space-xl);
 		}
-		/* Mobile echoes the desktop grammar: the plane anchors to the RIGHT screen edge with a dark inset on
-		   the left (an asymmetric offset register), and the dark statement sits directly above it — so it
-		   never collapses into a centred card or a full-viewport light slab. */
-		.svc-scope__plane {
-			margin-left: var(--space-xl);
-			margin-right: calc(-1 * var(--gutter));
-		}
-	}
-	@media (max-width: 30rem) {
-		.svc-scope__plane {
-			margin-left: var(--space-md);
+		.svc-scope__apps {
+			padding-top: 0;
 		}
 	}
 
@@ -313,9 +299,11 @@ const toepassingen = [
 	.svc-method__num {
 		font-family: var(--font-display);
 		font-weight: var(--fw-display);
-		font-size: var(--fs-h3);
+		font-size: clamp(2.4rem, 1.7rem + 3vw, 3.6rem);
+		line-height: 1;
 		color: var(--color-accent);
-		letter-spacing: var(--ls-heading);
+		letter-spacing: var(--ls-display);
+		margin-bottom: var(--space-xs);
 	}
 	.svc-method__item p {
 		color: var(--color-text-secondary);

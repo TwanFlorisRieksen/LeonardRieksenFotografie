@@ -216,15 +216,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		</div>
 	</Section>
 
-	<!-- ATELIER (P4 correction #3 — D-22). No longer one full-bleed light chapter. The section is DARK: the
-	     two discipline PHOTOGRAPHS now sit on dark (photography-first — the images are the light source, 6.16),
-	     and only the text-only werkwijze becomes the page's contained LIGHT moment — a wide, left-anchored
-	     "paper method insert" with dark negative space to its right. Light and dark coexist within the same
-	     composition (dark photographic diptych → light method plane), and the homepage's light lands on a
-	     different element (werkwijze) and in a different proportion (wide/short) than the service pages. -->
-	<Section as="section" class="atelier">
-		<!-- SPECIALISATIES (13.17 / 13.19). The two disciplines as an asymmetric diptych — different ratios,
-		     different weights, a shared approach — NOT two equal cards. Each opens its service page. -->
+	<!-- SPECIALISATIES (13.17 / 13.19). The two disciplines as an asymmetric photographic diptych — different
+	     ratios, different weights, a shared approach — NOT two equal cards. The two PHOTOGRAPHS carry this beat
+	     on the base-dark surface (images as the light source, 6.16). Each opens its service page. -->
+	<Section as="section" class="spec-sec">
 		<div class="spec">
 		<p class="t-eyebrow t-eyebrow--accent">Specialisaties</p>
 		<h2 class="t-display spec__title">Twee disciplines, één benadering.</h2>
@@ -275,11 +270,15 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			</a>
 		</div>
 		</div>
+	</Section>
 
-		<!-- WERKWIJZE / VERTROUWEN (13.13 vertrouwen en werkwijze). Transformed from Leo's own on-location
-		     service copy — a restrained enumerated method, not icon cards. Sits below the specialisaties on the
-		     same light surface (one chapter), divided by a gold hairline. -->
-		<div class="method surface-light">
+	<!-- WERKWIJZE / VERTROUWEN (13.13 vertrouwen en werkwijze; P4 correction #4 — D-23). Transformed from Leo's
+	     own on-location service copy — a restrained enumerated method, not icon cards. The light plane is retired:
+	     this is now a distinct DARK chapter, stepped up one tint to ink-850 (`surface`) — a subtle full-bleed
+	     tonal lift (6.9) between the base-dark specialisaties above and the base-dark CTA below — with monumental
+	     gold numerals carrying the scale contrast the light card used to. Full-width tonal step, not a panel. -->
+	<Section as="section" surface="surface" class="method-sec">
+		<div class="method">
 		<div class="method__head">
 			<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
 			<h2 class="t-h2 method__title">Rustig, precies, altijd op locatie.</h2>
@@ -525,7 +524,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	}
 
 	/* ============================================================= *
-	 * ATELIER — the light chapter (specialisaties + werkwijze on one warm-stone surface, D-20)
+	 * SPECIALISATIES — the two-discipline photographic diptych (D-20 asymmetry, D-23 all-dark)
 	 * ============================================================= */
 	.spec__title {
 		margin-top: var(--space-sm);
@@ -583,15 +582,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		}
 	}
 
-	/* --- WERKWIJZE: the homepage's contained LIGHT plane — a wide, left-anchored "paper method insert" with
-	   dark negative space to its right (.surface-light supplies the on-light colours). Text-only, so no
-	   photograph crosses the surface boundary. Wide-and-short proportion distinguishes it from the interior
-	   page's narrow-and-tall light column. --- */
-	.method {
-		margin-top: clamp(3rem, 2rem + 4vw, 5.5rem);
-		max-width: 64rem;
-		padding: clamp(1.75rem, 1.2rem + 2.6vw, 3.25rem);
-	}
+	/* ============================================================= *
+	 * WERKWIJZE — the method chapter on the ink-850 tonal step (D-23). A full-width dark chapter (the Section
+	 * paints ink-850); monumental gold numerals carry the scale contrast, hairline-topped columns give the
+	 * architectural rhythm. No panel, no light surface. --- */
 	.method__head {
 		max-width: 40ch;
 		margin-bottom: clamp(2rem, 1.4rem + 3vw, 3.5rem);
@@ -607,41 +601,31 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	.method__item {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-md);
+		gap: var(--space-sm);
 		padding-top: var(--space-lg);
-		border-top: 1px solid var(--color-border-on-light);
+		border-top: 1px solid var(--color-border);
 	}
 	.method__num {
 		font-family: var(--font-display);
 		font-weight: var(--fw-display);
-		font-size: var(--fs-h3);
-		color: var(--color-accent-on-light);
-		letter-spacing: var(--ls-heading);
+		font-size: clamp(2.4rem, 1.7rem + 3vw, 3.6rem);
+		line-height: 1;
+		color: var(--color-accent);
+		letter-spacing: var(--ls-display);
+		margin-bottom: var(--space-2xs);
 	}
 	.method__name {
 		margin-bottom: var(--space-xs);
-		color: var(--color-text-on-light);
+		color: var(--color-text);
 	}
 	.method__desc {
-		color: var(--color-text-on-light-secondary);
+		color: var(--color-text-secondary);
 		font-size: var(--fs-body-sm);
 	}
 	@media (max-width: 52rem) {
 		.method__list {
 			grid-template-columns: 1fr;
 			gap: var(--space-xl);
-		}
-		/* The method plane bleeds to the LEFT screen edge with a dark inset on the right — a contained offset
-		   register on mobile, never a full-viewport light slab. */
-		.method {
-			max-width: none;
-			margin-left: calc(-1 * var(--gutter));
-			margin-right: var(--space-xl);
-		}
-	}
-	@media (max-width: 30rem) {
-		.method {
-			margin-right: var(--space-md);
 		}
 	}
 

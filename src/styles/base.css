@@ -294,31 +294,12 @@ a {
 	transform: translateX(3px);
 }
 
-/* --------------------------------------------------------------- *
- * Light material plane (P4 correction #3 — D-22)
- * --------------------------------------------------------------- *
- * The warm-stone light register (D-16) as a CONTAINED editorial field rather than a full-bleed section.
- * `Section surface="light"` switches an entire viewport-width section to light; that made the four P4
- * pages read as "a dark site with isolated full-width light slabs". This class carries the SAME on-light
- * token mapping (no new palette, VIS-13/D-16) but is applied to a bounded child element, so a light paper
- * plane can share one composition with dark surfaces and/or photography (architectonische precisie / 4.23
- * ritme). It intentionally sets ONLY surface + text-colour semantics — no padding, width, radius or shadow
- * — so each page composes its own geometry (the fields must not become identical templates). Pages add
- * their own padding/alignment. Reuses the D-16-verified on-light contrast tokens (text 15:1, secondary,
- * accent-on-light 4.6:1). The full-bleed `Section surface="light"` variant still exists for the styleguide. */
-.surface-light {
-	background: var(--color-bg-light);
-	color: var(--color-text-on-light);
-}
-.surface-light :is(.t-display, .t-h1, .t-h2, .t-h3, .t-h4) {
-	color: var(--color-text-on-light);
-}
-.surface-light :is(.t-lead, .t-secondary) {
-	color: var(--color-text-on-light-secondary);
-}
-.surface-light .t-eyebrow--accent {
-	color: var(--color-accent-on-light);
-}
+/* The `.surface-light` contained-light-field utility (P4 correction #3 / D-22) was retired in P4 correction #4
+ * (D-23): rendered evidence showed contained light fields read as oversized cards/panels on the four P4 pages,
+ * so large light surfaces are no longer a compositional register there. Dark dominance is now carried by the
+ * dark tonal scale + photography + typography + spacing (blueprint 6.8/6.9/6.15). The `Section surface="light"`
+ * variant and the on-light tokens remain only for the dev-only /styleguide, which documents the tested-and-
+ * retired light-surface hypothesis. Light neutrals stay available for TEXT (6.10), never obligatory surfaces. */
 
 /* Section vertical rhythm */
 .u-section {
