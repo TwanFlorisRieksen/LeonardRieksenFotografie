@@ -66,8 +66,59 @@ const {
 </Section>
 
 <style>
+	/* P4.9 PRE-P5 CONSOLIDATION (D-29) — the recurring closing block is the site's most-repeated NON-photographic
+	 * zone (home, diensten, both service pages) and read as flat base-dark + one hairline (owner Limitation 4:
+	 * quiet ≠ flat). It becomes a composed premium CLOSE, tuned to be calm so it never competes with the page's
+	 * photography, using three mechanisms that also serve the other limitations:
+	 *   · a soft cool depth rising from the top-left (the block emerges from architectural depth, not a flat wall);
+	 *   · a gentle deepening toward the FOOT so the CTA→footer boundary reads as one continuous descent into the
+	 *     deep footer instead of a hard horizontal cut (Limitation 1, a cross-boundary tonal bridge);
+	 *   · a FULL-WIDTH GOLD DATUM top rule — champagne caught at the left, dissolving to a neutral hairline across
+	 *     the page (Limitation 3: gold gains large spatial extent while staying a 1px hairline — "larger in extent,
+	 *     not heavier in weight"). It is a left-anchored architect's DIMENSION line, deliberately NOT the homepage
+	 *     `.work` glow-seam (no catch-light haze, no centred highlight) — a distinct member of the datum-rule gold
+	 *     family (D-28), extended to a longer trace. Static CSS, painted once; gold stays a hairline, never a fill. */
 	.cta {
-		border-top: 1px solid var(--color-border);
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+		background:
+			radial-gradient(
+				88% 78% at 3% 0%,
+				rgba(var(--p-atmos-cool), 0.11) 0%,
+				rgba(var(--p-atmos-cool), 0.03) 42%,
+				rgba(var(--p-atmos-cool), 0) 72%
+			),
+			linear-gradient(180deg, rgba(6, 8, 12, 0) 58%, rgba(6, 8, 12, 0.5) 100%);
+	}
+	/* Gold datum top rule (champagne caught at the left → neutral hairline across the full width). */
+	.cta::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 auto 0;
+		height: 1px;
+		z-index: 1;
+		pointer-events: none;
+		background: linear-gradient(
+			90deg,
+			rgba(224, 197, 140, 0.95) 0%,
+			rgba(199, 165, 106, 0.62) 16%,
+			rgba(236, 238, 242, 0.17) 34%,
+			rgba(236, 238, 242, 0.13) 100%
+		);
+	}
+	/* A short vertical gold riser at the left forms a precise architect's corner bracket (a partial frame — gold
+	   spatial extent as structure, not decoration). Sits at the section's left edge, clear of the content. */
+	.cta::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 1px;
+		height: clamp(1.8rem, 1.2rem + 2vw, 3rem);
+		z-index: 1;
+		pointer-events: none;
+		background: linear-gradient(180deg, rgba(224, 197, 140, 0.82) 0%, rgba(199, 165, 106, 0) 100%);
 	}
 	.cta__inner {
 		display: grid;

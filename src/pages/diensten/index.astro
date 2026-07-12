@@ -157,10 +157,32 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 			var(--color-bg);
 	}
 	.dien-cover__marker {
+		position: relative;
 		display: flex;
 		align-items: center;
 		gap: var(--space-md);
 		margin-bottom: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+	}
+	/* P4.9 (D-29) — the short horizontal datum rule is extended into an architect's L-bracket by a thin vertical
+	   gold riser dropping from the same top-left corner into the negative space above the monumental title (owner
+	   Limitation 3: gold gains larger spatial extent while staying a 1px hairline — extent, not weight). A longer
+	   structural trace, distinct from the homepage glow-seam and from the short project/CTA datum rules. Sits in
+	   the gap above the title, clear of the type; aria-hidden decorative (pure ::before, not announced). */
+	.dien-cover__marker::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 1px;
+		height: clamp(4.5rem, 3rem + 4vw, 8rem);
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			180deg,
+			rgba(224, 197, 140, 0.7) 0%,
+			rgba(199, 165, 106, 0.22) 44%,
+			rgba(199, 165, 106, 0) 100%
+		);
 	}
 	.dien-cover__rule {
 		flex: none;

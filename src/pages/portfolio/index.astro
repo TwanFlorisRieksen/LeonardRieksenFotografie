@@ -121,6 +121,12 @@ const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', in
 		isolation: isolate;
 		overflow-x: clip;
 	}
+	/* P4.9 (D-29) — strengthen the site's strongest existing cross-boundary moment (the owner's cited example: the
+	   lead photograph straddles the masthead field→base). The colourful Arnhem lead (a pink-sunset sky over
+	   cyan/green glass) now appears to CAST ITS OWN warm light into the field: a low, wide warm pool peaks in the
+	   negative space at the lead image's lower-left, so the crossing reads as photographic light-spill, not just a
+	   photo laid over a tonal wall (Limitation 2). The pool is achromatic-safe elsewhere — it is anchored ONLY to
+	   this warm-skied image; the field stays cool where the type sits. Low alpha, below the photo's own luminance. */
 	.port-sec::before {
 		content: '';
 		position: absolute;
@@ -130,12 +136,19 @@ const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', in
 		height: clamp(22rem, 16rem + 20vw, 42rem);
 		z-index: -1;
 		pointer-events: none;
-		background: linear-gradient(
-			218deg,
-			rgba(var(--p-atmos-cool), 0.16) 0%,
-			rgba(var(--p-atmos-cool), 0.05) 32%,
-			rgba(var(--p-atmos-cool), 0) 66%
-		);
+		background:
+			radial-gradient(
+				58% 46% at 25% 86%,
+				rgba(var(--p-atmos-warm), 0.11) 0%,
+				rgba(var(--p-atmos-warm), 0.03) 46%,
+				rgba(var(--p-atmos-warm), 0) 66%
+			),
+			linear-gradient(
+				218deg,
+				rgba(var(--p-atmos-cool), 0.17) 0%,
+				rgba(var(--p-atmos-cool), 0.05) 32%,
+				rgba(var(--p-atmos-cool), 0) 66%
+			);
 	}
 	.port-title {
 		margin-block: var(--space-sm) var(--space-lg);
