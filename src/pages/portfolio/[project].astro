@@ -103,7 +103,7 @@ const lastIndex = data.gallery.length - 1;
 		<!-- Curated image sequence — each photo's own ratio decides its treatment (no universal crop). -->
 		{
 			data.gallery.length > 0 && (
-				<Section width="wide" as="div">
+				<Section width="wide" as="div" class="proj-gallery-sec">
 					<div class="proj-gallery">
 					{data.gallery.map((item, i) =>
 						i === lastIndex && lastIndex > 0 ? (
@@ -209,11 +209,37 @@ const lastIndex = data.gallery.length - 1;
 		grid-template-columns: 13rem 1fr;
 		gap: var(--space-2xl);
 	}
+	/* P4.8 CROSS-SITE (D-28) — the metadata column becomes a precise editorial SPEC SHEET (this page's NON-
+	 * photographic premium moment, and its distinct gold role): a short champagne DATUM RULE leads the column,
+	 * hairline-ruled rows give it the measured, architectural precision of a drawing's title block (6.11
+	 * "belangrijke visuele lijnen"). Gold stays a selective structural mark here — no gold headings/fills. This
+	 * is a refined tabular precision, deliberately different from the portfolio index ordinals and the monumental
+	 * gold werkwijze numerals. */
 	.proj-meta {
+		position: relative;
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-md);
-		padding-top: var(--space-2xs);
+		padding-top: var(--space-md);
+	}
+	.proj-meta::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		width: clamp(2rem, 1.4rem + 2vw, 3rem);
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			rgba(224, 197, 140, 0.92) 0%,
+			rgba(199, 165, 106, 0.5) 66%,
+			rgba(199, 165, 106, 0) 100%
+		);
+	}
+	.proj-meta__row {
+		padding-block: var(--space-md);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+	.proj-meta__row:first-of-type {
+		border-top: 0;
 	}
 	.proj-meta__row dt {
 		color: var(--color-text-muted);
@@ -237,11 +263,41 @@ const lastIndex = data.gallery.length - 1;
 		.proj-meta {
 			flex-direction: row;
 			flex-wrap: wrap;
-			gap: var(--space-xl);
+			gap: var(--space-lg) var(--space-xl);
+			padding-top: var(--space-lg);
+		}
+		/* On mobile the spec rows sit side-by-side, so the column hairlines would read as odd vertical-stack
+		   rules — drop them and let the datum rule + spacing carry the precision instead. */
+		.proj-meta__row {
+			padding-block: 0;
+			border-top: 0;
 		}
 	}
 
-	/* --- Gallery sequence --- */
+	/* --- Gallery sequence.
+	 * P4.8 CROSS-SITE (D-28): an ACHROMATIC DEPTH FIELD frames the beeldreeks. This project's sequence is largely
+	 * black-and-white, so a coloured wash (the homepage/service colour mechanisms) would be exactly wrong — it
+	 * would tint monochrome photography (6.16). Instead the surrounding field is modelled toward the true abyss in
+	 * the negative space at the sequence's head and foot, so the photographs read as emerging from architectural
+	 * depth without any hue. Photography stays completely dominant; the interface only deepens around it. --- */
+	.proj-gallery-sec {
+		position: relative;
+		isolation: isolate;
+	}
+	.proj-gallery-sec::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			180deg,
+			rgba(6, 8, 12, 0.7) 0%,
+			rgba(6, 8, 12, 0) 14%,
+			rgba(6, 8, 12, 0) 86%,
+			rgba(6, 8, 12, 0.75) 100%
+		);
+	}
 	.proj-gallery {
 		display: flex;
 		flex-direction: column;

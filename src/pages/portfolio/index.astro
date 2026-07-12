@@ -27,7 +27,7 @@ const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', in
 	title="Portfolio"
 	description="Portfolio van Leonard Rieksen Fotografie — gecureerde architectuur- en interieurfotografie, per project gepresenteerd."
 >
-	<Section tight>
+	<Section tight class="port-sec">
 		<p class="t-eyebrow t-eyebrow--accent">Architectuur- &amp; interieurfotografie</p>
 		<h1 class="t-display port-title">Portfolio</h1>
 		<p class="t-lead port-intro">
@@ -49,6 +49,7 @@ const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', in
 								class="port-lead__media"
 							/>
 							<div class="port-lead__panel">
+								<span class="port-ord port-ord--lead" aria-hidden="true">01</span>
 								<p class="t-eyebrow">
 									{categoryLabel[lead.data.category]}
 									{lead.data.location && <> &middot; {lead.data.location}</>}
@@ -80,7 +81,7 @@ const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', in
 				)
 			}
 			{
-				rest.map((project) => (
+				rest.map((project, i) => (
 					<li class="port-index__item">
 						<a class="port-card" href={`/portfolio/${project.id}/`}>
 							<Media
@@ -91,10 +92,13 @@ const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', in
 								class="port-card__media"
 							/>
 							<div class="port-card__caption">
-								<p class="t-eyebrow">
-									{categoryLabel[project.data.category]}
-									{project.data.location && <> &middot; {project.data.location}</>}
-								</p>
+								<div class="port-card__meta">
+									<span class="port-ord" aria-hidden="true">{String(i + 2).padStart(2, '0')}</span>
+									<p class="t-eyebrow">
+										{categoryLabel[project.data.category]}
+										{project.data.location && <> &middot; {project.data.location}</>}
+									</p>
+								</div>
 								<h2 class="t-h3 port-card__title">{project.data.title}</h2>
 							</div>
 						</a>
@@ -107,11 +111,60 @@ const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', in
 
 
 <style>
+	/* P4.8 CROSS-SITE (D-28) — the portfolio's signature is a refined, NUMBERED editorial index (curation made
+	 * explicit, 8.2/PH-09), not a photo-coloured wash. The masthead's large empty upper-right negative space is
+	 * modelled with a single soft *diagonal linear* tonal lift from that corner (using the dead space, giving the
+	 * type spatial depth) — a directional wall gradient, deliberately NOT a radial bubble and NOT the diensten
+	 * top-raked wall. Photography still dominates the page below (quiet gallery, photos carry it). */
+	.port-sec {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+	}
+	.port-sec::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: clamp(22rem, 16rem + 20vw, 42rem);
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			218deg,
+			rgba(var(--p-atmos-cool), 0.16) 0%,
+			rgba(var(--p-atmos-cool), 0.05) 32%,
+			rgba(var(--p-atmos-cool), 0) 66%
+		);
+	}
 	.port-title {
 		margin-block: var(--space-sm) var(--space-lg);
 	}
 	.port-intro {
 		max-width: 46ch;
+	}
+
+	/* Refined index numbering — the one NEW gold role here: small champagne ordinals aligned to each entry's
+	   category label, marking the curated sequence. A precision/tabular hierarchy (6.11), distinct from the
+	   monumental gold werkwijze numerals elsewhere (those are display-scale; these are fine metadata markers). */
+	.port-ord {
+		font-family: var(--font-display);
+		font-weight: var(--fw-display);
+		font-size: var(--fs-caption);
+		line-height: 1;
+		letter-spacing: 0.04em;
+		color: var(--color-accent);
+		font-variant-numeric: tabular-nums;
+	}
+	.port-ord--lead {
+		display: block;
+		font-size: var(--fs-h4);
+		margin-bottom: var(--space-sm);
+	}
+	.port-card__meta {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-sm);
 	}
 
 	.port-index {

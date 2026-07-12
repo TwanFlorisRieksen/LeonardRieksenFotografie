@@ -27,7 +27,10 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 	     photograph (that distinguishes it from the home hero and the service heroes), no light panel — the scale
 	     contrast of the display title and the calm dark field carry the open; the discipline photography follows. -->
 	<Section as="header" class="dien-cover">
-		<p class="t-eyebrow t-eyebrow--accent dien-cover__eyebrow">Diensten</p>
+		<div class="dien-cover__marker">
+			<span class="dien-cover__rule" aria-hidden="true"></span>
+			<p class="t-eyebrow t-eyebrow--accent dien-cover__eyebrow">Diensten</p>
+		</div>
 		<div class="dien-cover__grid">
 			<h1 class="t-display dien-title">Fotografie die het ontwerp recht doet.</h1>
 			<div class="dien-cover__body">
@@ -126,12 +129,49 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 
 <style>
 	/* --- Opening: a dark editorial masthead — eyebrow across the top, monumental display title baseline-aligned
-	   against the orientation text. Generous top space for a calm premium open (D-23). --- */
+	   against the orientation text. Generous top space for a calm premium open (D-23).
+	 *
+	 * P4.8 CROSS-SITE (D-28) — this type-only masthead is the diensten page's signature NON-PHOTOGRAPHIC premium
+	 * moment (the owner's Limitation 3: quiet zones must still feel luxurious). Two mechanisms, neither a soft
+	 * radial bubble:
+	 *   1. TONAL WALL — a large-scale *linear* graded field (cool light raked from the top edge + a faint lift
+	 *      into the empty upper-right negative space), so the monumental Archivo type sits against modelled
+	 *      architectural depth instead of dead flat black. Linear/directional = perceptually distinct from the
+	 *      homepage's afterglow *radial*.
+	 *   2. A GOLD DATUM RULE — a short champagne hairline that catches a highlight toward the eyebrow, like an
+	 *      architect's dimension/datum marker (6.11 "belangrijke visuele lijnen", 6.12 controlled highlight). A
+	 *      selective structural line FRAGMENT — deliberately NOT the homepage's full-width `.work` seam. --- */
 	.dien-cover {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
 		padding-top: clamp(2rem, 1rem + 5vw, 5rem);
+		background:
+			linear-gradient(
+				180deg,
+				rgba(var(--p-atmos-cool), 0.13) 0%,
+				rgba(var(--p-atmos-cool), 0.04) 30%,
+				rgba(var(--p-atmos-cool), 0) 58%
+			),
+			linear-gradient(255deg, rgba(var(--p-atmos-cool), 0.07) 0%, rgba(var(--p-atmos-cool), 0) 44%),
+			var(--color-bg);
 	}
-	.dien-cover__eyebrow {
+	.dien-cover__marker {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
 		margin-bottom: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+	}
+	.dien-cover__rule {
+		flex: none;
+		width: clamp(2rem, 1.4rem + 2vw, 3.25rem);
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			rgba(199, 165, 106, 0) 0%,
+			rgba(199, 165, 106, 0.5) 34%,
+			rgba(224, 197, 140, 0.92) 100%
+		);
 	}
 	.dien-cover__grid {
 		display: grid;
@@ -166,7 +206,30 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		}
 	}
 
-	/* --- Alternating discipline spreads --- */
+	/* --- Alternating discipline spreads.
+	 * P4.8 (D-28): an ACHROMATIC depth field (no chroma, so it never tints the two discipline photographs — 6.16).
+	 * The already-deep surface (ink-950) is modelled toward the true abyss at its top and foot, so the two large
+	 * photographs read as emerging from architectural depth rather than sitting on a flat wall. Deliberately NOT a
+	 * colour pool (that is the homepage specialisaties mechanism — kept unique) and NOT a bubble; a vertical tonal
+	 * frame, the calm counterpart to the loud masthead above. --- */
+	.dien-spreads {
+		position: relative;
+		isolation: isolate;
+	}
+	.dien-spreads::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			180deg,
+			rgba(6, 8, 12, 0.6) 0%,
+			rgba(6, 8, 12, 0) 20%,
+			rgba(6, 8, 12, 0) 80%,
+			rgba(6, 8, 12, 0.55) 100%
+		);
+	}
 	.dien-spreads :global(.u-container) {
 		display: flex;
 		flex-direction: column;

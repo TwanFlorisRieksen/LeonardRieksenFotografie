@@ -51,7 +51,7 @@ const toepassingen = [
 	/>
 
 	<!-- Intro -->
-	<Section tight>
+	<Section tight class="svc-intro-sec">
 		<div class="svc-intro">
 			<p class="t-lead svc-intro__lead">
 				Een interieur werkt pas echt als je de sfeer voelt. Goede interieurfotografie brengt ruimte,
@@ -198,7 +198,23 @@ const toepassingen = [
 </BaseLayout>
 
 <style>
-	/* --- Intro --- */
+	/* --- Intro.
+	 * P4.8 CROSS-SITE (D-28) — the interieur page's SIGNATURE is a WARM afterglow: the Eemhuis hero directly above
+	 * is a warm artificial-light interior, and its glow spills a little way down into the intro before settling
+	 * into calm reading-dark. This is the homepage afterglow FAMILY (one soft top-descending light, the quiet
+	 * breath after a hero) but deliberately WARM — giving clear page-to-page variation against the architecture
+	 * page's COOL structural signature. Peak sits off the top edge; the fringe fades to base long before the body
+	 * copy, so the modelling lives in negative space, never under muted text (6.9 subtle depth, 6.16). --- */
+	.svc-intro-sec {
+		background:
+			radial-gradient(
+				128% 60% at 50% -14%,
+				rgba(var(--p-atmos-warm), 0.15) 0%,
+				rgba(var(--p-atmos-warm), 0.05) 40%,
+				rgba(var(--p-atmos-warm), 0) 70%
+			),
+			var(--color-bg);
+	}
 	.svc-intro {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
@@ -221,6 +237,27 @@ const toepassingen = [
 	/* --- Representative: a large full-bleed B&W plate + a contained portrait study --- */
 	.svc-lead-plate__cap {
 		margin-top: var(--space-sm);
+	}
+	/* Deep B&W duo — the shared achromatic depth idiom (D-28): the monochrome studies sit in a vertical abyss
+	   frame, never a coloured wash (that would tint black-and-white photography — 6.16). Matches the arch page's
+	   representatief framing so "deep photography chapters" read as one system sitewide. */
+	.svc-duo-section {
+		position: relative;
+		isolation: isolate;
+	}
+	.svc-duo-section::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			180deg,
+			rgba(6, 8, 12, 0.6) 0%,
+			rgba(6, 8, 12, 0) 24%,
+			rgba(6, 8, 12, 0) 76%,
+			rgba(6, 8, 12, 0.55) 100%
+		);
 	}
 	.svc-duo {
 		display: grid;
@@ -276,10 +313,22 @@ const toepassingen = [
 		flex-direction: column;
 	}
 	.svc-applist__item {
+		position: relative;
 		padding: var(--space-md) 0;
 		border-top: 1px solid var(--color-border);
 		color: var(--color-text);
 		font-weight: var(--fw-medium);
+	}
+	/* Champagne metallic-edge tick on each index row — the same precision-index gold idiom as the arch page's
+	   toepassingen (D-28), so the two service pages share one gold "index edge" language. */
+	.svc-applist__item::before {
+		content: '';
+		position: absolute;
+		top: -1px;
+		left: 0;
+		width: clamp(1.1rem, 0.8rem + 1vw, 1.6rem);
+		height: 1px;
+		background: linear-gradient(90deg, rgba(224, 197, 140, 0.95) 0%, rgba(199, 165, 106, 0) 100%);
 	}
 	.svc-applist__item:last-child {
 		border-bottom: 1px solid var(--color-border);

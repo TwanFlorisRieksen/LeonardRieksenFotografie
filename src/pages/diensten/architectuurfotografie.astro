@@ -202,7 +202,29 @@ const toepassingen = [
 		}
 	}
 
-	/* --- Representative photography (asymmetric pair: portrait + landscape) on the deep gallery surface --- */
+	/* --- Representative photography (asymmetric pair: portrait + landscape) on the deep gallery surface.
+	 * P4.8 CROSS-SITE (D-28): the shared "deep photography-grid chapter" gets an ACHROMATIC depth frame (vertical
+	 * abyss modelling at head + foot) so the plates emerge from architectural depth rather than a flat ink wall —
+	 * the same quiet-depth idiom used on the diensten spreads, always achromatic so it never tints photography
+	 * (6.16). The page's colour/gold SIGNATURE lives instead on the specification wall + toepassingen below. --- */
+	.svc-gallery {
+		position: relative;
+		isolation: isolate;
+	}
+	.svc-gallery::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			180deg,
+			rgba(6, 8, 12, 0.6) 0%,
+			rgba(6, 8, 12, 0) 22%,
+			rgba(6, 8, 12, 0) 78%,
+			rgba(6, 8, 12, 0.55) 100%
+		);
+	}
 	.svc-gallery__label {
 		display: block;
 		margin-bottom: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
@@ -228,7 +250,38 @@ const toepassingen = [
 
 	/* --- Uitleg + toepassingen: an all-dark "specification wall" on the ink-850 tonal step (D-23). Statement +
 	   body on the left, a precise gold-hairline toepassingen index on the right — an asymmetric grid aligned to
-	   the wide representative-gallery above, so photography structures the composition. No light plane. --- */
+	   the wide representative-gallery above, so photography structures the composition. No light plane.
+	 *
+	 * P4.8 CROSS-SITE (D-28) — this is the arch page's SIGNATURE non-photographic premium moment. D-23's ink-850
+	 * tonal step was near-imperceptible (owner Limitation 3: quiet zones read as flat). It is now MODELLED as a
+	 * lit specification wall: a faint cool raking gradient over the ink-850 surface gives the wall dimensional
+	 * depth (perceptible, still calm), and the toepassingen index rows gain a champagne METALLIC-EDGE TICK — a
+	 * short gold catch-light leading each hairline row (6.11 "belangrijke visuele lijnen" + 6.12 controlled
+	 * highlight). This is the page's distinct gold role (a precision edge on an index), NOT the homepage seam. --- */
+	.svc-scope-sec {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+	}
+	/* ACHROMATIC lit-wall modelling (refinement pass): a faint raked sheen at the top edge + a deepening toward
+	   the abyss at the foot gives the ink-850 "specification wall" real dimensional light WITHOUT adding a cool
+	   hue — so the cool *linear wall* stays reserved as the site's masthead idiom (diensten/portfolio) and this
+	   page's colour signature is carried purely by the champagne gold index below (sharper per-page distinction,
+	   avoids "one cool wash, three coordinates"). */
+	.svc-scope-sec::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			174deg,
+			rgba(236, 238, 242, 0.035) 0%,
+			rgba(236, 238, 242, 0.008) 24%,
+			rgba(236, 238, 242, 0) 46%,
+			rgba(6, 8, 12, 0.32) 100%
+		);
+	}
 	.svc-scope {
 		display: grid;
 		grid-template-columns: 1.35fr 1fr;
@@ -258,10 +311,21 @@ const toepassingen = [
 		flex-direction: column;
 	}
 	.svc-applist__item {
+		position: relative;
 		padding: var(--space-md) 0;
 		border-top: 1px solid var(--color-border);
 		color: var(--color-text);
 		font-weight: var(--fw-medium);
+	}
+	/* Champagne metallic-edge tick — a short gold catch-light leading each index row's hairline (D-28 gold role). */
+	.svc-applist__item::before {
+		content: '';
+		position: absolute;
+		top: -1px;
+		left: 0;
+		width: clamp(1.1rem, 0.8rem + 1vw, 1.6rem);
+		height: 1px;
+		background: linear-gradient(90deg, rgba(224, 197, 140, 0.95) 0%, rgba(199, 165, 106, 0) 100%);
 	}
 	.svc-applist__item:last-child {
 		border-bottom: 1px solid var(--color-border);
