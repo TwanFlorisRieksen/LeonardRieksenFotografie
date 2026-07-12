@@ -69,8 +69,11 @@
 	   SAME blue-hour undertone (~hue 218) as the ink scale; the faint warm echoes the recurring warm
 	   artificial light-points in Leo's photography (D-10) — grounded atmosphere, not a new palette. --- */
 	--p-ink-975: #06080c; /* true abyss — full-bleed photography emerges from real depth */
-	--p-atmos-cool: 124, 152, 208; /* blue-hour ambient lift — applied only at low alpha */
-	--p-atmos-warm: 178, 143, 92; /* faint warm artificial-light echo — applied only at low alpha */
+	/* P4.6-CORR (D-26): richer, more chromatic blue-hour ambient (cool) + a warmer amber echo (warm) — the
+	   warm deliberately sits near the champagne gold (199,165,106) so the chapter's warm light and its gold
+	   detail read as one material family. Both applied only at low alpha, always below photographic sat/lum. */
+	--p-atmos-cool: 112, 146, 214; /* blue-hour ambient lift */
+	--p-atmos-warm: 202, 156, 100; /* warm artificial-light / gold-family echo */
 
 	/* --- Alpha primitives (borders / overlays over unknown surfaces incl. photography). --- */
 	--p-white-a08: rgba(236, 238, 242, 0.08);
@@ -90,34 +93,70 @@
 	--color-surface-raised: var(--p-ink-800);
 	--color-surface-interactive: var(--p-ink-750);
 
-	/* P4.6 atmospheric depth (prototype — D-25). A MODELLED dark field for signature dark chapters instead
-	   of a flat fill: a soft blue-hour ambient anchored low-left (sharing the plate corner-scrim's light
-	   origin) + a faint warm counter-glow top-right, both dissolving to the abyss well before any content —
-	   so the interface reads as the same dark architectural space the photography lives in, without ever
-	   competing with it (peaks stay far below photographic luminance; 6.9/6.16). */
+	/* P4.6-CORRECTION (D-26). The first P4.6 (D-25) atmosphere was technically correct but sub-threshold —
+	   product-owner review saw "almost no change": one low-alpha radial pair over a flat abyss, peaking in
+	   dead corners, left the chapter reading as standard matte dark-blue. This rebuild keeps the SAME grounded
+	   direction (blue-hour architectural space, photography as the light source, 6.6.1 depth+premium, 6.9,
+	   6.12, 6.16) but makes it a genuinely MODELLED, clearly-visible space instead of a flat fill:
+	     · --atmos-depth-base  — the surface itself is a vertical blue-hour gradient (deep cool at the top edge
+	       → true abyss through the mid band the photography sits against → a cool lift at the foot). The chapter
+	       is never a flat colour anywhere; this alone kills the "matte" reading, and white/gold text is fully
+	       safe on it.
+	     · cool DAWN light in the head (top) — fixes the deadest zone (the first thing the eye met was pure
+	       black); peaks in the head's empty top padding, text-safe.
+	     · a WARM SPILL anchored at the plate's lower edge — the photography's warm light appears to bleed DOWN
+	       out of the immersive plate into the interface below it (connective tissue: "a system whose light
+	       grows from the photography", not "a photo pasted on black"). Its peak sits behind the opaque plate;
+	       only its fringe shows, in the negative space. This warm register is also the chromatic VARIATION that
+	       breaks the monochrome-blue monotony the owner flagged.
+	     · cool AMBIENT depth in the quiet stack — richer than D-25 but held so muted caption text stays ≥ AA.
+	   Every peak stays well below any adjacent photograph's luminance AND saturation (6.16). All static CSS —
+	   no JS, no motion, GPU-cheap (painted once). Values are prototype-scoped to the homepage .work slice. */
 	--color-bg-abyss: var(--p-ink-975);
+	--atmos-depth-base: linear-gradient(
+		180deg,
+		#0d1322 0%,
+		#0a0e18 20%,
+		#06080c 46%,
+		#080b14 72%,
+		#0c1322 100%
+	);
 	--atmos-signature: radial-gradient(
-			120% 96% at 12% 72%,
-			rgba(var(--p-atmos-cool), 0.16) 0%,
-			rgba(var(--p-atmos-cool), 0.07) 34%,
-			rgba(var(--p-atmos-cool), 0) 66%
+			82% 54% at 15% 3%,
+			rgba(var(--p-atmos-cool), 0.24) 0%,
+			rgba(var(--p-atmos-cool), 0.08) 38%,
+			rgba(var(--p-atmos-cool), 0) 64%
 		),
 		radial-gradient(
-			95% 82% at 90% 4%,
-			rgba(var(--p-atmos-warm), 0.075) 0%,
-			rgba(var(--p-atmos-warm), 0) 55%
+			104% 46% at 57% 55%,
+			rgba(var(--p-atmos-warm), 0.23) 0%,
+			rgba(var(--p-atmos-warm), 0.08) 44%,
+			rgba(var(--p-atmos-warm), 0) 72%
 		),
-		var(--color-bg-abyss);
+		radial-gradient(
+			84% 58% at 9% 90%,
+			rgba(var(--p-atmos-cool), 0.16) 0%,
+			rgba(var(--p-atmos-cool), 0) 58%
+		),
+		var(--atmos-depth-base);
 	/* Gold structural seam (6.11 "belangrijke visuele lijnen" + 6.12 "gecontroleerde highlights"): a hairline
 	   that catches a controlled highlight along its length — the one ELEVATED recurring gold material (still a
 	   hairline, never a fill/heading/text-gradient, so D-10's anti-black-and-gold-template rule holds). */
 	--seam-gold: linear-gradient(
 		90deg,
 		rgba(199, 165, 106, 0) 0%,
-		rgba(199, 165, 106, 0.5) 13%,
-		rgba(216, 189, 132, 0.82) 31%,
-		rgba(199, 165, 106, 0.42) 58%,
+		rgba(199, 165, 106, 0.55) 12%,
+		rgba(224, 197, 140, 0.92) 31%,
+		rgba(199, 165, 106, 0.46) 60%,
 		rgba(199, 165, 106, 0) 100%
+	);
+	/* A controlled catch-light hugging the seam (6.12 "gecontroleerde highlights"; 6.64 gold-glow "met grote
+	   terughoudendheid" — so: whisper-soft, wide, low-alpha, more "the line catches warm light" than a glow). */
+	--seam-gold-glow: radial-gradient(
+		58% 100% at 34% 100%,
+		rgba(224, 197, 140, 0.12) 0%,
+		rgba(224, 197, 140, 0.04) 44%,
+		rgba(224, 197, 140, 0) 78%
 	);
 
 	/* Text */

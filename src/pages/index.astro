@@ -519,6 +519,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	}
 	.work__head {
 		position: relative;
+		isolation: isolate; /* contain the seam catch-light (::before, z-index:-1) behind the head text */
 		display: flex;
 		flex-wrap: wrap;
 		align-items: end;
@@ -527,9 +528,22 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		padding-bottom: clamp(1.4rem, 1rem + 1.6vw, 2.2rem);
 		margin-bottom: clamp(1.7rem, 1rem + 2.6vw, 3rem);
 	}
-	/* Gold structural seam (P4.6 / D-25) — the one elevated recurring gold material: a hairline that catches
-	   a controlled highlight along its length (6.11 belangrijke visuele lijnen + 6.12 gecontroleerde
-	   highlights), marking the opening of the work chapter. Still a hairline, not a fill (D-10 preserved). */
+	/* Gold structural seam (P4.6 / D-25, elevated in D-26) — the one elevated recurring gold material: a
+	   hairline (::after) that catches a controlled warm highlight along its length, plus a whisper-soft
+	   catch-light haze rising off it (::before, z-index:-1 so it sits behind the head text) — 6.11 belangrijke
+	   visuele lijnen + 6.12 gecontroleerde highlights + 6.64 gold-glow met grote terughoudendheid. Still a
+	   hairline, never a fill/heading/text-gradient (D-10 anti-black-and-gold-template rule preserved). */
+	.work__head::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: clamp(2rem, 1.4rem + 2vw, 3.4rem);
+		z-index: -1;
+		background: var(--seam-gold-glow);
+		pointer-events: none;
+	}
 	.work__head::after {
 		content: '';
 		position: absolute;
