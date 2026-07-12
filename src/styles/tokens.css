@@ -60,6 +60,18 @@
 	--p-stone-200: #ddd6c8; /* border/divider on the light surface */
 	--p-gold-800: #7c6339; /* deep gold, further darkened for AA small-text on stone-100 (4.6:1; gold-700 alone is 3.85:1) */
 
+	/* --- P4.6 ATMOSPHERIC DEPTH (PROTOTYPE — used ONLY by the homepage "geselecteerd werk" slice; see
+	   DECISIONS.md D-25). Grounded, not decorative: blueprint 6.6.1 (colour must distinguish surfaces AND
+	   DEPTH and reinforce premium positioning), 6.9 (hierarchy from refined, subtle differences), 6.12
+	   (digitaal goud via "zeer beperkte gradients" + "gecontroleerde highlights"), 6.16 (the environment
+	   near important photography stays *relatively* neutral). Every value here is therefore large-scale,
+	   low-alpha, and lower in luminance AND saturation than any adjacent photograph. The cool tint is the
+	   SAME blue-hour undertone (~hue 218) as the ink scale; the faint warm echoes the recurring warm
+	   artificial light-points in Leo's photography (D-10) — grounded atmosphere, not a new palette. --- */
+	--p-ink-975: #06080c; /* true abyss — full-bleed photography emerges from real depth */
+	--p-atmos-cool: 124, 152, 208; /* blue-hour ambient lift — applied only at low alpha */
+	--p-atmos-warm: 178, 143, 92; /* faint warm artificial-light echo — applied only at low alpha */
+
 	/* --- Alpha primitives (borders / overlays over unknown surfaces incl. photography). --- */
 	--p-white-a08: rgba(236, 238, 242, 0.08);
 	--p-white-a14: rgba(236, 238, 242, 0.14);
@@ -77,6 +89,36 @@
 	--color-surface: var(--p-ink-850);
 	--color-surface-raised: var(--p-ink-800);
 	--color-surface-interactive: var(--p-ink-750);
+
+	/* P4.6 atmospheric depth (prototype — D-25). A MODELLED dark field for signature dark chapters instead
+	   of a flat fill: a soft blue-hour ambient anchored low-left (sharing the plate corner-scrim's light
+	   origin) + a faint warm counter-glow top-right, both dissolving to the abyss well before any content —
+	   so the interface reads as the same dark architectural space the photography lives in, without ever
+	   competing with it (peaks stay far below photographic luminance; 6.9/6.16). */
+	--color-bg-abyss: var(--p-ink-975);
+	--atmos-signature: radial-gradient(
+			120% 96% at 12% 72%,
+			rgba(var(--p-atmos-cool), 0.16) 0%,
+			rgba(var(--p-atmos-cool), 0.07) 34%,
+			rgba(var(--p-atmos-cool), 0) 66%
+		),
+		radial-gradient(
+			95% 82% at 90% 4%,
+			rgba(var(--p-atmos-warm), 0.075) 0%,
+			rgba(var(--p-atmos-warm), 0) 55%
+		),
+		var(--color-bg-abyss);
+	/* Gold structural seam (6.11 "belangrijke visuele lijnen" + 6.12 "gecontroleerde highlights"): a hairline
+	   that catches a controlled highlight along its length — the one ELEVATED recurring gold material (still a
+	   hairline, never a fill/heading/text-gradient, so D-10's anti-black-and-gold-template rule holds). */
+	--seam-gold: linear-gradient(
+		90deg,
+		rgba(199, 165, 106, 0) 0%,
+		rgba(199, 165, 106, 0.5) 13%,
+		rgba(216, 189, 132, 0.82) 31%,
+		rgba(199, 165, 106, 0.42) 58%,
+		rgba(199, 165, 106, 0) 100%
+	);
 
 	/* Text */
 	--color-text: var(--p-paper-50);

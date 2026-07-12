@@ -497,15 +497,47 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	/* The full-bleed breakout can spill a sub-pixel past the viewport on some scrollbar models; clip the
 	   chapter horizontally so the immersive plate never introduces a horizontal scroll. */
 	.work {
+		position: relative;
+		isolation: isolate; /* contain the atmosphere `::before` (z-index:-1) above the fill, below all content */
 		overflow-x: clip;
 	}
+	/*
+	 * P4.6 (D-25) — atmospheric depth field. The "geselecteerd werk" chapter stops being a flat ink fill and
+	 * becomes a modelled dark space: a soft blue-hour ambient (low-left) + faint warm counter-glow (top-right)
+	 * dissolving to the abyss, so the interface reads as the same dark architectural space the photography
+	 * lives in — the environment the full-bleed plate emerges FROM, rather than a wall its light dies against.
+	 * A `::before` layer (z-index:-1) so it sits above the section fill but below all content and below the
+	 * full-bleed plate (which is positioned → paints above); it can never affect legibility or photography.
+	 */
+	.work::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: var(--atmos-signature);
+		pointer-events: none;
+	}
 	.work__head {
+		position: relative;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: end;
 		justify-content: space-between;
 		gap: var(--space-md) var(--space-xl);
-		margin-bottom: clamp(2.5rem, 1.5rem + 4vw, 4.5rem);
+		padding-bottom: clamp(1.4rem, 1rem + 1.6vw, 2.2rem);
+		margin-bottom: clamp(1.7rem, 1rem + 2.6vw, 3rem);
+	}
+	/* Gold structural seam (P4.6 / D-25) — the one elevated recurring gold material: a hairline that catches
+	   a controlled highlight along its length (6.11 belangrijke visuele lijnen + 6.12 gecontroleerde
+	   highlights), marking the opening of the work chapter. Still a hairline, not a fill (D-10 preserved). */
+	.work__head::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 1px;
+		background: var(--seam-gold);
 	}
 	.work__title {
 		margin-top: var(--space-sm);
@@ -522,7 +554,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		align-items: flex-end;
 		min-height: clamp(26rem, 66svh, 44rem);
 		isolation: isolate;
-		background: var(--color-bg-deep);
+		background: var(--color-bg-abyss); /* P4.6 — the plate emerges from real depth, not the flat deep fill */
 	}
 	/* Inset focus ring — the plate is edge-to-edge, so an outset ring would sit at the viewport edge; an
 	   inset ring stays fully visible without risking horizontal overflow. */
@@ -591,7 +623,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		position: absolute;
 		inset: 0;
 		z-index: 2;
-		background: var(--color-bg-deep);
+		background: var(--color-bg-abyss); /* P4.6 — reveal curtain matches the plate's abyss base */
 		transform: scaleY(0);
 		transform-origin: top;
 		pointer-events: none;
