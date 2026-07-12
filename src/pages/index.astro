@@ -93,7 +93,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	<!-- POSITIONERING + INTRODUCTIE LEO (13.17 / 13.20). Asymmetric: a monumental statement against the
 	     transformed intro prose + a brief, factual introduction of Leo. Progressive disclosure — the full
 	     background lives on Over mij. -->
-	<Section as="section" id="positionering">
+	<Section as="section" id="positionering" class="pos-sec">
 		<div class="pos">
 			<div class="pos__lead">
 				<p class="t-eyebrow t-eyebrow--accent">Positionering</p>
@@ -451,8 +451,27 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	}
 
 	/* ============================================================= *
-	 * POSITIONERING
+	 * POSITIONERING — the quiet breath between the hero and the work chapter.
+	 * VARIATION EXPRESSION #1 (P4.7): "afterglow". This chapter has NO photography and is deliberately the
+	 * page's first QUIET beat, but it must not read as the dead flat-black it was. Instead of the .work
+	 * chapter's modelled multi-radial room, it gets a SINGLE soft cool light DESCENDING from its top edge —
+	 * as if the hero photograph's blue-hour light spills a little way down into the interface before settling
+	 * into calm reading-dark. Distinct mechanism from .work (one top-anchored wash, no warm spill, no base
+	 * gradient, no gold seam), so the identity carries through WITHOUT repeating the .work treatment. Peak sits
+	 * off the top edge; only the fringe shows, and it has faded to the base ink long before the body copy —
+	 * so the modelling lives in negative space and never sits under muted text (6.9 subtle depth, 6.16). Pure
+	 * static CSS, painted once.
 	 * ============================================================= */
+	.pos-sec {
+		background:
+			radial-gradient(
+				132% 66% at 50% -12%,
+				rgba(var(--p-atmos-cool), 0.18) 0%,
+				rgba(var(--p-atmos-cool), 0.06) 40%,
+				rgba(var(--p-atmos-cool), 0) 70%
+			),
+			var(--color-bg);
+	}
 	.pos {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
@@ -698,7 +717,45 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 
 	/* ============================================================= *
 	 * SPECIALISATIES — the two-discipline photographic diptych (D-20 asymmetry, D-23 all-dark)
+	 *
+	 * VARIATION EXPRESSION #2 (P4.7): "two light sources". The elevation here is NOT the .work room and NOT a
+	 * gold seam — it is a DIFFERENT expression of the same "photography is the light source" principle: each of
+	 * the two discipline photographs appears to cast its OWN light into the surrounding dark. A cool pool sits
+	 * upper-left, under/around the architecture plate (which is itself a cool blue-sky image); a warm pool sits
+	 * lower-right, under/around the interior plate (a warm artificial-light image). Together they read as a
+	 * cool→warm chromatic diagonal that literally maps the two disciplines — "twee disciplines, één benadering"
+	 * expressed in light. This makes the chapter MEDIUM intensity (photography-led, richer than the flat base,
+	 * quieter than .work's full-bleed plate) and keeps gold's structural-LINE role exclusive to .work (this
+	 * chapter carries no added gold line — anti-repetition). A `::before` (z-index:-1, contained by isolation)
+	 * so it paints above the section fill but below every card; each photo's opaque frame covers the peak, so the
+	 * light only ever shows in the negative space around the images, never tinting a photograph (6.16). Static
+	 * CSS, painted once; both peaks stay well below adjacent photographic luminance/saturation.
 	 * ============================================================= */
+	.spec-sec {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip; /* the wide pools can spill toward the gutters; never let them add horizontal scroll */
+	}
+	.spec-sec::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background:
+			radial-gradient(
+				64% 46% at 6% 40%,
+				rgba(var(--p-atmos-cool), 0.17) 0%,
+				rgba(var(--p-atmos-cool), 0.05) 40%,
+				rgba(var(--p-atmos-cool), 0) 64%
+			),
+			radial-gradient(
+				70% 50% at 92% 78%,
+				rgba(var(--p-atmos-warm), 0.15) 0%,
+				rgba(var(--p-atmos-warm), 0.045) 42%,
+				rgba(var(--p-atmos-warm), 0) 66%
+			);
+	}
 	.spec__title {
 		margin-top: var(--space-sm);
 		max-width: 16ch;
