@@ -28,6 +28,18 @@ const data = project.data;
 
 const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
 
+// P5.1 (D-32) — contextual return to the discipline this project belongs to (UX-03 / IA). A project reached
+// via Diensten → Architectuur-/Interieurfotografie → "Relevante projecten" previously offered only a route back
+// to Portfolio, dropping the service context. The content model's `category` is the AUTHORITATIVE relationship
+// (see content.config.ts — "drives … which Diensten page cross-links here"), so this link is derived from the
+// project itself, NOT from browser history: it is truthful wherever the visitor arrived from (a project may be
+// reached from both Portfolio and either service page). Paired with the existing Portfolio return, never replacing it.
+const serviceReturn: Record<string, { href: string; label: string }> = {
+	architectuur: { href: '/diensten/architectuurfotografie/', label: 'Meer over architectuurfotografie' },
+	interieur: { href: '/diensten/interieurfotografie/', label: 'Meer over interieurfotografie' },
+};
+const service = serviceReturn[data.category];
+
 // SEO-04/12.51-12.52: per-entry override with a quality fallback, never a blank tag.
 const seoTitle = data.seoTitle ?? data.title;
 const seoDescription = data.seoDescription ?? data.summary;
@@ -157,6 +169,27 @@ const lastIndex = data.gallery.length - 1;
 				</svg>
 				Terug naar portfolio
 			</a>
+			{
+				service && (
+					<a class="proj-service-link" href={service.href}>
+						{service.label}
+						<svg
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+							focusable="false"
+						>
+							<path d="M4 12h15M13 6l6 6-6 6" />
+						</svg>
+					</a>
+				)
+			}
 		</div>
 	</article>
 </BaseLayout>
@@ -334,8 +367,16 @@ const lastIndex = data.gallery.length - 1;
 		/* Bottom stays modest — the footer already carries its own generous top breathing room, so a large
 		   bottom pad here would only double it and leave the return link stranded high above the footer. */
 		padding-block: var(--space-xl) var(--space-2xl);
+		/* P5.1 (D-32) — two return paths sit on one line: Portfolio (broad) at the start, the discipline (specific)
+		   at the end, reading left→right as "back to the overview / onward to this discipline". Wraps on narrow. */
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-md) var(--space-2xl);
 	}
-	.proj-back {
+	.proj-back,
+	.proj-service-link {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-xs);
@@ -344,7 +385,27 @@ const lastIndex = data.gallery.length - 1;
 		color: var(--color-text-secondary);
 		transition: color var(--dur-interaction) var(--ease-standard);
 	}
-	.proj-back:hover {
+	.proj-back:hover,
+	.proj-back:focus-visible,
+	.proj-service-link:hover,
+	.proj-service-link:focus-visible {
 		color: var(--color-text);
+	}
+	/* The discipline link points onward (gold on hover), matching the site's forward link-arrow idiom. */
+	.proj-service-link:hover,
+	.proj-service-link:focus-visible {
+		color: var(--color-accent);
+	}
+	.proj-service-link svg,
+	.proj-back svg {
+		transition: transform var(--dur-interaction) var(--ease-out);
+	}
+	.proj-service-link:hover svg,
+	.proj-service-link:focus-visible svg {
+		transform: translateX(3px);
+	}
+	.proj-back:hover svg,
+	.proj-back:focus-visible svg {
+		transform: translateX(-3px);
 	}
 </style>

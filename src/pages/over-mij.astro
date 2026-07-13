@@ -26,6 +26,7 @@ import Section from '../components/Section.astro';
 import Media from '../components/Media.astro';
 import ContactCta from '../components/ContactCta.astro';
 import portretImg from '../assets/static/overmij.jpeg';
+import visieImg from '../assets/static/avond-deventer.jpg';
 ---
 
 <BaseLayout
@@ -104,6 +105,26 @@ import portretImg from '../assets/static/overmij.jpeg';
 				lijnen, op licht, en op alles wat kan afleiden van het beeld dat ik voor ogen heb.
 			</p>
 		</div>
+		<!-- P5.1 (D-32) — a single atmospheric photograph fills the visie section's previously-empty right field
+		     (owner: the space beside the vision statement read as too empty on desktop). Chosen by VISUAL inspection,
+		     not filename: a long-exposure evening architecture frame (a church in Deventer) — warm-lit stone against a
+		     deep blue night with moon-glow and drifting cloud — the literal illustration of the statement ("lange
+		     sluitertijden en zorgvuldige belichting… de sfeer"; "mooier dan de werkelijkheid"). Architecture, so it
+		     does NOT compete with the portrait hero; nocturne palette. Its dark sky edges melt into the deep field
+		     via the same inward mask as the portrait (emerge-from-the-nocturne), so it reads as spatial depth, NOT a
+		     pasted rectangle — and it COMPLEMENTS the typographic crossing: the statement still straddles the seam,
+		     the photo stays anchored on the deep field (it does not cross), so the crossing mechanism is not duplicated. -->
+		<figure class="about-visie__figure u-inview">
+			<Media
+				src={visieImg}
+				alt="Een gotische kerk in Deventer bij avond — warm uitgelicht metselwerk en torenspitsen tegen een diepblauwe nachthemel met maanlicht."
+				widths={[420, 640, 900]}
+				sizes="(min-width: 60rem) 32vw, 82vw"
+				ratio="4/5"
+				position="center 30%"
+				class="about-visie__media"
+			/>
+		</figure>
 	</Section>
 
 	<!-- 4. WERKWIJZE + persoonlijk + portfolio-koppeling (13.46). A first-person, reflective prose block —
@@ -277,9 +298,24 @@ import portretImg from '../assets/static/overmij.jpeg';
 	}
 	/* Flex column so the inner's negative margin reliably lifts it (a plain block container would collapse
 	   the negative top margin instead of crossing — the D-30 diensten crossing uses the same flex pattern). */
+	/* P5.1 (D-32) — two-column grid: statement/text (left) + the atmospheric photograph (right). Grid (like flex)
+	   does NOT collapse the inner's negative top margin, so the TYPOGRAPHIC crossing is fully preserved: the text
+	   column still rises across the seam; the figure column is anchored on the deep field (align-items:start, no
+	   lift) so it COMPLEMENTS the crossing rather than duplicating the photo-rise idiom. */
 	.about-visie :global(.u-container) {
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr);
+		gap: clamp(var(--space-2xl), 1rem + 5vw, var(--space-4xl));
+		align-items: start;
+	}
+	.about-visie__figure {
+		margin-top: clamp(0.5rem, -0.5rem + 3vw, 2.5rem);
+	}
+	/* The photo's dark night-sky edges melt into the deep field via the same inward mask as the portrait hero, so
+	   it emerges from the nocturne rather than reading as a pasted rectangle. Decorative; the img carries the alt. */
+	.about-visie__media {
+		-webkit-mask-image: radial-gradient(128% 122% at 52% 44%, #000 66%, transparent 100%);
+		mask-image: radial-gradient(128% 122% at 52% 44%, #000 66%, transparent 100%);
 	}
 	.about-visie__inner {
 		max-width: 54ch;
@@ -316,10 +352,18 @@ import portretImg from '../assets/static/overmij.jpeg';
 	}
 	@media (max-width: 52rem) {
 		/* The typographic crossing is a desktop composition move; on the single column restore normal spacing
-		   so the statement doesn't ride up into the achtergrond prose. */
+		   so the statement doesn't ride up into the achtergrond prose. The photo stacks below the text (P5.1). */
+		.about-visie :global(.u-container) {
+			grid-template-columns: 1fr;
+			gap: var(--space-xl);
+		}
 		.about-visie__inner {
 			margin-top: 0;
 			max-width: none;
+		}
+		.about-visie__figure {
+			margin-top: 0;
+			max-width: 26rem;
 		}
 	}
 

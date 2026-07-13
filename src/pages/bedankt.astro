@@ -9,6 +9,8 @@
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
+import Media from '../components/Media.astro';
+import sculptuurImg from '../assets/static/bedankt.jpg';
 ---
 
 <BaseLayout
@@ -36,6 +38,22 @@ import Section from '../components/Section.astro';
 				</a>
 			</div>
 		</div>
+		<!-- P5.1 (D-32) — the success page gains a deliberate premium image composition (owner-specified photograph):
+		     an abstract architectural light-sculpture (gold armillary sphere on pure black, with green/red catch-lights).
+		     Its pure-black field IS the escape mechanism — a radial mask dissolves the frame entirely so the sphere
+		     FLOATS in the page's dark field (controlled image-escape, careful edge treatment), never a rectangle under
+		     the text. An asymmetric editorial split (confirmation copy left, sculpture right) with strong negative
+		     space; the image is already visually strong, so no extra decoration is added beyond the existing calm
+		     cool-glow field. Decorative (alt=""): it sets a tone, it is not information the success message depends on. -->
+		<figure class="thanks__figure u-inview" aria-hidden="true">
+			<Media
+				src={sculptuurImg}
+				alt=""
+				widths={[480, 720, 1000]}
+				sizes="(min-width: 60rem) 42vw, 86vw"
+				class="thanks__media"
+			/>
+		</figure>
 	</Section>
 </BaseLayout>
 
@@ -46,7 +64,7 @@ import Section from '../components/Section.astro';
 		overflow-x: clip;
 		display: flex;
 		align-items: center;
-		min-height: min(72vh, 620px);
+		min-height: min(78vh, 720px);
 		background:
 			radial-gradient(
 				120% 60% at 50% -8%,
@@ -56,8 +74,40 @@ import Section from '../components/Section.astro';
 			),
 			var(--color-bg);
 	}
+	/* P5.1 (D-32) — asymmetric editorial split: confirmation copy (left) + the light-sculpture (right). The section
+	   still vertically centres its content within the min-height; the grid places the two beats side by side. */
+	.thanks :global(.u-container) {
+		width: 100%;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+		gap: clamp(var(--space-xl), 1rem + 5vw, var(--space-4xl));
+		align-items: center;
+	}
 	.thanks__inner {
-		max-width: 40ch;
+		max-width: 42ch;
+	}
+	/* The sculpture floats in the page's dark field: a radial mask dissolves the pure-black frame entirely, so the
+	   gold armillary reads as a light source suspended in the nocturne — a controlled escape, not a boxed picture.
+	   Decorative (aria-hidden + alt=""), so no focus/alt burden; it sets tone only. */
+	.thanks__figure {
+		position: relative;
+		isolation: isolate;
+	}
+	/* A dark tonal POOL behind the sculpture (owner's suggested depth device): the photograph's field is pure black,
+	   so against the slightly-navy page its masked edges would otherwise hint at a rectangle. This near-black radial,
+	   fading to the page, gives the masked edges darkness to dissolve INTO — the sphere sits in a pool of shadow and
+	   truly floats. Restrained (no colour, no glow of its own — the vivid image stays the only light source). */
+	.thanks__figure::before {
+		content: '';
+		position: absolute;
+		inset: -14% -10%;
+		z-index: -1;
+		pointer-events: none;
+		background: radial-gradient(70% 70% at 52% 47%, #05070b 0%, rgba(5, 7, 11, 0.6) 42%, rgba(5, 7, 11, 0) 78%);
+	}
+	.thanks__media {
+		-webkit-mask-image: radial-gradient(76% 76% at 52% 47%, #000 54%, transparent 100%);
+		mask-image: radial-gradient(76% 76% at 52% 47%, #000 54%, transparent 100%);
 	}
 	/* A single champagne datum rule — the confirmation mark, in the site's selective gold hairline language. */
 	.thanks__rule {
@@ -86,5 +136,16 @@ import Section from '../components/Section.astro';
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-md) var(--space-xl);
+	}
+	/* The confirmation copy leads; the sculpture follows below, centred and bounded so it stays a calm accent. */
+	@media (max-width: 52rem) {
+		.thanks :global(.u-container) {
+			grid-template-columns: 1fr;
+			gap: var(--space-xl);
+		}
+		.thanks__figure {
+			max-width: 24rem;
+			margin-inline: auto;
+		}
 	}
 </style>

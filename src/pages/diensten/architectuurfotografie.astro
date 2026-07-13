@@ -229,6 +229,15 @@ const toepassingen = [
 		position: relative;
 		isolation: isolate;
 	}
+	/* P5.1 (D-32) — same intro→photography band correction as the interieur page. The intro is `section--tight`;
+	   this gallery carried the full `--section-gap` top padding, so ~64px + ~112–136px stacked into an oversized
+	   empty band above the "Representatief werk" chapter (owner-reported black band). Tightened so the gallery
+	   answers the intro closely, keeping a premium break, the abyss depth-frame and the tonal step to ink-950 intact.
+	   Compounded onto `.section` (0,3,0) to beat Section.astro's `.section { padding-block }` shorthand in production
+	   (the cascade trap that broke the diensten crossing) — a specificity guarantee, not source-order luck. */
+	.svc-gallery.section {
+		padding-top: clamp(2.25rem, 1.25rem + 3vw, 4rem);
+	}
 	.svc-gallery::before {
 		content: '';
 		position: absolute;

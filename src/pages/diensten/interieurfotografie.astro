@@ -72,7 +72,7 @@ const toepassingen = [
 	<!-- Representatieve fotografie: black-and-white spatial studies — a distinct rhythm from the arch page -->
 	{
 		kroller && (
-			<Section as="div" width="wide">
+			<Section as="div" width="wide" class="svc-lead-sec">
 				<figure class="svc-lead-plate u-inview">
 					<Media
 						src={kroller.data.coverImage}
@@ -235,6 +235,17 @@ const toepassingen = [
 	}
 
 	/* --- Representative: a large full-bleed B&W plate + a contained portrait study --- */
+	/* P5.1 (D-32) — the intro is `section--tight` and this lead-plate section carried the FULL `--section-gap` top
+	   padding, so its bottom padding (~64px) + this top padding (~112–136px) stacked into a ~180px COMPLETELY EMPTY
+	   black band between the intro copy and the first photograph (owner: "large empty black band between the title
+	   area and the following content" — genuinely empty here, no label breaks it). The lead photograph now answers
+	   the intro more closely: a deliberately tighter intro→photography coupling that removes the dead band while
+	   keeping a premium section break and the warm afterglow's purpose. Compounded onto `.section` (specificity
+	   0,3,0) so it deterministically beats Section.astro's `.section { padding-block }` shorthand in production
+	   (the same cascade trap that broke the diensten crossing — a specificity guarantee, not source-order luck). */
+	.svc-lead-sec.section {
+		padding-top: clamp(2.25rem, 1.25rem + 3vw, 4rem);
+	}
 	.svc-lead-plate__cap {
 		margin-top: var(--space-sm);
 	}

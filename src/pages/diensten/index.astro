@@ -244,9 +244,16 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		   (owner's cited portfolio-lead model, varied: here a landscape photo straddling a TYPE masthead). The
 		   two fields stay clearly distinct (visibly different bg); the photo layers over the seam. Robust: the
 		   spreads keep their own bg start (boundary fixed), only the first spread's flow rises via a negative
-		   margin into reserved space; painting-above is automatic (later DOM + this section's `isolation`). */
-		padding-top: clamp(1.5rem, 0.5rem + 2vw, 3rem);
+		   margin into reserved space; painting-above is automatic (later DOM + this section's `isolation`).
+		   ROBUSTNESS (P5.1 — D-32): the reduced top padding MUST be compounded onto `.section` (`.dien-spreads.section`,
+		   specificity 0,3,0) so it deterministically beats Section.astro's `.section { padding-block }` shorthand
+		   (0,2,0). Without this, production CSS source-order let the shorthand win — top padding resolved to the full
+		   `--section-gap` (~120px) and the photo dropped ~18px BELOW the seam, leaving the masthead's band empty
+		   (the crossing "no longer visibly crossed"). This is a specificity guarantee, not source-order luck. */
 		--cross-rise: clamp(3rem, 1rem + 6vw, 7rem);
+	}
+	.dien-spreads.section {
+		padding-top: clamp(1.5rem, 0.5rem + 2vw, 3rem);
 	}
 	.dien-spreads::before {
 		content: '';
@@ -315,8 +322,10 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 			order: 0;
 		}
 		/* Mobile stacks the spread (photo over text); the boundary crossing is a desktop composition move only —
-		   restore normal top spacing so the masthead and the first photo don't collide in the single column. */
-		.dien-spreads {
+		   restore normal top spacing so the masthead and the first photo don't collide in the single column.
+		   Compounded onto `.section` (0,3,0) so this reset still beats the desktop `.dien-spreads.section` override
+		   above (equal specificity → later source order wins) — mobile keeps full `--section-gap` breathing room. */
+		.dien-spreads.section {
 			padding-top: var(--section-gap);
 		}
 		.spread--arch {
