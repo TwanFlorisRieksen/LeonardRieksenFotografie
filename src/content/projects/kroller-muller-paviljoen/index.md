@@ -14,7 +14,7 @@ gallery:
       geperforeerde bakstenen wanden, in zwart-wit."
     caption: "Het paviljoen vanaf het bospad"
 featured: false
-order: 1
+order: 2
 draft: false
 ---
 

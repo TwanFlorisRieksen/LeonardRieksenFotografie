@@ -20,7 +20,10 @@ import heroImg from '../../assets/static/eemhuis-bibliotheek.jpg';
 const projects = await getCollection('projects', ({ data }) => !data.draft);
 const kroller = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 const arnhem = projects.find((p) => p.id === 'arnhem-stadsarchitectuur');
-const related = ['kroller-muller-paviljoen', 'arnhem-stadsarchitectuur']
+// P6: kröller + the arnhem interieurbeeld are already shown above on this page. P6 added real interieur
+// projects, so the related strip now surfaces two category-correct interieur projects (no longer padded
+// with an architectuur entry, and no same-page duplication).
+const related = ['interieur-ruimte-en-licht', 'woonbeurs-rai-amsterdam']
 	.map((id) => projects.find((p) => p.id === id))
 	.filter((p): p is NonNullable<typeof p> => Boolean(p));
 

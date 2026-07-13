@@ -14,7 +14,7 @@ gallery:
       een hoog standpunt gefotografeerd."
     caption: "Skyline met de Erasmusbrug"
 featured: false
-order: 2
+order: 3
 draft: false
 ---
 

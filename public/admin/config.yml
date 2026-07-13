@@ -47,6 +47,17 @@ collections:
         options:
           - { label: "Architectuur", value: "architectuur" }
           - { label: "Interieur", value: "interieur" }
+      - label: "Locatie (optioneel)"
+        name: "location"
+        widget: "string"
+        required: false
+        hint: "Alleen invullen als de plaats echt bekend is — nooit raden."
+      - label: "Jaar (optioneel)"
+        name: "year"
+        widget: "number"
+        value_type: "int"
+        required: false
+        hint: "Alleen invullen als het opnamejaar echt bekend is — nooit raden."
       - { label: "Samenvatting", name: "summary", widget: "text" }
       - { label: "Coverbeeld", name: "coverImage", widget: "image" }
       - label: "Alt-tekst coverbeeld"

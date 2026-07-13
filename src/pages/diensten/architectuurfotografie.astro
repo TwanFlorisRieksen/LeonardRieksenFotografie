@@ -20,7 +20,9 @@ import amersfoortImg from '../../assets/static/amersfoort-toren.jpg';
 
 const projects = await getCollection('projects', ({ data }) => !data.draft);
 const arnhem = projects.find((p) => p.id === 'arnhem-stadsarchitectuur');
-const related = ['arnhem-stadsarchitectuur', 'rotterdam-skyline-kubuswoningen']
+// P6: the arnhem project is already the featured crossing image on this page (below), so the related
+// strip surfaces two OTHER architectuur projects for genuine onward discovery (no same-page duplication).
+const related = ['avond-en-blauw-uur', 'amersfoort-stad']
 	.map((id) => projects.find((p) => p.id === id))
 	.filter((p): p is NonNullable<typeof p> => Boolean(p));
 
