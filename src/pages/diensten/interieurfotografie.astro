@@ -264,6 +264,17 @@ const toepassingen = [
 		grid-template-columns: auto 1fr;
 		gap: var(--space-2xl) var(--space-3xl);
 		align-items: center;
+		/* P4.10 TRUE BOUNDARY CROSSING (D-30) — the wide Kröller plate sits on the base field above; this B&W duo
+		   sits on the deeper gallery field (ink-950) below. Instead of the two meeting at a clean cut, the tall
+		   stairwell PORTRAIT rises ACROSS that boundary into the empty band beneath the Kröller plate — the deep
+		   gallery's sequence visibly reaches up toward the lead plate (an asymmetric paired-image + quote crossing,
+		   deliberately DIFFERENT from the diensten photo-into-type masthead). The quote stays anchored on the deep
+		   side, so the pair straddles the seam. Achromatic throughout (never tints the B&W photography). */
+		--cross-rise: clamp(3rem, 0.5rem + 8vw, 9rem);
+	}
+	.svc-duo__media {
+		align-self: start;
+		margin-top: calc(-1 * var(--cross-rise));
 	}
 	.svc-duo__img {
 		max-width: 30rem;
@@ -283,6 +294,11 @@ const toepassingen = [
 			grid-template-columns: 1fr;
 			gap: var(--space-lg);
 			align-items: start;
+		}
+		/* Single column stacks the portrait over the quote — the boundary crossing is a desktop-only move; restore
+		   normal flow so the stairwell doesn't ride up over the Kröller plate/caption in the stacked layout. */
+		.svc-duo__media {
+			margin-top: 0;
 		}
 		.svc-duo__img {
 			max-width: 24rem;

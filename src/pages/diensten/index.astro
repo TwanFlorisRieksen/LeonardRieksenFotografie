@@ -237,6 +237,16 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 	.dien-spreads {
 		position: relative;
 		isolation: isolate;
+		/* P4.10 TRUE BOUNDARY CROSSING (D-30) — the masthead above is a type-only field (cool wall, rgb(15,19,26))
+		   with a large empty band below the title; the spreads below are the deeper gallery field (ink-950,
+		   rgb(9,11,15)). Rather than the two meeting at a clean horizontal cut, the FIRST discipline photograph
+		   physically rises ACROSS that boundary into the masthead's empty lower band — a real content crossing
+		   (owner's cited portfolio-lead model, varied: here a landscape photo straddling a TYPE masthead). The
+		   two fields stay clearly distinct (visibly different bg); the photo layers over the seam. Robust: the
+		   spreads keep their own bg start (boundary fixed), only the first spread's flow rises via a negative
+		   margin into reserved space; painting-above is automatic (later DOM + this section's `isolation`). */
+		padding-top: clamp(1.5rem, 0.5rem + 2vw, 3rem);
+		--cross-rise: clamp(3rem, 1rem + 6vw, 7rem);
 	}
 	.dien-spreads::before {
 		content: '';
@@ -262,6 +272,12 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		grid-template-columns: 1.25fr 1fr;
 		gap: var(--space-2xl) var(--space-3xl);
 		align-items: center;
+	}
+	/* The first spread rises across the masthead boundary (its photograph straddles the two fields). The
+	   whole first spread lifts so the photo leads into the masthead's empty band while its text settles just
+	   below the seam on the deep field — a coherent, layered open, not a decorative overlap. */
+	.spread--arch {
+		margin-top: calc(-1 * var(--cross-rise));
 	}
 	/* Interior spread reverses — text left, image right — so the page reads as a comparison, not a list. */
 	.spread--int {
@@ -297,6 +313,14 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		}
 		.spread--int .spread__media-link {
 			order: 0;
+		}
+		/* Mobile stacks the spread (photo over text); the boundary crossing is a desktop composition move only —
+		   restore normal top spacing so the masthead and the first photo don't collide in the single column. */
+		.dien-spreads {
+			padding-top: var(--section-gap);
+		}
+		.spread--arch {
+			margin-top: 0;
 		}
 	}
 </style>
