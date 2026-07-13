@@ -1,12 +1,90 @@
 ---
+/*
+ * Bedankt — the contact form's success target (P5 — D-31). Netlify redirects a successful submission to
+ * this route (the form's `action="/bedankt/"`), preserving the old site's proven no-JS success flow
+ * (blueprint 3.11 — keep this confirmation behaviour) and satisfying 2.23's "bevestiging na verzending".
+ * Deliberately calm and restrained — a reassuring confirmation and clear onward navigation, not a page
+ * that competes with the site's content. noindex: a per-submission result page has no standalone search
+ * value and should not be indexed. Content is a factual confirmation; nothing invented.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
 ---
 
-<BaseLayout title="Bericht verzonden" description="Bevestiging na het verzenden van uw bericht.">
-	<h1>Bedankt voor uw bericht</h1>
-	<p>
-		Technische P1-scaffold voor de bevestigingspagina na het contactformulier (blueprint 3.11 — deze
-		functionaliteit van de oude website moet behouden blijven). Definitieve invulling volgt in P5.
-	</p>
-	<p><a href="/">Terug naar home</a></p>
+<BaseLayout
+	title="Bericht verzonden"
+	description="Bevestiging: uw bericht aan Leonard Rieksen Fotografie is verzonden."
+	noindex
+>
+	<Section as="section" class="thanks">
+		<div class="thanks__inner u-reveal">
+			<span class="thanks__rule" aria-hidden="true" style="--reveal-index: 0"></span>
+			<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 1">Bericht verzonden</p>
+			<h1 class="t-display thanks__title" style="--reveal-index: 2">Bedankt voor uw bericht.</h1>
+			<p class="t-lead thanks__lead" style="--reveal-index: 3">
+				Uw bericht is verzonden. Ik neem zo snel mogelijk persoonlijk contact met u op — meestal binnen
+				een paar werkdagen.
+			</p>
+			<div class="thanks__actions" style="--reveal-index: 4">
+				<a class="link-arrow" href="/">
+					Terug naar home
+					<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+				</a>
+				<a class="link-arrow" href="/portfolio/">
+					Bekijk het portfolio
+					<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+				</a>
+			</div>
+		</div>
+	</Section>
 </BaseLayout>
+
+<style>
+	.thanks {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+		display: flex;
+		align-items: center;
+		min-height: min(72vh, 620px);
+		background:
+			radial-gradient(
+				120% 60% at 50% -8%,
+				rgba(var(--p-atmos-cool), 0.16) 0%,
+				rgba(var(--p-atmos-cool), 0.05) 42%,
+				rgba(var(--p-atmos-cool), 0) 72%
+			),
+			var(--color-bg);
+	}
+	.thanks__inner {
+		max-width: 40ch;
+	}
+	/* A single champagne datum rule — the confirmation mark, in the site's selective gold hairline language. */
+	.thanks__rule {
+		display: block;
+		width: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+		height: 1px;
+		margin-bottom: var(--space-lg);
+		background: linear-gradient(
+			90deg,
+			rgba(224, 197, 140, 0.92) 0%,
+			rgba(199, 165, 106, 0.5) 55%,
+			rgba(199, 165, 106, 0) 100%
+		);
+	}
+	.thanks__title {
+		margin-top: var(--space-md);
+		max-width: 14ch;
+	}
+	.thanks__lead {
+		margin-top: var(--space-lg);
+		max-width: 46ch;
+		color: var(--color-text);
+	}
+	.thanks__actions {
+		margin-top: var(--space-xl);
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-md) var(--space-xl);
+	}
+</style>

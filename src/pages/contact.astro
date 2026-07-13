@@ -1,11 +1,428 @@
 ---
+/*
+ * Contact — the low-friction conversion close of the site (13.47/2.22). Blueprint architecture 13.49
+ * (header · introductie · contactmogelijkheden · formulier · praktische informatie · privacycontext ·
+ * footer). Not a generic "heading + card-with-form + details beside it": an integrated premium composition
+ * where the blue-hour architecture (Radio Kootwijk) anchors the page as an architectural vertical DATUM.
+ *
+ * FORM (D-04 / SEC-05/06/11 / A11Y-08 / 11.63–11.90): Netlify Forms + honeypot, NO CAPTCHA by default,
+ * native HTML5 client validation (UX) with server-side handled by Netlify (client validation is not a
+ * security control — 11.64/11.65), permanent visible labels (2.23, never placeholder-as-label), realistic
+ * maxlengths (11.70), no file uploads (11.71), only necessary fields (data minimisation — SEC-11/13.51),
+ * success → /bedankt/ (migrated from the old site's proven flow). Progressive enhancement: the form is a
+ * plain server-POST form that works with zero client JS.
+ *
+ * CONTENT AUTHORITY (CLAUDE §9.2): the contact facts (email / phone / KvK / region) are MIGRATED factual
+ * data extracted from Leo's own contact page (OLD_WEBSITE_CONTENT_INVENTORY, A-02) — real, owner-confirm,
+ * not invented. Consistent with the footer, which already ships the email.
+ *
+ * ART DIRECTION (frozen D-28/D-29/D-30 grammar): cool blue-hour afterglow (matching the image), the deep
+ * form field, and a genuine cross-boundary crossing that is an ARCHITECTURAL VERTICAL DATUM — the tall
+ * symmetrical photograph rises to meet a champagne datum hairline that begins in the intro field and
+ * resolves down the image in the form field, laterally paired with the form. Deliberately a DIFFERENT
+ * mechanism from the site's three photo-vertical-rise crossings (D-31).
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import Media from '../components/Media.astro';
+import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import contactImg from '../assets/static/contact.jpeg';
+
+const email = 'fotorieksen@hotmail.com';
+const phoneDisplay = '06 22 956 813';
+const phoneHref = 'tel:+31622956813';
+const region = 'Midden-Nederland';
+const kvk = '32169926';
 ---
 
-<BaseLayout title="Contact" description="Neem contact op met Leonard Rieksen Fotografie.">
-	<h1>Contact</h1>
-	<p>
-		Technische P1-scaffold. Het contactformulier (Netlify Forms + honeypot, D-04) wordt gebouwd in
-		P5 (blueprint 13.47–13.51).
-	</p>
+<BaseLayout
+	title="Contact"
+	description="Neem contact op met Leonard Rieksen Fotografie. Een vraag, opdracht of kort overleg over architectuur- of interieurfotografie in Midden-Nederland — stuur gerust een bericht."
+>
+	<!-- 1. INTRO (13.49) — a calm, low-friction opening. Cool blue-hour afterglow, matching the photograph
+	     below. Deliberately restrained; reserves trailing space for the datum + image to rise into. -->
+	<Section as="header" tight class="contact-intro">
+		<div class="contact-intro__inner u-reveal">
+			<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 0">Contact</p>
+			<h1 class="t-display contact-intro__title" style="--reveal-index: 1">Laten we uw project bespreken.</h1>
+			<p class="t-lead contact-intro__lead" style="--reveal-index: 2">
+				Heeft u een vraag, een opdracht of wilt u eerst kort overleggen? Stuur gerust een bericht — u
+				ontvangt zo snel mogelijk een persoonlijke reactie.
+			</p>
+		</div>
+	</Section>
+
+	<!-- 2. THE CONTACT COMPOSITION (13.49 contactmogelijkheden + formulier + praktische informatie). The deep
+	     field. Left: the tall Radio Kootwijk photograph (the architectural datum, crossing the seam) + the
+	     practical contact details. Right: the form. -->
+	<Section as="section" class="contact-body">
+		<div class="contact-grid">
+			<div class="contact-aside">
+				<figure class="contact-media u-inview">
+					<Media
+						src={contactImg}
+						alt="Radio Kootwijk in het blauwe uur — het monumentale betonnen zendgebouw, symmetrisch weerspiegeld in een stille vijver, met een warm verlichte entree."
+						widths={[360, 560, 760]}
+						sizes="(min-width: 60rem) 30vw, 80vw"
+						ratio="2/3"
+						position="center"
+						class="contact-media__img"
+					/>
+				</figure>
+
+				<div class="contact-details">
+					<h2 class="t-eyebrow contact-details__heading">Gegevens</h2>
+					<ul class="contact-details__list">
+						<li class="contact-details__item">
+							<a class="contact-details__link" href={`mailto:${email}`}>
+								<Icon name="mail" size={18} />
+								<span>{email}</span>
+							</a>
+						</li>
+						<li class="contact-details__item">
+							<a class="contact-details__link" href={phoneHref}>
+								<Icon name="phone" size={18} />
+								<span>{phoneDisplay}</span>
+							</a>
+						</li>
+					</ul>
+					<dl class="contact-details__meta">
+						<div class="contact-details__row">
+							<dt>Regio</dt>
+							<dd>{region}</dd>
+						</div>
+						<div class="contact-details__row">
+							<dt>KvK</dt>
+							<dd>{kvk}</dd>
+						</div>
+					</dl>
+				</div>
+			</div>
+
+			<div class="contact-form-wrap">
+				<h2 class="t-h3 contact-form-wrap__heading">Stuur een bericht</h2>
+				<form
+					name="contact"
+					method="POST"
+					data-netlify="true"
+					netlify-honeypot="bot-field"
+					action="/bedankt/"
+					class="cform"
+				>
+					<input type="hidden" name="form-name" value="contact" />
+					<!-- Honeypot: off-screen (naive bots still fill it) but removed from the a11y tree and tab
+					     order (11.78) — never announced to screenreaders or keyboard users. -->
+					<div class="cform__hp" aria-hidden="true">
+						<label>
+							Vul dit veld niet in
+							<input type="text" name="bot-field" tabindex="-1" autocomplete="off" />
+						</label>
+					</div>
+
+					<div class="field">
+						<label class="field__label" for="naam">Naam</label>
+						<input
+							class="field__control"
+							type="text"
+							id="naam"
+							name="naam"
+							required
+							autocomplete="name"
+							maxlength="100"
+						/>
+					</div>
+
+					<div class="field">
+						<label class="field__label" for="email">E-mailadres</label>
+						<input
+							class="field__control"
+							type="email"
+							id="email"
+							name="email"
+							required
+							autocomplete="email"
+							maxlength="150"
+						/>
+					</div>
+
+					<div class="field">
+						<label class="field__label" for="telefoon">
+							Telefoonnummer <span class="field__optional">(optioneel)</span>
+						</label>
+						<input
+							class="field__control"
+							type="tel"
+							id="telefoon"
+							name="telefoon"
+							autocomplete="tel"
+							inputmode="tel"
+							maxlength="40"
+						/>
+					</div>
+
+					<div class="field">
+						<label class="field__label" for="bericht">Bericht</label>
+						<textarea
+							class="field__control"
+							id="bericht"
+							name="bericht"
+							required
+							maxlength="2000"
+							rows="6"
+							aria-describedby="bericht-hint"></textarea>
+						<p class="field__hint" id="bericht-hint">
+							Vertel kort waar uw project over gaat — locatie, type en wat u zoekt.
+						</p>
+					</div>
+
+					<div class="cform__actions">
+						<Button variant="primary" type="submit" trailingArrow>Verstuur bericht</Button>
+					</div>
+
+					<p class="cform__privacy">
+						Uw gegevens worden uitsluitend gebruikt om op uw bericht te reageren en niet met derden
+						gedeeld. Lees de <a href="/privacy/">privacyverklaring</a>.
+					</p>
+				</form>
+			</div>
+		</div>
+	</Section>
 </BaseLayout>
+
+<style>
+	/* ============================================================= *
+	 * 1. INTRO — calm opening with a cool blue-hour afterglow (matching the photograph)
+	 * ============================================================= */
+	.contact-intro {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+		background:
+			radial-gradient(
+				120% 62% at 50% -14%,
+				rgba(var(--p-atmos-cool), 0.18) 0%,
+				rgba(var(--p-atmos-cool), 0.06) 42%,
+				rgba(var(--p-atmos-cool), 0) 72%
+			),
+			var(--color-bg);
+		/* Reserve space so the datum + photograph below can rise across the seam into this field. */
+		padding-bottom: clamp(3.5rem, 2rem + 6vw, 8rem);
+	}
+	.contact-intro__title {
+		margin-top: var(--space-md);
+		max-width: 15ch;
+		font-size: clamp(2.4rem, 1.5rem + 3.4vw, 4.25rem);
+	}
+	.contact-intro__lead {
+		margin-top: var(--space-lg);
+		max-width: 46ch;
+		color: var(--color-text);
+	}
+
+	/* ============================================================= *
+	 * 2. CONTACT BODY — the deep field, the datum crossing, the form
+	 * ============================================================= */
+	.contact-body {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+		--cross-rise: clamp(2.25rem, 0.5rem + 5.5vw, 6.5rem);
+		background:
+			radial-gradient(
+				88% 52% at 12% 6%,
+				rgba(var(--p-atmos-cool), 0.1) 0%,
+				rgba(var(--p-atmos-cool), 0.03) 44%,
+				rgba(var(--p-atmos-cool), 0) 70%
+			),
+			linear-gradient(180deg, #080b12 0%, #06090e 60%, #090c13 100%);
+	}
+	/* Reduced top padding so the photograph's negative margin actually lifts it ACROSS the seam into the
+	   intro field (rather than merely trimming a large default padding) — the D-30 robust-crossing pattern.
+	   Element+class selector so it reliably outweighs `.section`'s `padding-block` regardless of CSS bundle
+	   source order (a plain `.contact-body` tie was order-dependent and fragile). */
+	section.contact-body {
+		padding-top: clamp(1.5rem, 0.5rem + 2vw, 3rem);
+	}
+	/* Deep frame top+foot so the composition sits in a modelled space (premium non-photographic depth). */
+	.contact-body::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			180deg,
+			rgba(5, 7, 11, 0.5) 0%,
+			rgba(5, 7, 11, 0) 22%,
+			rgba(5, 7, 11, 0) 84%,
+			rgba(5, 7, 11, 0.5) 100%
+		);
+	}
+	.contact-grid {
+		display: grid;
+		grid-template-columns: 0.82fr 1.18fr;
+		gap: var(--space-2xl) clamp(var(--space-3xl), 2rem + 5vw, var(--space-4xl));
+		align-items: start;
+	}
+
+	/* --- Left: the photograph as an architectural vertical datum (D-31 crossing) --- */
+	.contact-media {
+		position: relative;
+		/* Rise across the intro→body seam: the tall symmetrical photograph reaches up into the intro field. */
+		margin-top: calc(-1 * var(--cross-rise));
+	}
+	/* The champagne DATUM hairline: a thin vertical gold line at the plate's left margin that BEGINS above
+	   the photograph (in the intro field) and RESOLVES downward alongside it (in the body field) — an
+	   architect's datum connecting the two fields, and the "gold precision begins in one field, resolves in
+	   another" idiom. Gold stays a hairline, never a fill. aria-hidden decorative (pure ::before). */
+	.contact-media::before {
+		content: '';
+		position: absolute;
+		left: calc(-1 * var(--space-lg));
+		top: calc(-1 * (var(--cross-rise) + 3.5rem));
+		width: 1px;
+		height: calc(var(--cross-rise) + 3.5rem + 52%);
+		z-index: 1;
+		pointer-events: none;
+		background: linear-gradient(
+			180deg,
+			rgba(224, 197, 140, 0) 0%,
+			rgba(224, 197, 140, 0.9) 18%,
+			rgba(199, 165, 106, 0.58) 58%,
+			rgba(199, 165, 106, 0) 100%
+		);
+	}
+	/* Architect's dimension-line start-tick where the datum begins in the intro field — a short horizontal
+	   champagne hairline capping the top of the vertical datum, so it reads unmistakably as a datum/dimension
+	   line rather than a stray rule. aria-hidden decorative. */
+	.contact-media::after {
+		content: '';
+		position: absolute;
+		left: calc(-1 * var(--space-lg));
+		top: calc(-1 * (var(--cross-rise) + 3rem));
+		width: clamp(1rem, 0.6rem + 1.2vw, 1.75rem);
+		height: 1px;
+		z-index: 1;
+		pointer-events: none;
+		background: linear-gradient(90deg, rgba(224, 197, 140, 0.85) 0%, rgba(199, 165, 106, 0) 100%);
+	}
+	.contact-media__img {
+		width: 100%;
+	}
+
+	/* --- Practical contact details: a clean index (GEGEVENS in the selective gold eyebrow language; the
+	   page's gold moment is the datum, so the rows stay restrained hairline dividers — no gold ticks here). --- */
+	.contact-details {
+		margin-top: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+	}
+	.contact-details__heading {
+		color: var(--color-accent);
+		margin-bottom: var(--space-md);
+	}
+	.contact-details__list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+	}
+	.contact-details__link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-sm);
+		padding-block: var(--space-2xs);
+		color: var(--color-text);
+		font-weight: var(--fw-medium);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.contact-details__link:hover,
+	.contact-details__link:focus-visible {
+		color: var(--color-accent);
+	}
+	.contact-details__meta {
+		margin-top: var(--space-md);
+		display: flex;
+		flex-direction: column;
+	}
+	.contact-details__row {
+		display: flex;
+		gap: var(--space-sm);
+		padding: var(--space-sm) 0;
+		border-top: 1px solid var(--color-border);
+		font-size: var(--fs-body-sm);
+	}
+	.contact-details__row:last-child {
+		border-bottom: 1px solid var(--color-border);
+	}
+	.contact-details__row dt {
+		flex: none;
+		width: 4rem;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		letter-spacing: var(--ls-eyebrow);
+		font-size: var(--fs-eyebrow);
+		padding-top: 0.15em;
+	}
+	.contact-details__row dd {
+		color: var(--color-text);
+	}
+
+	/* --- Right: the form --- */
+	.contact-form-wrap__heading {
+		margin-bottom: var(--space-lg);
+	}
+	.cform {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+		max-width: 34rem;
+	}
+	/* Accessible honeypot: visually removed, kept in the DOM for naive bots, out of a11y tree + tab order. */
+	.cform__hp {
+		position: absolute;
+		left: -9999px;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+	.cform__actions {
+		margin-top: var(--space-2xs);
+	}
+	.cform__privacy {
+		font-size: var(--fs-caption);
+		line-height: var(--lh-snug);
+		color: var(--color-text-muted);
+		max-width: 42ch;
+	}
+	.cform__privacy a {
+		color: var(--color-interactive);
+		text-decoration: underline;
+		text-decoration-color: color-mix(in srgb, var(--color-interactive) 45%, transparent);
+		text-underline-offset: 0.18em;
+		transition: color var(--dur-interaction) var(--ease-standard),
+			text-decoration-color var(--dur-interaction) var(--ease-standard);
+	}
+	.cform__privacy a:hover {
+		color: var(--color-interactive-hover);
+		text-decoration-color: currentColor;
+	}
+
+	@media (max-width: 60rem) {
+		.contact-grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-2xl);
+		}
+		/* The datum crossing is a desktop composition move; on the single column restore normal flow so the
+		   photograph doesn't ride up into the intro, and shrink the plate to a sensible portrait. */
+		.contact-media {
+			margin-top: 0;
+			max-width: 22rem;
+		}
+		.contact-media::before,
+		.contact-media::after {
+			display: none;
+		}
+		.cform {
+			max-width: none;
+		}
+	}
+</style>

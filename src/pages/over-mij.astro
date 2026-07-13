@@ -1,8 +1,350 @@
 ---
+/*
+ * Over mij — the person behind Leonard Rieksen Fotografie (P5 — D-31). Builds trust and personal context
+ * (13.42/2.21) without becoming an autobiography (13.45): who Leo is, his background, his photographic
+ * vision, his working approach, the human component — each beat justified by the trust/expertise/identity
+ * test (13.45). Blueprint flow 13.46 (header · introductie · portret · achtergrond · visie · werkwijze ·
+ * portfolio-koppeling · contact-CTA · footer) is honoured but consolidated into fewer, stronger beats.
+ *
+ * CONTENT AUTHORITY (CLAUDE §9.2): every factual claim here is TRANSFORMED from Leo's OWN published bio
+ * (reference/old-website/over-mij.html) — his own words about his training, specialisation and approach.
+ * This is migration/transformation of his self-description, NOT invention. Naming: "Leo Rieksen" for the
+ * personal register (2.21/3.8.2). The two named specialisations stay Architectuur + Interieur (D-07);
+ * vastgoed/avondfotografie are mentioned as factual parts of his background, not elevated to services.
+ * Bio facts remain owner-confirm (A-02) — Leo's own site copy, not independently re-validated.
+ *
+ * ART DIRECTION (D-28/D-29/D-30 frozen grammar): this page carries the nocturne identity in its OWN
+ * signature — a low-key studio portrait whose dark backdrop dissolves into the page (the figure emerges
+ * from the nocturne rather than sitting in a hard frame), and a monumental VISIE statement that is the
+ * page's premium non-photographic moment. Its genuine cross-boundary crossing is TYPOGRAPHIC (the vision
+ * statement physically straddles the achtergrond→visie section seam) — deliberately a DIFFERENT mechanism
+ * from the three existing photo-vertical-rise crossings (portfolio lead / diensten / interieur). Gold stays
+ * a selective hairline/datum; photography (the portrait) is the dominant image.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import Media from '../components/Media.astro';
+import ContactCta from '../components/ContactCta.astro';
+import portretImg from '../assets/static/overmij.jpeg';
 ---
 
-<BaseLayout title="Over mij" description="Over Leo Rieksen — Leonard Rieksen Fotografie.">
-	<h1>Over mij</h1>
-	<p>Technische P1-scaffold. Introductie van Leo Rieksen volgt in P5 (blueprint 13.42–13.46).</p>
+<BaseLayout
+	title="Over mij"
+	description="Leo Rieksen — de fotograaf achter Leonard Rieksen Fotografie. Een rustige, precieze benadering van architectuur- en interieurfotografie, met een scherp oog voor licht, lijnen en sfeer."
+>
+	<!-- 1. HERO — editorial split (introductie + portret, 13.46). Deliberately NOT the full-bleed scrim hero
+	     of the home/service pages: an eyebrow + name + lead against the low-key portrait, whose dark studio
+	     backdrop dissolves into the page so Leo emerges from the nocturne. The portrait is this page's LCP
+	     candidate (priority-loaded). -->
+	<Section as="header" class="about-hero">
+		<div class="about-hero__grid">
+			<div class="about-hero__intro u-reveal">
+				<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 0">Over mij</p>
+				<h1 class="t-display about-hero__name" style="--reveal-index: 1">Leo Rieksen</h1>
+				<p class="t-lead about-hero__lead" style="--reveal-index: 2">
+					Fotograaf met een rustige benadering en een scherp oog voor detail. Ik leg architectuur en
+					interieur vast met aandacht voor licht, lijnen en sfeer — vaak in het bijzondere licht van het
+					avond- en blauwe uur.
+				</p>
+			</div>
+			<div class="about-hero__portrait u-inview">
+				<Media
+					src={portretImg}
+					alt="Portret van fotograaf Leo Rieksen — grijzend haar en baard, rustige blik, in een donkere studio."
+					priority={true}
+					widths={[420, 640, 860]}
+					sizes="(min-width: 60rem) 34vw, 80vw"
+					ratio="4/5"
+					position="center 34%"
+					class="about-hero__media"
+				/>
+			</div>
+		</div>
+	</Section>
+
+	<!-- 2. ACHTERGROND (professionele achtergrond, 13.44/13.46). Prose in Leo's own voice, transformed from
+	     his bio. Reserves generous trailing space so the VISIE statement below can rise across the seam. -->
+	<Section as="section" class="about-bg">
+		<div class="about-bg__grid">
+			<div class="about-bg__head">
+				<p class="t-eyebrow t-eyebrow--accent">Achtergrond</p>
+				<h2 class="t-h2 about-bg__title">Van jongs af gefascineerd door beeld.</h2>
+			</div>
+			<div class="about-bg__body prose">
+				<p>
+					Al vanaf mijn tiende jaar fascineert beeld mij: hoe licht, lijnen en sfeer samen een verhaal
+					kunnen vormen. Die nieuwsgierigheid bracht mij via de eerste cursussen naar de Fotovakschool.
+				</p>
+				<p>
+					Daarna volgde ik aanvullende opleidingen en verdiepte ik mij in boeken en in de technische
+					ontwikkelingen binnen het vak. Mijn specialisatie ligt bij architectuur- en interieurfotografie
+					— met daarnaast vastgoed — vaak aangevuld met avondfotografie.
+				</p>
+			</div>
+		</div>
+	</Section>
+
+	<!-- 3. VISIE (visie op fotografie, 13.46). The page's premium NON-photographic moment AND its genuine
+	     cross-boundary crossing: Leo's own defining line, set at display scale, physically STRADDLES the
+	     achtergrond→visie section seam. A TYPOGRAPHIC crossing — a substantial content element crossing a
+	     boundary between two visibly-distinct fields (base ink-900 above, a modelled deep field here) — a
+	     deliberately different mechanism from the site's three photo-vertical-rise crossings (D-30/D-31). -->
+	<Section as="section" class="about-visie">
+		<div class="about-visie__inner">
+			<div class="about-visie__marker">
+				<span class="about-visie__rule" aria-hidden="true"></span>
+				<p class="t-eyebrow t-eyebrow--accent about-visie__eyebrow">Visie</p>
+			</div>
+			<h2 class="t-display about-visie__statement">
+				Ik hoor vaker dat mijn foto&rsquo;s mooier uitpakken dan de werkelijkheid.
+			</h2>
+			<p class="about-visie__support">
+				Voor mij is dat het teken dat techniek en gevoel samenvallen — dat lange sluitertijden en
+				zorgvuldige belichting precies de sfeer opleveren die een ruimte of gebouw verdient. Ik let op
+				lijnen, op licht, en op alles wat kan afleiden van het beeld dat ik voor ogen heb.
+			</p>
+		</div>
+	</Section>
+
+	<!-- 4. WERKWIJZE + persoonlijk + portfolio-koppeling (13.46). A first-person, reflective prose block —
+	     deliberately NOT the third-person numbered 01/02/03 method used on the home/service pages, so Over
+	     mij stays compositionally distinct. Closes with the human note and a route into the work. This area
+	     is intentionally the RESTRAINED beat (no crossing, no added atmosphere) — calm before the CTA. -->
+	<Section as="section" class="about-work">
+		<div class="about-work__grid">
+			<div class="about-work__head">
+				<p class="t-eyebrow t-eyebrow--accent">Werkwijze</p>
+				<h2 class="t-h2 about-work__title">Eerst luisteren, dan fotograferen.</h2>
+			</div>
+			<div class="about-work__body">
+				<div class="prose">
+					<p>
+						Voor elke opdracht ga ik eerst in gesprek. Ik luister goed, inventariseer de wensen en vertaal
+						die naar beelden die helder, rustig en krachtig zijn.
+					</p>
+					<p>
+						Ik woon in Midden-Nederland, hou van sport en haal veel voldoening uit het moment waarop alles
+						klopt: de sfeer, het licht en het beeld dat precies overbrengt wat bedoeld was. Als fotograaf
+						wil ik een betrouwbare partner zijn — iemand die met aandacht en vakmanschap helpt om iets
+						bijzonders vast te leggen.
+					</p>
+				</div>
+				<p class="about-work__more">
+					<a class="link-arrow" href="/portfolio/">
+						Bekijk het werk
+						<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+					</a>
+				</p>
+			</div>
+		</div>
+	</Section>
+
+	<ContactCta
+		heading="Samen iets bijzonders vastleggen?"
+		text="Benieuwd wat ik voor uw project kan betekenen? Neem gerust vrijblijvend contact op — dan bespreken we kort wat u zoekt."
+		primaryLabel="Neem contact op"
+		primaryHref="/contact/"
+		secondaryLabel="Bekijk het portfolio"
+		secondaryHref="/portfolio/"
+	/>
 </BaseLayout>
+
+<style>
+	/* ============================================================= *
+	 * 1. HERO — editorial split; the portrait dissolves into the nocturne
+	 * ============================================================= */
+	.about-hero {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+	}
+	.about-hero__grid {
+		display: grid;
+		grid-template-columns: 1.05fr 0.95fr;
+		gap: var(--space-2xl) clamp(var(--space-2xl), 1rem + 6vw, var(--space-4xl));
+		align-items: center;
+	}
+	.about-hero__name {
+		margin-top: var(--space-md);
+		max-width: 12ch;
+	}
+	.about-hero__lead {
+		margin-top: var(--space-lg);
+		max-width: 42ch;
+		color: var(--color-text);
+	}
+	.about-hero__portrait {
+		position: relative;
+	}
+	/* The source is a low-key studio portrait on a dark, vignetted backdrop that already fades to near-black
+	   at its edges. A soft inward mask on the inner (left) and lower edges lets the plate melt into the page
+	   so the figure "escapes its field" instead of reading as a hard rectangle — a premium, portrait-specific
+	   treatment (the nocturne surround IS the studio backdrop). Decorative only; the <img> carries the alt. */
+	.about-hero__media {
+		-webkit-mask-image: radial-gradient(120% 108% at 68% 40%, #000 62%, transparent 100%);
+		mask-image: radial-gradient(120% 108% at 68% 40%, #000 62%, transparent 100%);
+	}
+	@media (max-width: 60rem) {
+		.about-hero__grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-xl);
+		}
+		.about-hero__name {
+			max-width: 16ch;
+		}
+		.about-hero__portrait {
+			max-width: 24rem;
+		}
+	}
+
+	/* ============================================================= *
+	 * 2. ACHTERGROND — base-dark prose; reserves trailing space for the crossing
+	 * ============================================================= */
+	.about-bg__grid {
+		display: grid;
+		grid-template-columns: 0.9fr 1.1fr;
+		gap: var(--space-2xl) clamp(var(--space-3xl), 2rem + 5vw, var(--space-4xl));
+		align-items: start;
+	}
+	.about-bg__title {
+		margin-top: var(--space-sm);
+		max-width: 14ch;
+	}
+	.about-bg__body {
+		max-width: var(--measure);
+	}
+	/* Reserve empty space at the foot so the VISIE statement below can rise into it without colliding with
+	   this prose (the upper field of the typographic crossing). */
+	.about-bg {
+		padding-bottom: clamp(5rem, 3rem + 8vw, 11rem);
+	}
+	@media (max-width: 52rem) {
+		.about-bg__grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+		}
+		.about-bg__title {
+			max-width: 18ch;
+		}
+	}
+
+	/* ============================================================= *
+	 * 3. VISIE — the modelled deep field + the TYPOGRAPHIC boundary crossing (D-31)
+	 * ============================================================= *
+	 * This section is a deliberately DEEPER, modelled field than the ink-900 achtergrond above, so the two
+	 * fields read as visibly distinct (the precondition for a true crossing, D-30). Its own background starts
+	 * at the section box (the field seam is fixed there); the eyebrow + monumental statement lift via a single
+	 * spacing-token negative margin so they RISE ACROSS that seam into the achtergrond's reserved space, while
+	 * the support line settles below the seam on the deep field. The statement is a substantial content
+	 * element straddling two distinct fields — a genuine crossing, delivered by TYPE (not a photo rising).
+	 * Robust: additive negative margin only, painting-above is automatic (later DOM), disabled when stacked. */
+	.about-visie {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+		--cross-rise: clamp(2.5rem, 0.5rem + 6vw, 7rem);
+		background:
+			radial-gradient(
+				96% 62% at 16% 14%,
+				rgba(var(--p-atmos-cool), 0.14) 0%,
+				rgba(var(--p-atmos-cool), 0.04) 44%,
+				rgba(var(--p-atmos-cool), 0) 72%
+			),
+			linear-gradient(180deg, #0b0f17 0%, #070a10 54%, #090c14 100%);
+	}
+	/* Reduced top padding so the statement's negative margin lifts it ACROSS the seam into the achtergrond
+	   field above (rather than merely trimming a large default padding) — the D-30 robust-crossing pattern.
+	   Element+class selector (`section.about-visie`) so it reliably outweighs `.section`'s `padding-block`
+	   regardless of CSS bundle source order (a plain `.about-visie` tie was order-dependent and fragile). */
+	section.about-visie {
+		padding-top: clamp(1.5rem, 0.5rem + 2vw, 3rem);
+	}
+	/* A faint deep frame top+foot so the statement sits in a modelled space, not a flat fill (premium
+	   non-photographic zone — D-29 Limitation 4). aria-hidden decorative. */
+	.about-visie::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			180deg,
+			rgba(5, 7, 11, 0.55) 0%,
+			rgba(5, 7, 11, 0) 26%,
+			rgba(5, 7, 11, 0) 82%,
+			rgba(5, 7, 11, 0.5) 100%
+		);
+	}
+	/* Flex column so the inner's negative margin reliably lifts it (a plain block container would collapse
+	   the negative top margin instead of crossing — the D-30 diensten crossing uses the same flex pattern). */
+	.about-visie :global(.u-container) {
+		display: flex;
+		flex-direction: column;
+	}
+	.about-visie__inner {
+		max-width: 54ch;
+		/* Lift the eyebrow + statement across the section seam into the achtergrond field above. */
+		margin-top: calc(-1 * var(--cross-rise));
+	}
+	.about-visie__marker {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		margin-bottom: var(--space-lg);
+	}
+	/* Short champagne datum rule (the selective gold precision idiom — 6.11/6.12, D-28 family), marking the
+	   page's defining statement. Gold stays a hairline, never a fill. */
+	.about-visie__rule {
+		flex: none;
+		width: clamp(2rem, 1.4rem + 2vw, 3.25rem);
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			rgba(199, 165, 106, 0) 0%,
+			rgba(199, 165, 106, 0.5) 34%,
+			rgba(224, 197, 140, 0.92) 100%
+		);
+	}
+	.about-visie__statement {
+		max-width: 22ch;
+		font-size: clamp(2.1rem, 1.2rem + 3.4vw, 4rem);
+	}
+	.about-visie__support {
+		margin-top: var(--space-xl);
+		max-width: 52ch;
+		color: var(--color-text-secondary);
+	}
+	@media (max-width: 52rem) {
+		/* The typographic crossing is a desktop composition move; on the single column restore normal spacing
+		   so the statement doesn't ride up into the achtergrond prose. */
+		.about-visie__inner {
+			margin-top: 0;
+			max-width: none;
+		}
+	}
+
+	/* ============================================================= *
+	 * 4. WERKWIJZE + persoonlijk — the restrained beat (no crossing, no added atmosphere)
+	 * ============================================================= */
+	.about-work__grid {
+		display: grid;
+		grid-template-columns: 0.85fr 1.15fr;
+		gap: var(--space-2xl) clamp(var(--space-3xl), 2rem + 5vw, var(--space-4xl));
+		align-items: start;
+	}
+	.about-work__head {
+		max-width: 26ch;
+	}
+	.about-work__title {
+		margin-top: var(--space-sm);
+	}
+	.about-work__more {
+		margin-top: var(--space-xl);
+	}
+	@media (max-width: 52rem) {
+		.about-work__grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+		}
+	}
+</style>
