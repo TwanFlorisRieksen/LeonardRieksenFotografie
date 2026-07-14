@@ -42,6 +42,20 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	socialImage={ogImage.src}
 	heroHeader
 >
+	<!-- ============================================================================================= *
+	     THE CONTINUOUS STAGE (P6.2 / D-39). One fixed "world" behind the whole page — the persistent
+	     blue-hour architectural space the reader descends through. Its light EVOLVES across the scroll
+	     (home-cinema.js drives the custom properties per scene), so atmosphere no longer hard-cuts at each
+	     section boundary — the direct fix for the "losse secties / document" feeling. aria-hidden + inert:
+	     purely atmospheric, never content. Off (opacity 0) until `html.motion-scene`; under no-JS / reduced
+	     motion it stays invisible and the exact frozen D-38 per-section atmospheres render instead. -->
+	<div class="stage" aria-hidden="true">
+		<div class="stage__base"></div>
+		<div class="stage__cool"></div>
+		<div class="stage__warm"></div>
+		<div class="stage__vignette"></div>
+	</div>
+
 	<!-- HERO — the first large contact moment (13.14). Photography full-bleed and central; identity,
 	     positioning and one logical next step over it; no competing CTAs or long text (13.16). -->
 	<header class="home-hero">
@@ -494,9 +508,111 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			});
 		})();
 	</script>
+
+	<!-- ============================================================================================= *
+	     P6.2 / D-39 — HOMEPAGE CINEMATIC SCENE ORCHESTRATION (GSAP + ScrollTrigger).
+	     A processed (bundled), deferred module — NOT is:inline — so GSAP is code-split into the site's first
+	     JS bundle and loaded non-render-blocking. It arms ONLY under `prefers-reduced-motion: no-preference`;
+	     content is fully visible before/without it (the LCP hero stays eager/priority and is never gated by
+	     this script). See home-cinema.js + documenten/HOMEPAGE_MOTION_CHOREOGRAPHY.md. -->
+	<script>
+		import { initHomeCinema } from '../scripts/home-cinema.js';
+		initHomeCinema();
+	</script>
 </BaseLayout>
 
 <style>
+	/* ============================================================= *
+	 * THE CONTINUOUS STAGE (P6.2 / D-39) — the fixed, evolving world behind the whole page.
+	 * A single aria-hidden fixed layer holding pre-painted gradient sub-layers whose intensity/position are
+	 * driven by CSS custom properties. home-cinema.js animates those properties per scene, so the atmosphere
+	 * flows continuously through the descent instead of hard-cutting at every section boundary. The sub-layers
+	 * only move OPACITY/POSITION (compositor-cheap) — gradients are never repainted per frame. Off until
+	 * `html.motion-scene`; under no-JS / reduced motion it stays invisible and the frozen D-38 atmospheres show.
+	 * ============================================================= */
+	.stage {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		opacity: 0;
+		isolation: isolate; /* contain the warm layer's screen blend to the stage's own sub-layers */
+		/* The live "dimmer board" home-cinema.js tweens. Defaults = the hero preset, so the stage is coherent
+		   even for the one frame before the script seeds it. */
+		--st-cool: 0.26;
+		--st-cool-y: -8%;
+		--st-warm: 0;
+		--st-warm-x: 82%;
+		--st-warm-y: 58%;
+		--st-vig: 0.04;
+		--st-base: 0.5;
+	}
+	:global(html.motion-scene) .stage {
+		opacity: 1;
+		transition: opacity 900ms var(--ease-standard);
+	}
+	.stage > * {
+		position: absolute;
+		inset: 0;
+	}
+	/* Steady vertical blue-hour field — the whole descent is a modelled space, never flat ink. */
+	.stage__base {
+		background: var(--atmos-depth-base);
+		opacity: var(--st-base);
+	}
+	/* Cool blue-hour glow — dominant at the hero, dimming + descending through the gallery. */
+	.stage__cool {
+		background: radial-gradient(
+			130% 92% at 50% var(--st-cool-y),
+			rgba(var(--p-atmos-cool), var(--st-cool)) 0%,
+			rgba(var(--p-atmos-cool), calc(var(--st-cool) * 0.32)) 34%,
+			rgba(var(--p-atmos-cool), 0) 62%
+		);
+	}
+	/* Warm gold-family light source — the "print-light" resolving in the gallery, the interior pole of the
+	   specialisaties split, and the target of the plate-hover warmth pull. */
+	.stage__warm {
+		background: radial-gradient(
+			88% 72% at var(--st-warm-x) var(--st-warm-y),
+			rgba(var(--p-atmos-warm), var(--st-warm)) 0%,
+			rgba(var(--p-atmos-warm), calc(var(--st-warm) * 0.3)) 40%,
+			rgba(var(--p-atmos-warm), 0) 66%
+		);
+		mix-blend-mode: screen;
+	}
+	/* Depth vignette / abyss — deepens as the camera descends into the gallery and again into the footer. */
+	.stage__vignette {
+		background:
+			radial-gradient(125% 105% at 50% 42%, transparent 38%, rgba(4, 6, 10, var(--st-vig)) 100%),
+			linear-gradient(180deg, transparent 58%, rgba(4, 6, 10, calc(var(--st-vig) * 0.85)) 100%);
+	}
+
+	/* ============================================================= *
+	 * STAGE HANDOFF (P6.2 / D-39). When the cinematic runtime is armed, the per-section D-38 atmospheres +
+	 * opaque fills yield to the continuous stage, and the native scroll-driven photography transforms yield to
+	 * GSAP's weighted camera. Every selector is qualified by `html.motion-scene` (set only by this page's
+	 * script, only under `prefers-reduced-motion: no-preference`), so the DEFAULT no-JS / reduced-motion render
+	 * remains the exact frozen D-38 composition.
+	 * ============================================================= */
+	:global(html.motion-scene) .pos-sec,
+	:global(html.motion-scene) .spec-sec,
+	:global(html.motion-scene) .work,
+	:global(html.motion-scene) .method-sec {
+		background: transparent;
+		transition: background 900ms var(--ease-standard);
+	}
+	:global(html.motion-scene) .work::before,
+	:global(html.motion-scene) .spec-sec::before {
+		opacity: 0;
+		transition: opacity 900ms var(--ease-standard);
+	}
+	/* Native CSS scroll-driven camera hands over to GSAP (inline transforms). A running CSS animation would
+	   otherwise win over GSAP's inline transform in the cascade, so cancel it on the handed-over media. */
+	:global(html.motion-scene) .home-hero__media,
+	:global(html.motion-scene) .work-immersive__media {
+		animation-name: none;
+	}
+
 	/* ============================================================= *
 	 * HERO — full-bleed under the transparent header
 	 * ============================================================= */
