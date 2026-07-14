@@ -1,13 +1,17 @@
 ---
 /*
- * Project detail (P6 recovery — D-34). One maintainable template, a bounded set of OPENING treatments.
+ * Project detail (P6 recovery #2 — D-35). One maintainable template with a bounded set of OPENING
+ * treatments, now with a body that reads as a composed page instead of a PDF-like plate stack.
  *
- * The rejected pattern — every project opening on the same cropped, darkened cover with the title burned
- * over it — is gone. The lead photograph is now shown WHOLE (intrinsic ratio, no scrim, no overlaid
- * title); the title is set as its own typography. Which opening a project uses is chosen by its
- * `leadLayout` (cinematic / editorial / duo-lead), so different projects open with different rhythm while
- * staying one template. The beeldreeks below is composed by each image's real orientation (composeGallery),
- * and every photograph opens the shared lightbox. Metadata + story are preserved but SUPPORT the images.
+ * What changed vs D-34:
+ *   · the beeldreeks is composed as JUSTIFIED ROWS + pano anchors (composeGallery), the same vocabulary as
+ *     the overview, so a larger project forms varied rows rather than a vertical column of full plates;
+ *   · the intro/meta zone gains the site's brand grammar — an atmosphere field + the gold structural seam —
+ *     so a project page reads as the same premium system as the homepage and overview;
+ *   · every project closes on a "Meer projecten" rail (RelatedProjects), so a two-image project ends on a
+ *     full, considered beat instead of a large empty tail, and navigation into the rest of the work is easy.
+ * Preserved: routes, SEO, leadLayout openings, whole-image (no-crop) photography, the shared lightbox,
+ * factual content, and the image pipeline / PH-08.
  */
 import { getCollection, render } from 'astro:content';
 import { getImage } from 'astro:assets';
@@ -15,6 +19,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import PhotoFrame from '../../components/PhotoFrame.astro';
 import Lightbox from '../../components/Lightbox.astro';
+import RelatedProjects from '../../components/RelatedProjects.astro';
 import { composeGallery } from '../../lib/portfolio';
 
 export async function getStaticPaths() {
@@ -44,7 +49,15 @@ const ogImage = await getImage({ src: ogSourceImage, width: 1200, format: 'jpeg'
 const layout = data.leadLayout;
 const duoPartner = layout === 'duo-lead' ? data.gallery[0] : undefined;
 const gallerySource = duoPartner ? data.gallery.slice(1) : data.gallery;
-const galleryBlocks = composeGallery(gallerySource);
+const galleryNodes = composeGallery(gallerySource);
+
+// "Meer projecten" close — real projects, same category first, then the rest; never the current one.
+const allProjects = await getCollection('projects', ({ data: d }) => !d.draft);
+const others = allProjects.filter((p) => p.id !== project.id);
+const related = [
+	...others.filter((p) => p.data.category === data.category),
+	...others.filter((p) => p.data.category !== data.category),
+].slice(0, 4);
 ---
 
 <BaseLayout title={seoTitle} description={seoDescription} socialImage={ogImage.src}>
@@ -86,7 +99,7 @@ const galleryBlocks = composeGallery(gallerySource);
 		}
 
 		<!-- ===================== INTRO: spec sheet + story ===================== -->
-		<Section tight>
+		<Section tight class="proj-intro-sec">
 			<div class={`proj-intro ${layout === 'editorial' ? 'proj-intro--lead-shown' : ''}`}>
 				<dl class="proj-meta">
 					<div class="proj-meta__row">
@@ -120,53 +133,39 @@ const galleryBlocks = composeGallery(gallerySource);
 		<!-- Editorial layout shows its lead image here, AFTER the quiet typographic opening. -->
 		{
 			layout === 'editorial' && (
-				<Section width="wide" as="div" class="proj-editorial-lead">
+				<Section tight width="wide" as="div" class="proj-editorial-lead">
 					<PhotoFrame image={data.coverImage} alt={data.coverImageAlt} group={LB} widths={[800, 1200, 1700]} sizes="(min-width: 90rem) 84rem, 100vw" mediaClass="proj-open__media" />
 				</Section>
 			)
 		}
 
-		<!-- ===================== BEELDREEKS (composed by orientation) ===================== -->
+		<!-- ===================== BEELDREEKS (justified rows + pano anchors) ===================== -->
 		{
-			galleryBlocks.length > 0 && (
-				<Section width="wide" as="div" class="proj-gallery-sec">
-					<div class="proj-gallery">
-						{galleryBlocks.map((block) => {
-							if (block.type === 'wide') {
-								return (
-									<div class="proj-g proj-g--wide">
-										<PhotoFrame image={block.item.image} alt={block.item.alt} caption={block.item.caption} group={LB} widths={[800, 1200, 1700, 2200]} sizes="100vw" showCaption />
-									</div>
-								);
-							}
-							if (block.type === 'pair') {
-								return (
-									<div class="proj-g proj-g--pair">
-										{block.items.map((it) => (
-											<PhotoFrame image={it.image} alt={it.alt} caption={it.caption} group={LB} widths={[480, 800]} sizes="(min-width: 48rem) 42vw, 100vw" showCaption />
-										))}
-									</div>
-								);
-							}
-							if (block.type === 'portrait') {
-								return (
-									<div class="proj-g proj-g--portrait">
-										<PhotoFrame image={block.item.image} alt={block.item.alt} caption={block.item.caption} group={LB} widths={[480, 800, 1100]} sizes="(min-width: 48rem) 34rem, 90vw" showCaption />
-									</div>
-								);
-							}
-							return (
-								<div class="proj-g proj-g--plate">
-									<PhotoFrame image={block.item.image} alt={block.item.alt} caption={block.item.caption} group={LB} widths={[700, 1100, 1500]} sizes="(min-width: 72rem) 68rem, 100vw" showCaption />
+			galleryNodes.length > 0 && (
+				<Section tight width="wide" as="div" class="proj-gallery-sec">
+					<div class="proj-seam" aria-hidden="true" />
+					<div class="proj-flow">
+						{galleryNodes.map((node) =>
+							node.type === 'anchor' ? (
+								<div class="proj-anchor">
+									<PhotoFrame image={node.item.image} alt={node.item.alt} caption={node.item.caption} group={LB} widths={[900, 1300, 1700, 2200]} sizes="(min-width: 90rem) 84rem, 100vw" showCaption />
 								</div>
-							);
-						})}
+							) : (
+								<div class="proj-row">
+									{node.items.map((it) => (
+										<div class="proj-cell" style={`--ar:${it.ar.toFixed(4)}`} data-o={it.orientation}>
+											<PhotoFrame image={it.image} alt={it.alt} caption={it.caption} group={LB} widths={[480, 800, 1100]} sizes="(min-width: 60rem) 42vw, 92vw" showCaption />
+										</div>
+									))}
+								</div>
+							),
+						)}
 					</div>
 				</Section>
 			)
 		}
 
-		<!-- ===================== OUTRO ===================== -->
+		<!-- ===================== OUTRO NAV ===================== -->
 		<div class="proj-outro u-container">
 			<a class="proj-back" href="/portfolio/">
 				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 12H5M11 6l-6 6 6 6" /></svg>
@@ -180,6 +179,8 @@ const galleryBlocks = composeGallery(gallerySource);
 			)}
 		</div>
 	</article>
+
+	<RelatedProjects title="Meer projecten" projects={related} />
 
 	<Lightbox />
 </BaseLayout>
@@ -230,6 +231,32 @@ const galleryBlocks = composeGallery(gallerySource);
 	}
 
 	/* ===================== INTRO ===================== */
+	/* Brand atmosphere: a quiet cool wash descending into the intro zone (the homepage "afterglow"
+	   mechanism), so the reading beat sits in the same nocturne light as the rest of the site. */
+	.proj-intro-sec {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+	}
+	.proj-intro-sec::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background:
+			radial-gradient(
+				120% 56% at 12% -6%,
+				rgba(var(--p-atmos-cool), 0.16) 0%,
+				rgba(var(--p-atmos-cool), 0.05) 44%,
+				rgba(var(--p-atmos-cool), 0) 72%
+			),
+			radial-gradient(
+				52% 34% at 92% -4%,
+				rgba(var(--p-atmos-warm), 0.07) 0%,
+				rgba(var(--p-atmos-warm), 0) 62%
+			);
+	}
 	.proj-intro {
 		display: grid;
 		grid-template-columns: 13rem 1fr;
@@ -276,29 +303,45 @@ const galleryBlocks = composeGallery(gallerySource);
 		position: relative;
 		isolation: isolate;
 	}
-	.proj-gallery {
+	/* Gold structural seam marking the start of the beeldreeks — the one recurring elevated gold material. */
+	.proj-seam {
+		position: relative;
+		height: 1px;
+		margin-bottom: clamp(2rem, 1.4rem + 3vw, 3.75rem);
+		background: var(--seam-gold);
+	}
+	.proj-seam::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		height: clamp(1.6rem, 1.2rem + 1.6vw, 2.6rem);
+		background: var(--seam-gold-glow);
+		pointer-events: none;
+	}
+	.proj-flow {
 		display: flex;
 		flex-direction: column;
-		gap: clamp(2.5rem, 1.8rem + 3vw, 5rem);
-		align-items: center;
+		gap: clamp(1.25rem, 0.9rem + 1.6vw, 2.25rem);
 	}
-	.proj-g {
+	.proj-row {
+		display: flex;
+		gap: clamp(1.25rem, 0.9rem + 1.6vw, 2.25rem);
+		align-items: flex-start;
+	}
+	.proj-cell {
+		flex: var(--ar) 1 0;
+		min-width: 0;
+	}
+	.proj-row:has(> .proj-cell:only-child) {
+		justify-content: center;
+	}
+	.proj-row > .proj-cell:only-child {
+		flex: 0 1 min(100%, 52rem);
+	}
+	.proj-anchor {
 		width: 100%;
-	}
-	.proj-g--wide {
-		width: 100%;
-	}
-	.proj-g--pair {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: clamp(1rem, 0.5rem + 1.5vw, 2rem);
-		align-items: start;
-	}
-	.proj-g--portrait {
-		width: min(100%, 34rem);
-	}
-	.proj-g--plate {
-		width: min(100%, 68rem);
 	}
 
 	/* ===================== OUTRO ===================== */
@@ -367,9 +410,18 @@ const galleryBlocks = composeGallery(gallerySource);
 			padding-block: 0;
 			border-top: 0;
 		}
-		.proj-g--pair {
-			grid-template-columns: 1fr;
-			gap: var(--space-lg);
+		.proj-row {
+			flex-wrap: wrap;
+		}
+		.proj-cell {
+			flex: 1 1 100%;
+		}
+		.proj-cell[data-o='portrait'],
+		.proj-cell[data-o='square'] {
+			flex: 1 1 calc(50% - 0.5 * clamp(1.25rem, 0.9rem + 1.6vw, 2.25rem));
+		}
+		.proj-row > .proj-cell:only-child {
+			flex: 1 1 100%;
 		}
 	}
 </style>

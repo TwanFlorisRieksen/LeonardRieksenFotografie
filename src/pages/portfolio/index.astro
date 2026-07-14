@@ -1,26 +1,31 @@
 ---
 /*
- * Portfolio overview — the exhibition (P6 recovery — D-34).
+ * Portfolio overview — the chaptered index (P6 recovery #2 — D-35).
  *
- * Not an equal-card grid. A single curated scroll that presents ALL authorised photography (every
- * standalone work + every series) through a composed rhythm of block shapes whose geometry is driven by
- * each photograph's REAL orientation and a curatorial scale (see lib/portfolio.ts). Statements run
- * full-bleed, portraits and landscapes pair into asymmetric duos, the quieter frames punctuate, and the
- * genuine multi-image series appear as lead+preview blocks linking to their stories. The photography
- * determines the presentation; the layout never repeats a template down the page. Every standalone photo
- * opens the shared lightbox; every series image opens the lightbox on its detail page.
+ * Not a 35-screen photo stack (the rejected D-34 exhibition) and not an equal grid. A scannable INDEX
+ * organised into truthful chapters — Projecten, then the two disciplines Architectuur & Interieur — each on
+ * its own tonal surface with a gold-seam header and a restrained atmosphere field, so the site's established
+ * nocturne identity (D-10/D-25/D-29) finally carries into the portfolio. Projects are a distinct project
+ * index (cover cards with metadata); loose works are laid out as justified rows (whole images, no crop, many
+ * per screen) punctuated by occasional full-width feature anchors. The lightbox remains the enlarged-view
+ * mode; the overview stays an overview. Every one of the 74 authorised photographs remains discoverable
+ * (all works fall into their category chapter; all projects appear in the index — see lib/portfolio.ts).
  */
 import { getOverview } from '../../lib/portfolio';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
 import Media from '../../components/Media.astro';
 import PhotoFrame from '../../components/PhotoFrame.astro';
 import Lightbox from '../../components/Lightbox.astro';
+import ContactCta from '../../components/ContactCta.astro';
 
-const { blocks, total, workCount, seriesCount } = await getOverview();
+const { projects, chapters, total, workCount, seriesCount } = await getOverview();
 const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
 const LB = 'portfolio';
+const arch = chapters.find((c) => c.id === 'architectuur')!;
+const inter = chapters.find((c) => c.id === 'interieur')!;
 
-// The first photograph on the page is the LCP candidate — mark only that one as priority.
+// Only the very first photograph (the first project cover) is the LCP candidate.
 let prioritySpent = false;
 const takePriority = () => {
 	if (prioritySpent) return false;
@@ -31,390 +36,525 @@ const takePriority = () => {
 
 <BaseLayout
 	title="Portfolio"
-	description="Het volledige portfolio van Leonard Rieksen Fotografie — architectuur- en interieurfotografie als één gecureerde beeldreeks, van losse werken tot complete projecten."
+	description="Het portfolio van Leonard Rieksen Fotografie — architectuur- en interieurfotografie, geordend in projecten en losse werken, van complete reeksen tot losse beelden."
 >
-	<header class="exh-intro u-container">
+	<!-- ===================== MASTHEAD ===================== -->
+	<header class="pf-intro u-container">
 		<p class="t-eyebrow t-eyebrow--accent">Architectuur- &amp; interieurfotografie</p>
-		<h1 class="t-display exh-intro__title">Portfolio</h1>
-		<p class="t-lead exh-intro__lead">
-			Het volledige werk als één doorlopende reeks — losse beelden en complete projecten, in een
-			opbouw die het licht en de compositie van elke foto volgt. Klik op een beeld om het schermvullend
-			te bekijken; open een reeks voor het hele verhaal.
+		<h1 class="t-display pf-intro__title">Portfolio</h1>
+		<p class="t-lead pf-intro__lead">
+			Het werk in drie hoofdstukken: complete <strong>projecten</strong>, en losse werken in{' '}
+			<strong>architectuur</strong> en <strong>interieur</strong>. Klik op een beeld om het schermvullend
+			te bekijken; open een project voor het hele verhaal.
 		</p>
+		<nav class="pf-jump" aria-label="Naar hoofdstuk">
+			<a href="#projecten">Projecten <span aria-hidden="true">{seriesCount}</span></a>
+			<a href="#architectuur">Architectuur <span aria-hidden="true">{arch.count}</span></a>
+			<a href="#interieur">Interieur <span aria-hidden="true">{inter.count}</span></a>
+		</nav>
 	</header>
 
-	<div class="exh">
-		{
-			blocks.map((block) => {
-				if (block.type === 'series') {
-					const p = block.project;
-					const previews = p.data.gallery.slice(0, 3);
-					return (
-						<section class="exh-block exh-series u-inview" aria-labelledby={`s-${p.id}`}>
-							<a class="exh-series__link" href={`/portfolio/${p.id}/`}>
-								<div class="exh-series__lead">
-									<Media
-										src={p.data.coverImage}
-										alt={p.data.coverImageAlt}
-										widths={[480, 800, 1200, 1700]}
-										sizes="(min-width: 60rem) 60vw, 100vw"
-										class="exh-series__lead-media"
-									/>
-								</div>
-								<div class="exh-series__body">
-									<p class="t-eyebrow exh-series__kicker">
-										Reeks
-										<span class="exh-series__dot" aria-hidden="true">·</span>
-										{categoryLabel[p.data.category]}
-										{p.data.location && <> · {p.data.location}</>}
-									</p>
-									<h2 class="t-h2 exh-series__title" id={`s-${p.id}`}>
-										{p.data.title}
-									</h2>
-									<p class="t-secondary exh-series__summary">{p.data.summary}</p>
-									<span class="exh-series__cta">
-										Bekijk reeks
-										<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
-									</span>
-								</div>
-								{previews.length > 0 && (
-									<div class="exh-series__strip" aria-hidden="true">
-										{previews.map((g) => (
-											<Media
-												src={g.image}
-												alt=""
-												widths={[240, 480]}
-												sizes="30vw"
-												ratio="4/3"
-												class="exh-series__thumb"
-											/>
-										))}
-									</div>
-								)}
-							</a>
-						</section>
-					);
-				}
+	<!-- ===================== CHAPTER 1 · PROJECTEN ===================== -->
+	<Section as="section" surface="deep" width="wide" id="projecten" class="pf-chapter pf-chapter--projects">
+		<div class="ch-head">
+			<div class="ch-head__text">
+				<p class="t-eyebrow t-eyebrow--accent">Hoofdstuk 01</p>
+				<h2 class="t-h2 ch-head__title">Projecten</h2>
+				<p class="ch-head__note t-secondary">
+					Complete reeksen — elk gebouw of interieur als geheel gefotografeerd.
+				</p>
+			</div>
+			<p class="ch-head__count t-caption">{seriesCount} projecten</p>
+		</div>
 
-				if (block.type === 'statement') {
-					const it = block.item;
-					return (
-						<section class={`exh-block exh-statement exh-statement--${it.orientation} u-inview`}>
-							<PhotoFrame
-								image={it.image}
-								alt={it.alt}
-								caption={it.caption}
-								group={LB}
+		<ul class="pf-projects">
+			{
+				projects.map((p) => (
+					<li class="pf-project u-inview">
+						<a class="pf-project__link" href={`/portfolio/${p.id}/`}>
+							<Media
+								src={p.data.coverImage}
+								alt={p.data.coverImageAlt}
+								widths={[400, 640, 900]}
+								sizes="(min-width: 60rem) 30vw, (min-width: 40rem) 46vw, 92vw"
+								ratio="3/2"
 								priority={takePriority()}
-								widths={[800, 1200, 1700, 2200]}
-								sizes="100vw"
-								mediaClass="exh-statement__media"
+								class="pf-project__media"
 							/>
-							<div class="exh-cap">
-								<span class="exh-cap__label">{categoryLabel[it.category]}</span>
-								{it.caption && <span class="exh-cap__text">{it.caption}</span>}
+							<div class="pf-project__body">
+								<p class="t-eyebrow pf-project__meta">
+									{categoryLabel[p.data.category]}
+									{p.data.location && <> &middot; {p.data.location}</>}
+									{p.data.year && <> &middot; {p.data.year}</>}
+								</p>
+								<h3 class="t-h3 pf-project__name">{p.data.title}</h3>
+								<span class="pf-project__cue">
+									{p.data.gallery.length + 1} beelden
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+								</span>
 							</div>
-						</section>
-					);
-				}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</Section>
 
-				if (block.type === 'wide') {
-					const it = block.item;
-					return (
-						<section class="exh-block exh-wide u-inview">
+	<!-- ===================== CHAPTER 2 · ARCHITECTUUR ===================== -->
+	<Section as="section" width="wide" id="architectuur" class="pf-chapter pf-chapter--arch">
+		<div class="ch-head">
+			<div class="ch-head__text">
+				<p class="t-eyebrow t-eyebrow--accent">Hoofdstuk 02</p>
+				<h2 class="t-h2 ch-head__title">Architectuur</h2>
+				<p class="ch-head__note t-secondary">
+					Gebouwen en exterieurs — structuur, proportie, licht en lijn.
+				</p>
+			</div>
+			<p class="ch-head__count t-caption">{arch.count} werken</p>
+		</div>
+
+		<div class="pf-flow">
+			{
+				arch.nodes.map((node) =>
+					node.type === 'anchor' ? (
+						<figure class="pf-anchor u-inview" style={`--ar:${node.item.ar.toFixed(4)}`}>
 							<PhotoFrame
-								image={it.image}
-								alt={it.alt}
-								caption={it.caption}
+								image={node.item.image}
+								alt={node.item.alt}
+								caption={node.item.caption}
 								group={LB}
-								priority={takePriority()}
-								widths={[800, 1200, 1700, 2200]}
+								widths={[900, 1300, 1700]}
 								sizes="(min-width: 105rem) 1680px, 100vw"
-								mediaClass="exh-wide__media"
+								mediaClass="pf-anchor__media"
 							/>
-							<div class="exh-cap">
-								<span class="exh-cap__label">{categoryLabel[it.category]}</span>
-								{it.caption && <span class="exh-cap__text">{it.caption}</span>}
-							</div>
-						</section>
-					);
-				}
-
-				if (block.type === 'duo') {
-					const [a, b] = block.items;
-					// The portrait leads the tall column; two same-orientation works alternate emphasis.
-					const portraitFirst = a.orientation === 'portrait' && b.orientation !== 'portrait';
-					return (
-						<section class={`exh-block exh-duo u-inview ${portraitFirst ? 'exh-duo--portrait-lead' : ''}`}>
-							{[a, b].map((it) => (
-								<div class="exh-duo__cell">
+							<figcaption class="pf-anchor__cap">
+								<span class="pf-anchor__label">{categoryLabel[node.item.category]}</span>
+								{node.item.caption && <span class="pf-anchor__text">{node.item.caption}</span>}
+							</figcaption>
+						</figure>
+					) : (
+						<div class="pf-row u-inview">
+							{node.items.map((it) => (
+								<div class="pf-cell" style={`--ar:${it.ar.toFixed(4)}`} data-o={it.orientation}>
 									<PhotoFrame
 										image={it.image}
 										alt={it.alt}
 										caption={it.caption}
 										group={LB}
-										priority={takePriority()}
-										widths={[480, 800, 1200]}
-										sizes="(min-width: 48rem) 48vw, 100vw"
+										widths={[360, 560, 800]}
+										sizes="(min-width: 60rem) 40vw, (min-width: 40rem) 46vw, 92vw"
 									/>
-									{it.caption && <p class="t-caption exh-duo__cap">{it.caption}</p>}
 								</div>
 							))}
-						</section>
-					);
-				}
+						</div>
+					),
+				)
+			}
+		</div>
+	</Section>
 
-				if (block.type === 'quiet') {
-					return (
-						<section class={`exh-block exh-quiet exh-quiet--${block.items.length} u-inview`}>
-							{block.items.map((it) => (
-								<figure class="exh-quiet__cell">
+	<!-- ===================== CHAPTER 3 · INTERIEUR ===================== -->
+	<Section as="section" surface="surface" width="wide" id="interieur" class="pf-chapter pf-chapter--int">
+		<div class="ch-head">
+			<div class="ch-head__text">
+				<p class="t-eyebrow t-eyebrow--accent">Hoofdstuk 03</p>
+				<h2 class="t-h2 ch-head__title">Interieur</h2>
+				<p class="ch-head__note t-secondary">Ruimtes waarin sfeer, materiaal en licht samenkomen.</p>
+			</div>
+			<p class="ch-head__count t-caption">{inter.count} werken</p>
+		</div>
+
+		<div class="pf-flow">
+			{
+				inter.nodes.map((node) =>
+					node.type === 'anchor' ? (
+						<figure class="pf-anchor u-inview" style={`--ar:${node.item.ar.toFixed(4)}`}>
+							<PhotoFrame
+								image={node.item.image}
+								alt={node.item.alt}
+								caption={node.item.caption}
+								group={LB}
+								widths={[900, 1300, 1700]}
+								sizes="(min-width: 105rem) 1680px, 100vw"
+								mediaClass="pf-anchor__media"
+							/>
+							<figcaption class="pf-anchor__cap">
+								<span class="pf-anchor__label">{categoryLabel[node.item.category]}</span>
+								{node.item.caption && <span class="pf-anchor__text">{node.item.caption}</span>}
+							</figcaption>
+						</figure>
+					) : (
+						<div class="pf-row u-inview">
+							{node.items.map((it) => (
+								<div class="pf-cell" style={`--ar:${it.ar.toFixed(4)}`} data-o={it.orientation}>
 									<PhotoFrame
 										image={it.image}
 										alt={it.alt}
 										caption={it.caption}
 										group={LB}
-										widths={[360, 640]}
-										sizes="(min-width: 48rem) 30vw, 100vw"
+										widths={[360, 560, 800]}
+										sizes="(min-width: 60rem) 40vw, (min-width: 40rem) 46vw, 92vw"
 									/>
-									{it.caption && <figcaption class="t-caption exh-quiet__cap">{it.caption}</figcaption>}
-								</figure>
+								</div>
 							))}
-						</section>
-					);
-				}
+						</div>
+					),
+				)
+			}
+		</div>
+	</Section>
 
-				// single
-				const it = block.item;
-				return (
-					<section class="exh-block exh-single u-inview">
-						<PhotoFrame
-							image={it.image}
-							alt={it.alt}
-							caption={it.caption}
-							group={LB}
-							priority={takePriority()}
-							widths={[600, 900, 1300]}
-							sizes="(min-width: 60rem) 60rem, 100vw"
-							mediaClass="exh-single__media"
-						/>
-						{it.caption && <p class="t-caption exh-single__cap">{it.caption}</p>}
-					</section>
-				);
-			})
-		}
+	<!-- ===================== OUTRO ===================== -->
+	<div class="pf-outro u-container">
+		<p class="t-caption pf-outro__count">
+			{seriesCount} projecten &middot; {workCount} losse werken &middot; {total} foto's
+		</p>
 	</div>
 
-	<footer class="exh-outro u-container">
-		<p class="t-caption exh-outro__count">
-			{workCount} losse werken · {seriesCount} projecten · {total} foto's
-		</p>
-	</footer>
+	<ContactCta
+		heading="Een gebouw of interieur laten fotograferen?"
+		text="Neem vrijblijvend contact op voor een voorstel op maat — voor architecten, interieurontwerpers, makelaars en bedrijven."
+		primaryLabel="Neem contact op"
+		primaryHref="/contact/"
+		secondaryLabel="Bekijk de diensten"
+		secondaryHref="/diensten/"
+	/>
 
 	<Lightbox />
 </BaseLayout>
 
 <style>
-	/* --- Intro masthead --- */
-	.exh-intro {
+	/* ============================================================= *
+	 * MASTHEAD — the quiet breath before the chapters. Reuses the homepage "afterglow" mechanism (D-27/D-29):
+	 * a single cool blue-hour wash descending from the top edge, faded to base long before the body copy, so
+	 * the page opens as lit by the same nocturne light as the rest of the site rather than a hard flat cut.
+	 * ============================================================= */
+	.pf-intro {
+		position: relative;
 		padding-top: clamp(2.5rem, 1.5rem + 6vw, 6rem);
-		padding-bottom: clamp(2rem, 1.5rem + 3vw, 4rem);
+		padding-bottom: clamp(2rem, 1.5rem + 3vw, 3.5rem);
+		background:
+			radial-gradient(
+				128% 60% at 50% -16%,
+				rgba(var(--p-atmos-cool), 0.2) 0%,
+				rgba(var(--p-atmos-cool), 0.06) 42%,
+				rgba(var(--p-atmos-cool), 0) 72%
+			),
+			radial-gradient(
+				46% 32% at 86% -8%,
+				rgba(var(--p-atmos-warm), 0.06) 0%,
+				rgba(var(--p-atmos-warm), 0) 60%
+			);
 	}
-	.exh-intro__title {
+	.pf-intro__title {
 		margin-block: var(--space-sm) var(--space-lg);
 	}
-	.exh-intro__lead {
-		max-width: 52ch;
+	.pf-intro__lead {
+		max-width: 56ch;
+	}
+	.pf-intro__lead strong {
+		color: var(--color-text);
+		font-weight: var(--fw-semibold);
+	}
+	/* Chapter jump-nav — plain in-page anchors (work without JS). Restrained chips with a gold hairline. */
+	.pf-jump {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm) var(--space-md);
+		margin-top: var(--space-xl);
+	}
+	.pf-jump a {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.5em;
+		padding: var(--space-2xs) var(--space-md);
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-medium);
+		color: var(--color-text-secondary);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-pill);
+		transition: color var(--dur-interaction) var(--ease-standard),
+			border-color var(--dur-interaction) var(--ease-standard);
+	}
+	.pf-jump a span {
+		font-size: var(--fs-caption);
+		color: var(--color-accent);
+	}
+	.pf-jump a:hover,
+	.pf-jump a:focus-visible {
+		color: var(--color-text);
+		border-color: var(--color-accent-hairline);
 	}
 
-	/* --- Exhibition flow: the frame is wide; statements break fully out of it. --- */
-	.exh {
-		--exh-frame: min(100% - 2 * var(--gutter), var(--container-wide));
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: clamp(3.25rem, 2.4rem + 3.5vw, 6.5rem);
+	/* ============================================================= *
+	 * CHAPTERS — each a tonal step with a gold-seam header. The seam (hairline that catches a warm highlight
+	 * + a whisper-soft glow) is the site's one elevated recurring gold material (6.11/6.12, D-25/D-26),
+	 * reused here so the portfolio reads as the same premium system as the homepage.
+	 * ============================================================= */
+	.pf-chapter {
+		scroll-margin-top: var(--space-lg);
+		position: relative;
+		isolation: isolate;
 		overflow-x: clip;
 	}
-	.exh-block {
-		width: var(--exh-frame);
-		max-width: 100%;
+	/* Projecten sits on the deepest surface + a modelled atmosphere field (the same signature the homepage's
+	   "geselecteerd werk" chapter uses) so the curated stories read as a distinct dark gallery room. */
+	.pf-chapter--projects::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: var(--atmos-signature);
+		pointer-events: none;
+	}
+	/* Architectuur is the base-surface chapter and the tallest — so instead of flat black it gets three
+	   low, well-spaced light pools down its length (cool at the head, a warm echo mid-right, a cool lift at
+	   the foot). Every peak is low-alpha and sits in the row gaps / page margins, always below any adjacent
+	   photograph's luminance (6.16) — the same photography-led modelling the homepage's specialisaties use. */
+	.pf-chapter--arch::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background:
+			radial-gradient(
+				72% 30% at 10% 2%,
+				rgba(var(--p-atmos-cool), 0.14) 0%,
+				rgba(var(--p-atmos-cool), 0) 60%
+			),
+			radial-gradient(
+				70% 26% at 94% 52%,
+				rgba(var(--p-atmos-warm), 0.1) 0%,
+				rgba(var(--p-atmos-warm), 0) 62%
+			),
+			radial-gradient(
+				64% 24% at 16% 100%,
+				rgba(var(--p-atmos-cool), 0.11) 0%,
+				rgba(var(--p-atmos-cool), 0) 64%
+			);
+	}
+	/* Interieur (ink-850 step) gets a quieter two-pool wash so the smallest chapter still has spatial depth. */
+	.pf-chapter--int::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background:
+			radial-gradient(
+				62% 44% at 8% 12%,
+				rgba(var(--p-atmos-cool), 0.14) 0%,
+				rgba(var(--p-atmos-cool), 0) 62%
+			),
+			radial-gradient(
+				66% 48% at 94% 88%,
+				rgba(var(--p-atmos-warm), 0.12) 0%,
+				rgba(var(--p-atmos-warm), 0) 64%
+			);
 	}
 
-	/* Captions shared style — quiet metadata under statements/singles. */
-	.exh-cap {
+	.ch-head {
+		position: relative;
+		isolation: isolate;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: end;
+		justify-content: space-between;
+		gap: var(--space-md) var(--space-xl);
+		padding-bottom: clamp(1.4rem, 1rem + 1.6vw, 2.4rem);
+		margin-bottom: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+	}
+	.ch-head::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 1px;
+		background: var(--seam-gold);
+	}
+	.ch-head::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: clamp(2rem, 1.4rem + 2vw, 3.4rem);
+		z-index: -1;
+		background: var(--seam-gold-glow);
+		pointer-events: none;
+	}
+	.ch-head__title {
+		margin-top: var(--space-xs);
+	}
+	.ch-head__note {
+		margin-top: var(--space-sm);
+		max-width: 40ch;
+		font-size: var(--fs-body-sm);
+	}
+	.ch-head__count {
+		white-space: nowrap;
+		letter-spacing: var(--ls-eyebrow);
+		text-transform: uppercase;
+	}
+
+	/* ============================================================= *
+	 * PROJECT INDEX — cover cards with metadata. Deliberately a DIFFERENT vocabulary from the works rows
+	 * (framed covers + text block) so a project reads as clearly distinct from a loose photograph.
+	 * ============================================================= */
+	.pf-projects {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: clamp(1.5rem, 1rem + 2vw, 2.75rem) clamp(1.25rem, 0.8rem + 1.6vw, 2rem);
+	}
+	.pf-project {
+		min-width: 0;
+	}
+	.pf-project__link {
+		display: block;
+	}
+	.pf-project__media {
+		border: 1px solid var(--color-border-subtle);
+		transition: filter var(--dur-interaction) var(--ease-standard),
+			border-color var(--dur-interaction) var(--ease-standard);
+	}
+	.pf-project__link:hover .pf-project__media,
+	.pf-project__link:focus-visible .pf-project__media {
+		filter: brightness(1.05);
+		border-color: var(--color-accent-hairline);
+	}
+	.pf-project__body {
+		margin-top: var(--space-md);
+	}
+	.pf-project__meta {
+		color: var(--color-text-muted);
+	}
+	.pf-project__name {
+		margin-top: var(--space-2xs);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.pf-project__link:hover .pf-project__name,
+	.pf-project__link:focus-visible .pf-project__name {
+		color: var(--color-accent);
+	}
+	.pf-project__cue {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		margin-top: var(--space-sm);
+		font-size: var(--fs-caption);
+		color: var(--color-text-secondary);
+	}
+	.pf-project__cue svg {
+		color: var(--color-accent);
+		transition: transform var(--dur-interaction) var(--ease-out);
+	}
+	.pf-project__link:hover .pf-project__cue svg,
+	.pf-project__link:focus-visible .pf-project__cue svg {
+		transform: translateX(3px);
+	}
+
+	/* ============================================================= *
+	 * WORKS FLOW — justified rows + full-width anchors.
+	 * ============================================================= */
+	.pf-flow {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(1rem, 0.7rem + 1.4vw, 1.9rem);
+	}
+
+	/* A justified row: each cell grows in proportion to its image's aspect ratio, so all cells share one
+	   height and the row fills the width — whole images, no crop, controlled density. */
+	.pf-row {
+		display: flex;
+		gap: clamp(1rem, 0.7rem + 1.4vw, 1.9rem);
+		align-items: flex-start;
+	}
+	.pf-cell {
+		flex: var(--ar) 1 0;
+		min-width: 0;
+	}
+	/* A lone trailing frame stays a calm contained single instead of stretching full-width (tall). */
+	.pf-row:has(> .pf-cell:only-child) {
+		justify-content: center;
+	}
+	.pf-row > .pf-cell:only-child {
+		flex: 0 1 min(100%, 46rem);
+	}
+
+	/* Feature anchor — a deliberate big moment. Its WIDTH is capped so its intrinsic height lands at the
+	   target (≈62vh): a wide pano then fills the frame; a squarer feature centres with editorial air at its
+	   sides. The image is always shown WHOLE — no crop — so a feature can never damage its own content. */
+	.pf-anchor {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: var(--space-md);
+		width: min(100%, calc(min(62vh, 40rem) * var(--ar)));
+		margin-inline: auto;
+	}
+	.pf-anchor :global(.pf-anchor__media) {
+		width: 100%;
+	}
+	.pf-anchor__cap {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: baseline;
 		gap: var(--space-sm) var(--space-md);
-		margin-top: var(--space-md);
 	}
-	.exh-cap__label {
+	.pf-anchor__label {
 		font-size: var(--fs-eyebrow);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-eyebrow);
 		text-transform: uppercase;
 		color: var(--color-accent);
 	}
-	.exh-cap__text {
+	.pf-anchor__text {
 		font-size: var(--fs-caption);
 		color: var(--color-text-muted);
 	}
 
-	/* --- Statement: a big quiet moment. Panoramas break to full viewport width. --- */
-	.exh-statement--pano {
-		width: 100vw;
-	}
-	.exh-statement :global(.exh-statement__media) {
-		width: 100%;
-	}
-
-	/* --- Wide: a big panorama held INSIDE the frame (calmer than a full-bleed statement) — the shape
-	   difference from a statement is the frame gutter, giving the eye a change of register. --- */
-	.exh-wide :global(.exh-wide__media) {
-		width: 100%;
-	}
-
-	/* --- Duo: two unequal columns, portrait↔landscape interplay. --- */
-	.exh-duo {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: clamp(1rem, 0.5rem + 2vw, 2.5rem);
-		align-items: start;
-	}
-	.exh-duo--portrait-lead {
-		grid-template-columns: 0.82fr 1.18fr;
-		align-items: end;
-	}
-	.exh-duo__cap {
-		margin-top: var(--space-sm);
-	}
-
-	/* --- Quiet: small contained punctuation, centred with air. --- */
-	.exh-quiet {
-		display: grid;
-		justify-content: center;
-		gap: clamp(1rem, 0.5rem + 2vw, 2.5rem);
-		max-width: min(100%, 68rem);
-	}
-	.exh-quiet--1 {
-		grid-template-columns: minmax(0, 26rem);
-	}
-	.exh-quiet--2 {
-		grid-template-columns: repeat(2, minmax(0, 22rem));
-	}
-	.exh-quiet--3 {
-		grid-template-columns: repeat(3, minmax(0, 19rem));
-	}
-	.exh-quiet__cell {
-		margin: 0;
-	}
-	.exh-quiet__cap {
-		margin-top: var(--space-xs);
-	}
-
-	/* --- Single: a calm contained beat. --- */
-	.exh-single {
-		width: min(var(--exh-frame), 62rem);
-	}
-
-	/* --- Series: lead + preview strip, the one block that links to a story. --- */
-	.exh-series__link {
-		display: grid;
-		grid-template-columns: 1.5fr 1fr;
-		grid-template-areas: 'lead body' 'lead strip';
-		gap: var(--space-lg) clamp(1.5rem, 1rem + 2vw, 3rem);
-		align-items: start;
-	}
-	.exh-series__lead {
-		grid-area: lead;
-	}
-	.exh-series__lead-media {
-		width: 100%;
-		transition: filter var(--dur-interaction) var(--ease-standard);
-	}
-	.exh-series__link:hover .exh-series__lead-media,
-	.exh-series__link:focus-visible .exh-series__lead-media {
-		filter: brightness(1.04);
-	}
-	.exh-series__body {
-		grid-area: body;
-		align-self: center;
-	}
-	.exh-series__kicker {
-		color: var(--color-text-muted);
-	}
-	.exh-series__dot {
-		margin-inline: 0.4em;
-		color: var(--color-accent);
-	}
-	.exh-series__title {
-		margin-block: var(--space-sm) var(--space-md);
-		transition: color var(--dur-interaction) var(--ease-standard);
-	}
-	.exh-series__link:hover .exh-series__title,
-	.exh-series__link:focus-visible .exh-series__title {
-		color: var(--color-accent);
-	}
-	.exh-series__summary {
-		max-width: 42ch;
-	}
-	.exh-series__cta {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-xs);
-		margin-top: var(--space-lg);
-		font-size: var(--fs-body-sm);
-		font-weight: var(--fw-semibold);
-		color: var(--color-text);
-	}
-	.exh-series__cta svg {
-		transition: transform var(--dur-interaction) var(--ease-out);
-	}
-	.exh-series__link:hover .exh-series__cta svg,
-	.exh-series__link:focus-visible .exh-series__cta svg {
-		transform: translateX(3px);
-	}
-	.exh-series__strip {
-		grid-area: strip;
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: var(--space-sm);
-		align-self: end;
-	}
-
-	/* --- Outro count --- */
-	.exh-outro {
-		margin-top: clamp(3rem, 2rem + 4vw, 6rem);
-		padding-bottom: var(--space-2xl);
+	/* ============================================================= *
+	 * OUTRO
+	 * ============================================================= */
+	.pf-outro {
+		padding-block: clamp(2.5rem, 1.8rem + 3vw, 4.5rem) clamp(1.5rem, 1rem + 2vw, 3rem);
 		text-align: center;
 	}
+	.pf-outro__count {
+		letter-spacing: var(--ls-eyebrow);
+		text-transform: uppercase;
+	}
 
-	/* ---------------- Responsive ---------------- */
+	/* ============================================================= *
+	 * RESPONSIVE
+	 * ============================================================= */
 	@media (max-width: 60rem) {
-		.exh-series__link {
-			grid-template-columns: 1fr;
-			grid-template-areas: 'lead' 'body' 'strip';
-			gap: var(--space-lg);
-		}
-		.exh-series__body {
-			align-self: start;
+		.pf-projects {
+			grid-template-columns: repeat(2, 1fr);
 		}
 	}
+	/* Mobile: justified rows would render too small, so switch to an orientation-aware wrap — portraits and
+	   squares pair 2-up, wider frames take the full width. Still whole images, still varied, never a stack. */
 	@media (max-width: 40rem) {
-		.exh-duo,
-		.exh-duo--portrait-lead {
+		.pf-projects {
 			grid-template-columns: 1fr;
-			gap: var(--space-lg);
+			gap: var(--space-xl);
 		}
-		.exh-quiet--2,
-		.exh-quiet--3 {
-			grid-template-columns: 1fr 1fr;
+		.pf-row {
+			flex-wrap: wrap;
 		}
-		.exh-quiet__cell:last-child:nth-child(odd) {
-			grid-column: 1 / -1;
-			justify-self: center;
-			max-width: 60%;
+		.pf-cell {
+			flex: 1 1 100%;
+		}
+		.pf-cell[data-o='portrait'],
+		.pf-cell[data-o='square'] {
+			flex: 1 1 calc(50% - 0.5 * clamp(1rem, 0.7rem + 1.4vw, 1.9rem));
+		}
+		.pf-row > .pf-cell:only-child {
+			flex: 1 1 100%;
 		}
 	}
 </style>

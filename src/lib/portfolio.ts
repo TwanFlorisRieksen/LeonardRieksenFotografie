@@ -1,23 +1,33 @@
 /*
- * Portfolio composition (P6 recovery — D-34).
+ * Portfolio composition (P6 recovery #2 — D-35).
  *
- * The portfolio must present ALL authorised photography (74 images) as ONE curated premium exhibition,
- * and its variation must come from the PHOTOGRAPHY, not from a repeating template. So this module derives
- * each image's REAL orientation from its intrinsic dimensions and composes an ordered sequence of BLOCKS
- * whose geometry follows that orientation + a curatorial scale hint:
+ * WHY THIS REPLACES THE D-34 SPINE
+ * --------------------------------
+ * D-34 published all 74 photographs as ONE flat vertical "exhibition" whose only structure was a
+ * per-image block shape (statement / wide / duo / quiet / single / series). Rendered, that read as a
+ * 35-screen stack of near-fullscreen photographs on flat black: not scannable, no visible sections, and
+ * none of the site's established brand grammar (atmosphere fields, gold seams, tonal surface steps).
+ * Product-owner rejected it. The lightbox already provides the enlarged-view mode, so the OVERVIEW does
+ * not need to show images near-fullscreen — it must be a scannable, chaptered INDEX of the body of work.
  *
- *   statement  — one image, full-bleed wide (panoramas + `feature` works + featured series covers)
- *   duo        — two images side by side, deliberately unequal (portrait ↔ landscape interplay)
- *   quiet      — a small run (1–3) of contained images with air around them (punctuation)
- *   single     — one contained image at reading width (a calm standard beat)
- *   series     — a genuine multi-image project: lead + preview strip, links to its detail page
+ * THE NEW MODEL
+ * -------------
+ * The overview is organised into a small number of truthful CHAPTERS — Projecten, Architectuur, Interieur
+ * — each introduced by a header (eyebrow + title + count + gold seam) on its own tonal surface. Chapters
+ * make the information architecture legible (what is a project vs a loose work; which discipline you are
+ * looking at) and give recurring orientation anchors. Category is thereby STRUCTURAL, not a label repeated
+ * under every image.
  *
- * The result is a designed rhythm: no two adjacent blocks share a shape by accident, big moments are
- * spaced, and the weaker daytime/abstract frames are given honest hierarchy (quiet) rather than being
- * EXCLUDED — the P6-recovery rule is "use hierarchy, not exclusion; publish every image".
+ * Within a works chapter, photography is laid out as JUSTIFIED ROWS: a greedy row-packer groups images by
+ * their REAL aspect ratio so each row shares one height and fills the width (flex-grow ∝ aspect ratio in
+ * CSS). Images are shown WHOLE — no crop (the D-34 content-integrity win is kept) — but at restrained
+ * heights, so many images are visible per screen. Periodic wide `feature` images are promoted to full-width
+ * ANCHOR rows: the deliberate "big moments" that carry scale-contrast and rhythm, spaced so they punctuate
+ * rather than dominate. So variation still comes from the photography (orientation + curatorial scale), but
+ * the page now has genuine composition, density and hierarchy instead of one-photo-per-screen.
  *
- * Maintainability: the curated ORDER lives in ONE data array (SPINE); block SHAPE is computed. Any work
- * not named in the spine is still appended and composed, so an image can never silently drop out.
+ * Maintainability: works order is the curatorial order in works.json; block geometry is DERIVED here. Any
+ * work not otherwise placed is still emitted (the P6-recovery guarantee: every image stays published).
  */
 import { getCollection, type CollectionEntry } from 'astro:content';
 import type { ImageMetadata } from 'astro';
@@ -33,140 +43,121 @@ export function orientationOf(img: ImageMetadata): Orientation {
 	return 'portrait';
 }
 
-export interface PhotoItem {
-	kind: 'work';
-	id: string;
+/** A single displayable tile — the shared shape the justified packer works over. */
+export interface Tile {
 	image: ImageMetadata;
 	alt: string;
 	caption?: string;
+	orientation: Orientation;
+	/** Clamped aspect ratio (w/h). Clamped so one extreme frame can't blow a row's height out. */
+	ar: number;
+}
+
+export interface WorkTile extends Tile {
+	id: string;
 	category: 'architectuur' | 'interieur';
 	scale: 'feature' | 'standard' | 'quiet';
 	location?: string;
 	year?: number;
-	orientation: Orientation;
 }
-
-export type Block =
-	| { type: 'statement'; item: PhotoItem } // full-bleed impact beat (the "wow" images)
-	| { type: 'wide'; item: PhotoItem } // a big image held within the frame (panoramas that read calmer)
-	| { type: 'duo'; items: [PhotoItem, PhotoItem] } // two unequal images, portrait/landscape interplay
-	| { type: 'quiet'; items: PhotoItem[] } // 1–3 small contained images — punctuation
-	| { type: 'single'; item: PhotoItem }
-	| { type: 'series'; project: CollectionEntry<'projects'> };
 
 /**
- * Curated spine — the editorial ORDER of the exhibition. Tokens are either a work `id` or
- * `series:<slug>`. This is the one place a curator sets sequence; block geometry is derived below.
- * Ordering is chosen so standards sit next to portraits (forming portrait↔landscape duos), big
- * statements are spaced, series punctuate, and the weaker park/abstract frames cluster as quiet beats.
+ * A composed layout node. `anchor` = one wide image shown full-frame (a big moment). `row` = a justified
+ * row of 1‑N images sharing a height. This same vocabulary drives both the overview works chapters and the
+ * project-detail beeldreeks, so the two surfaces read as one system.
  */
-type Spine =
-	| { statement: string }
-	| { wide: string }
-	| { single: string }
-	| { duo: [string, string] }
-	| { quiet: string[] }
-	| { series: string };
+export type MediaNode<T extends Tile = Tile> =
+	| { type: 'anchor'; item: T }
+	| { type: 'row'; items: T[] };
 
-const SPINE: Spine[] = [
-	{ statement: 'brug-avondrood' },
-	{ series: 'arnhem-stadsarchitectuur' },
-	{ duo: ['baksteen-woontoren', 'modern-gebouw-schemering'] },
-	{ statement: 'glasgevel-kleurvlakken' },
-	{ duo: ['oranje-gevel-verticaal', 'glasgevel-avondlicht'] },
-	{ series: 'avond-en-blauw-uur' },
-	{ statement: 'nemo-amsterdam' },
-	{ duo: ['olv-toren-amersfoort', 'witte-villa-park'] },
-	{ wide: 'zonnepanelen-veld' },
-	{ statement: 'westerveld-koepel' },
-	{ series: 'kroller-muller-paviljoen' },
-	{ duo: ['stadsstraat-schemering', 'glazen-paviljoen'] },
-	{ statement: 'skyline-schemering' },
-	{ quiet: ['lindenlaan-baarn', 'wintertuin-cantonspark'] },
-	{ series: 'amersfoort-stad' },
-	{ duo: ['baarnsche-bos-boog', 'kerk-deventer-avond'] },
-	{ statement: 'tuibrug-blauwe-uur' },
-	{ wide: 'modernistische-gevel-zw' },
-	{ duo: ['interieurdetail-licht', 'tunnel-warm-eindpunt'] },
-	{ series: 'rotterdam-skyline-kubuswoningen' },
-	{ statement: 'nachtbeeld-blauw-licht' },
-	{ duo: ['gebogen-lichtruimte', 'gebouw-avond-vierkant'] },
-	{ statement: 'gebouw-spiegeling-water' },
-	{ wide: 'industriele-oever-nacht' },
-	{ quiet: ['zeilboot-haven', 'parkboom-daglicht'] },
-	{ statement: 'brug-skyline-blauwe-uur' },
-	{ series: 'interieur-ruimte-en-licht' },
-	{ duo: ['lichtlijnen-roze', 'witte-zaal-boog'] },
-	{ statement: 'witte-gang-lang' },
-	{ duo: ['gewelfde-hal-warm', 'monumentale-zaal'] },
-	{ duo: ['eemhuis-bibliotheek', 'interieurgang-warm'] },
-	{ series: 'woonbeurs-rai-amsterdam' },
-	{ statement: 'soestdijk-lichtshow' },
-	{ series: 'kees-smit-amersfoort' },
-	{ duo: ['lichtkunst-groen', 'baksteenarchitectuur-water'] },
-	{ statement: 'gevel-warm-blauwe-uur' },
-	{ wide: 'skyline-woonbebouwing' },
-	{ quiet: ['parkscene-bomen', 'parklaan-pad'] },
-	{ statement: 'waterfront-panorama' },
-	{ wide: 'stadsgezicht-nacht' },
-	{ quiet: ['lichtbol-studie'] },
-];
+/** Aspect ratio, clamped so a freak panorama/portrait can't dominate a justified row's height. */
+function arOf(img: ImageMetadata): number {
+	const r = img.width / img.height;
+	return Math.max(0.5, Math.min(3.2, r));
+}
+
+/**
+ * Greedy justified-row packer. Groups tiles so each row's summed aspect ratio reaches a (cycling) target,
+ * which — because CSS sizes each tile's width in proportion to its aspect ratio — yields a controlled band
+ * of row heights and a designed density variation down the page. Wide `feature` tiles are lifted out as
+ * full-width anchors, spaced by `minGap` tiles so the big moments punctuate rather than clump.
+ */
+function justify<T extends Tile & { scale?: WorkTile['scale'] }>(
+	items: T[],
+	opts: { targets?: number[]; anchor?: (t: T) => boolean; minGap?: number } = {},
+): MediaNode<T>[] {
+	const targets = opts.targets ?? [3.3, 4.4, 3.8];
+	const isAnchor = opts.anchor ?? (() => false);
+	const minGap = opts.minGap ?? 3;
+
+	const nodes: MediaNode<T>[] = [];
+	let buf: T[] = [];
+	let bufAr = 0;
+	let ti = 0;
+	let target = targets[0];
+	let sinceAnchor = minGap; // allow an anchor immediately if the first item qualifies
+
+	const flush = () => {
+		if (buf.length) {
+			nodes.push({ type: 'row', items: buf });
+			buf = [];
+			bufAr = 0;
+			ti++;
+			target = targets[ti % targets.length];
+		}
+	};
+
+	for (const it of items) {
+		if (isAnchor(it) && sinceAnchor >= minGap) {
+			flush();
+			nodes.push({ type: 'anchor', item: it });
+			sinceAnchor = 0;
+			continue;
+		}
+		// Overshoot guard: if the row is already near its target, don't let a wide frame pile on and squash
+		// the whole row's height (which on a narrow tablet container produced thumbnail-thin rows). Flush
+		// first so the wide frame opens a fresh row instead. This caps a row's summed aspect ratio, keeping
+		// row heights in a premium band across viewport widths.
+		if (buf.length && bufAr >= target - 0.7 && bufAr + it.ar > target + 0.9) flush();
+		buf.push(it);
+		bufAr += it.ar;
+		sinceAnchor++;
+		if (bufAr >= target) flush();
+	}
+
+	// Trailing remainder: fold a too-thin last row back into the previous row so no lone frame is left to
+	// stretch to a full-width (tall) beat. If the previous node is an anchor, keep it as its own contained
+	// row (CSS caps a solo row's width so it stays a calm centred single, never a giant).
+	if (buf.length) {
+		const last = nodes[nodes.length - 1];
+		if (bufAr < 2.6 && last && last.type === 'row') last.items.push(...buf);
+		else nodes.push({ type: 'row', items: buf });
+	}
+	return nodes;
+}
 
 /* ------------------------------------------------------------------ *
- * Project detail galleries — the same "photography drives the layout" idea, scoped to one project's
- * beeldreeks. A short gallery is composed into a varied sequence (wide statements, portrait pairs,
- * contained plates) so two projects with different image mixes read with genuinely different rhythm.
+ * Project-detail galleries — the same justified system, scoped to one project's beeldreeks. A pano gallery
+ * frame becomes a full-width anchor (one big moment); the rest justify into rows. Replaces the old
+ * plate/pair/portrait stack that rendered as a PDF-like vertical sequence.
  * ------------------------------------------------------------------ */
-export interface GalleryPhoto {
-	image: ImageMetadata;
-	alt: string;
-	caption?: string;
-	orientation: Orientation;
-}
-export type GalleryBlock =
-	| { type: 'wide'; item: GalleryPhoto }
-	| { type: 'pair'; items: [GalleryPhoto, GalleryPhoto] }
-	| { type: 'portrait'; item: GalleryPhoto }
-	| { type: 'plate'; item: GalleryPhoto };
+export type GalleryTile = Tile;
 
 export function composeGallery(
 	photos: { image: ImageMetadata; alt: string; caption?: string }[],
-): GalleryBlock[] {
-	const items: GalleryPhoto[] = photos.map((p) => ({ ...p, orientation: orientationOf(p.image) }));
-	const out: GalleryBlock[] = [];
-	let i = 0;
-	let first = true; // the first image opens the sequence solo (a strong, whole plate), never paired
-	const isWideish = (o: Orientation) => o === 'landscape' || o === 'square';
-	while (i < items.length) {
-		const it = items[i];
-		const next = items[i + 1];
-		if (it.orientation === 'pano') {
-			out.push({ type: 'wide', item: it });
-			i++;
-		} else if (it.orientation === 'portrait') {
-			if (next && next.orientation === 'portrait') {
-				out.push({ type: 'pair', items: [it, next] });
-				i += 2;
-			} else {
-				out.push({ type: 'portrait', item: it });
-				i++;
-			}
-		} else if (!first && next && isWideish(next.orientation)) {
-			// two consecutive landscape/square frames → a side-by-side beat (2-up rhythm, each still whole)
-			out.push({ type: 'pair', items: [it, next] });
-			i += 2;
-		} else {
-			out.push({ type: 'plate', item: it });
-			i++;
-		}
-		first = false;
-	}
-	return out;
+): MediaNode<GalleryTile>[] {
+	const tiles: GalleryTile[] = photos.map((p) => ({
+		...p,
+		orientation: orientationOf(p.image),
+		ar: arOf(p.image),
+	}));
+	// Slightly denser targets than the overview (project galleries are short, so keep 2‑up rhythm), panos
+	// promoted to anchors with no spacing constraint (a short gallery earns its big moment).
+	return justify(tiles, { targets: [2.9, 3.6], anchor: (t) => t.orientation === 'pano', minGap: 0 });
 }
 
-function toItem(w: CollectionEntry<'works'>): PhotoItem {
+function toWorkTile(w: CollectionEntry<'works'>): WorkTile {
 	return {
-		kind: 'work',
 		id: w.id,
 		image: w.data.image,
 		alt: w.data.alt,
@@ -176,14 +167,24 @@ function toItem(w: CollectionEntry<'works'>): PhotoItem {
 		location: w.data.location,
 		year: w.data.year,
 		orientation: orientationOf(w.data.image),
+		ar: arOf(w.data.image),
 	};
 }
 
+export interface OverviewChapter {
+	id: 'architectuur' | 'interieur';
+	label: string;
+	count: number;
+	nodes: MediaNode<WorkTile>[];
+}
+
 export interface Overview {
-	blocks: Block[];
-	total: number; // total distinct photographs discoverable through the exhibition (works + series images)
+	projects: CollectionEntry<'projects'>[];
+	chapters: OverviewChapter[];
+	total: number; // distinct photographs discoverable through the whole overview (works + project images)
 	workCount: number;
 	seriesCount: number;
+	seriesImageCount: number;
 }
 
 export async function getOverview(): Promise<Overview> {
@@ -192,68 +193,37 @@ export async function getOverview(): Promise<Overview> {
 		(a, b) => a.data.order - b.data.order,
 	);
 
-	const workById = new Map(works.map((w) => [w.id, toItem(w)]));
-	const projById = new Map(projects.map((p) => [p.id, p]));
-	const usedWorks = new Set<string>();
-	const usedSeries = new Set<string>();
-	const take = (id: string): PhotoItem | undefined => {
-		const it = workById.get(id);
-		if (it && !usedWorks.has(id)) {
-			usedWorks.add(id);
-			return it;
-		}
-		return undefined;
-	};
+	const tiles = works.map(toWorkTile);
+	const arch = tiles.filter((t) => t.category === 'architectuur');
+	const inter = tiles.filter((t) => t.category === 'interieur');
 
-	const blocks: Block[] = [];
-	for (const s of SPINE) {
-		if ('series' in s) {
-			const p = projById.get(s.series);
-			if (p && !usedSeries.has(s.series)) {
-				usedSeries.add(s.series);
-				blocks.push({ type: 'series', project: p });
-			}
-		} else if ('statement' in s) {
-			const it = take(s.statement);
-			if (it) blocks.push({ type: 'statement', item: it });
-		} else if ('wide' in s) {
-			const it = take(s.wide);
-			if (it) blocks.push({ type: 'wide', item: it });
-		} else if ('single' in s) {
-			const it = take(s.single);
-			if (it) blocks.push({ type: 'single', item: it });
-		} else if ('duo' in s) {
-			const a = take(s.duo[0]);
-			const b = take(s.duo[1]);
-			if (a && b) blocks.push({ type: 'duo', items: [a, b] });
-			else if (a) blocks.push({ type: 'single', item: a });
-			else if (b) blocks.push({ type: 'single', item: b });
-		} else if ('quiet' in s) {
-			const items = s.quiet.map(take).filter((x): x is PhotoItem => !!x);
-			if (items.length) blocks.push({ type: 'quiet', items });
-		}
-	}
+	// A wide `feature` frame earns a full-width anchor; spacing differs by chapter size so the small
+	// interieur chapter isn't over-punctuated.
+	const wideFeature = (t: WorkTile) => t.scale === 'feature' && t.ar > 1.6;
 
-	// Safety net (P6-recovery guarantee): any work NOT named in the spine is still published — grouped
-	// into calm quiet rows so an image can NEVER silently drop out of the exhibition.
-	const leftovers = works.map((w) => w.id).filter((id) => !usedWorks.has(id));
-	for (let i = 0; i < leftovers.length; i += 3) {
-		const items = leftovers.slice(i, i + 3).map(take).filter((x): x is PhotoItem => !!x);
-		if (items.length) blocks.push({ type: 'quiet', items });
-	}
-	for (const p of projects) {
-		if (!usedSeries.has(p.id)) {
-			usedSeries.add(p.id);
-			blocks.push({ type: 'series', project: p });
-		}
-	}
+	const chapters: OverviewChapter[] = [
+		{
+			id: 'architectuur',
+			label: 'Architectuur',
+			count: arch.length,
+			nodes: justify(arch, { anchor: wideFeature, minGap: 4 }),
+		},
+		{
+			id: 'interieur',
+			label: 'Interieur',
+			count: inter.length,
+			nodes: justify(inter, { targets: [2.9, 3.6], anchor: wideFeature, minGap: 3 }),
+		},
+	];
 
 	const seriesImageCount = projects.reduce((n, p) => n + 1 + p.data.gallery.length, 0);
 
 	return {
-		blocks,
+		projects,
+		chapters,
 		total: works.length + seriesImageCount,
 		workCount: works.length,
 		seriesCount: projects.length,
+		seriesImageCount,
 	};
 }
