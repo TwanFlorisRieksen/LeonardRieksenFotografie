@@ -232,7 +232,13 @@ const related = [
 
 	/* ===================== INTRO ===================== */
 	/* Brand atmosphere: a quiet cool wash descending into the intro zone (the homepage "afterglow"
-	   mechanism), so the reading beat sits in the same nocturne light as the rest of the site. */
+	   mechanism), so the reading beat sits in the same nocturne light as the rest of the site.
+	   The vertical radius is a PERCENTAGE of this section's own (content-driven, variable) height — a longer
+	   project description wraps to more lines and grows the box, and the old 56%/34% radii always faded to
+	   zero at the same *fraction* of it, so the fixed alpha stops never actually reached the section's tail:
+	   a flat, atmosphere-less band appeared before the gallery's gold seam on longer copy / narrower
+	   viewports (P6.1 correction). Sized generously past 100% so the zero-stop always lands at/after the
+	   box's own bottom edge regardless of content length — same anchor, alpha and colour, corrected reach. */
 	.proj-intro-sec {
 		position: relative;
 		isolation: isolate;
@@ -246,13 +252,13 @@ const related = [
 		pointer-events: none;
 		background:
 			radial-gradient(
-				120% 56% at 12% -6%,
+				120% 160% at 12% -6%,
 				rgba(var(--p-atmos-cool), 0.16) 0%,
 				rgba(var(--p-atmos-cool), 0.05) 44%,
 				rgba(var(--p-atmos-cool), 0) 72%
 			),
 			radial-gradient(
-				52% 34% at 92% -4%,
+				52% 180% at 92% -4%,
 				rgba(var(--p-atmos-warm), 0.07) 0%,
 				rgba(var(--p-atmos-warm), 0) 62%
 			);
@@ -315,7 +321,7 @@ const related = [
 		position: absolute;
 		left: 0;
 		right: 0;
-		top: 0;
+		bottom: 0;
 		height: clamp(1.6rem, 1.2rem + 1.6vw, 2.6rem);
 		background: var(--seam-gold-glow);
 		pointer-events: none;

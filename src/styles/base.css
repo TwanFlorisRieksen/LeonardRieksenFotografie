@@ -136,6 +136,14 @@ a {
 	font-weight: var(--fw-display);
 	color: var(--color-text);
 	text-wrap: balance;
+	/* A composed measure (e.g. 16ch) assumes ordinary multi-word wrapping. A long unbroken Dutch compound
+	   ("Architectuurfotografie") has no such break opportunity, so it silently overflowed its heading's
+	   measure and got clipped by an ancestor's overflow:clip on narrow viewports (P6.1 correction). `hyphens`
+	   lets the browser (html lang="nl") break the word at a real syllable with a visible hyphen — a deliberate,
+	   legible fallback; `overflow-wrap` is the guaranteed backstop for the rare case a single syllable still
+	   doesn't fit. Ordinary multi-word headings are unaffected (nothing to hyphenate/break). */
+	overflow-wrap: break-word;
+	hyphens: auto;
 }
 
 .t-display {

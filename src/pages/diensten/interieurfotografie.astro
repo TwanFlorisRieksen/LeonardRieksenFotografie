@@ -206,12 +206,17 @@ const toepassingen = [
 	 * is a warm artificial-light interior, and its glow spills a little way down into the intro before settling
 	 * into calm reading-dark. This is the homepage afterglow FAMILY (one soft top-descending light, the quiet
 	 * breath after a hero) but deliberately WARM — giving clear page-to-page variation against the architecture
-	 * page's COOL structural signature. Peak sits off the top edge; the fringe fades to base long before the body
-	 * copy, so the modelling lives in negative space, never under muted text (6.9 subtle depth, 6.16). --- */
+	 * page's COOL structural signature. Peak sits off the top edge, fading toward reading-dark.
+	 * P6.1 correction: the vertical radius is a PERCENTAGE of this section's own (content-driven) height, so
+	 * the original 60% always faded to zero at the same fraction of the box — fine when short, but longer
+	 * copy/narrower viewports grow this section and the fixed fraction didn't adapt, completing the fade
+	 * early and leaving a flat, atmosphere-less band before the next section. Sized past 100% so the
+	 * zero-stop always lands at/after the box's own bottom edge regardless of height — same anchor, alpha
+	 * and colour, corrected reach. --- */
 	.svc-intro-sec {
 		background:
 			radial-gradient(
-				128% 60% at 50% -14%,
+				128% 175% at 50% -14%,
 				rgba(var(--p-atmos-warm), 0.15) 0%,
 				rgba(var(--p-atmos-warm), 0.05) 40%,
 				rgba(var(--p-atmos-warm), 0) 70%
