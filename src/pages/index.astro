@@ -51,7 +51,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			priority={true}
 			widths={[640, 1024, 1400, 1920]}
 			sizes="100vw"
-			class="home-hero__media"
+			class="home-hero__media u-parallax"
 		/>
 		<div class="home-hero__scrim"></div>
 		<div class="home-hero__content u-container u-container--wide u-reveal">
@@ -181,9 +181,14 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 						alt={featured.data.coverImageAlt}
 						widths={[768, 1200, 1600, 1700]}
 						sizes="100vw"
-						class="work-immersive__media"
+						class="work-immersive__media u-depth"
 					/>
 					<div class="work-immersive__scrim" />
+					{/* Pointer catch-light (P6.2 / D-37): a whisper-soft warm highlight tracks the pointer across
+					    the architecture — a subtle "light on the building" mouse interaction (7.64/7.65). Desktop
+					    fine-pointer only, opacity 0 until hover, script-set position; non-essential (no JS / touch /
+					    reduced-motion → simply absent, plate fully intact). */}
+					<div class="work-immersive__glow" aria-hidden="true" />
 					<div class="work-immersive__caption u-container">
 						<div class="work-immersive__caption-inner">
 							<p class="t-eyebrow t-eyebrow--accent">
@@ -343,6 +348,40 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		secondaryLabel="Bekijk de diensten"
 		secondaryHref="/diensten/"
 	/>
+
+	<!-- P6.2 (D-37) — pointer catch-light on the immersive plate. Progressive enhancement, `is:inline` so it
+	     emits NO JS bundle (site stays 0-bundle). Attaches only on a fine desktop pointer with motion allowed;
+	     otherwise the glow layer is simply never lit (touch / no-JS / reduced-motion = plate fully intact).
+	     rAF-throttled, passive, transform-free (writes two custom properties only) — no layout thrashing. -->
+	<script is:inline>
+		(function () {
+			var glow = document.querySelector('.work-immersive__glow');
+			if (!glow) return;
+			var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+			var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			if (!fine || reduce) return;
+			var host = glow.closest('.work-immersive');
+			if (!host) return;
+			var raf = 0,
+				gx = 50,
+				gy = 38;
+			host.addEventListener(
+				'pointermove',
+				function (e) {
+					var r = host.getBoundingClientRect();
+					gx = ((e.clientX - r.left) / r.width) * 100;
+					gy = ((e.clientY - r.top) / r.height) * 100;
+					if (!raf)
+						raf = requestAnimationFrame(function () {
+							raf = 0;
+							glow.style.setProperty('--gx', gx + '%');
+							glow.style.setProperty('--gy', gy + '%');
+						});
+				},
+				{ passive: true }
+			);
+		})();
+	</script>
 </BaseLayout>
 
 <style>
@@ -401,11 +440,16 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		color: var(--color-text);
 		padding-bottom: var(--space-2xs);
 		border-bottom: 1px solid var(--color-accent);
-		transition: gap var(--dur-interaction) var(--ease-out), color var(--dur-interaction) var(--ease-standard);
+		transition: gap var(--dur-interaction) var(--ease-out), color var(--dur-interaction) var(--ease-standard),
+			transform var(--dur-feedback) var(--ease-standard);
 	}
 	.home-hero__cta:hover {
 		gap: var(--space-md);
 		color: var(--color-accent-strong);
+	}
+	/* Tactile press (P6.2 / D-37) — a 1px settle so the CTA feels physical to click/tap. */
+	.home-hero__cta:active {
+		transform: translateY(1px);
 	}
 	/* Scroll cue — a slim descending hairline, calm and non-distracting. */
 	.home-hero__scroll {
@@ -447,6 +491,12 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		}
 		.home-hero__scroll {
 			display: none;
+		}
+		/* Mobile-specific motion (7.127/7.128): the hero keeps a GENTLER parallax — its own tuned amount,
+		   not the copied desktop travel — so mobile feels alive without over-moving on smaller/weaker devices. */
+		.home-hero__media {
+			--m-parallax: 3.5%;
+			--m-parallax-scale: 1.09;
 		}
 	}
 
@@ -701,6 +751,66 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		}
 	}
 
+	/* ============================================================= *
+	 * P6.2 (D-37) — SLICE MOTION WIRING. Applies the central scroll-linked vocabulary (motion.css) to this
+	 * slice's photography + structural line, plus pointer/press feedback. All scroll-linked pieces are
+	 * gated (@supports + no-preference) so the base render is the frozen D-29 composition.
+	 * ============================================================= */
+
+	/* Pointer catch-light: a whisper-soft warm highlight (screen-blended over the dark plate) at the pointer.
+	   z-index:-1 + placed after the scrim in DOM → it lifts above the photo/scrim but sits BEHIND the caption
+	   text; opacity 0 until hover, and only on a fine desktop pointer with motion allowed. */
+	.work-immersive__glow {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		opacity: 0;
+		background: radial-gradient(
+			26rem 26rem at var(--gx, 50%) var(--gy, 38%),
+			rgba(var(--p-atmos-warm), 0.1) 0%,
+			rgba(var(--p-atmos-warm), 0.032) 42%,
+			rgba(var(--p-atmos-warm), 0) 68%
+		);
+		mix-blend-mode: screen;
+		transition: opacity 600ms var(--ease-standard);
+	}
+	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		.work-immersive:hover .work-immersive__glow {
+			opacity: 1;
+		}
+	}
+
+	/* The gold structural seam is DRAWN from its centre as the work chapter enters (reversible). Base state
+	   (above) keeps the full seam (scaleX:1 implicit) so unsupported / reduced / no-CSS-scroll shows it whole. */
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			.work__head {
+				view-timeline-name: --work-head;
+				view-timeline-axis: block;
+			}
+			.work__head::after {
+				transform-origin: center;
+				animation-name: m-line-draw;
+				animation-timing-function: linear;
+				animation-fill-mode: both;
+				animation-timeline: --work-head;
+				animation-range: entry 45% cover 20%;
+			}
+		}
+	}
+
+	/* Tactile press feedback (touch has no hover — 7.129): a short, subtle opacity compression, no transform
+	   (so it never fights the reveal/parallax transforms). */
+	.work-immersive,
+	.work-plate {
+		transition: opacity var(--dur-feedback) var(--ease-standard);
+	}
+	.work-immersive:active,
+	.work-plate:active {
+		opacity: 0.9;
+	}
+
 	/* --- Quiet counterpoint: a small contained pair, so the scale contrast with the plate is the point. --- */
 	.work__stack {
 		display: grid;
@@ -723,9 +833,23 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	.work-plate:focus-visible .work-plate__name {
 		color: var(--color-accent);
 	}
+	/* Hover lift (P6.2 / D-37): the photograph scales slightly WITHIN its clip (the `.media` wrapper is
+	   overflow:clip) — a quiet "lean-in", not a card that pops. Composition never leaves the frame. */
+	.work-plate__media :global(img) {
+		transition: transform var(--dur-component) var(--ease-out);
+	}
+	.work-plate:hover .work-plate__media :global(img),
+	.work-plate:focus-visible .work-plate__media :global(img) {
+		transform: scale(1.045);
+	}
 	@media (max-width: 52rem) {
 		.work-immersive {
 			min-height: clamp(22rem, 60svh, 32rem);
+		}
+		/* Gentler plate depth-drift on small screens (7.128) — its own reduced amount, not the desktop travel. */
+		.work-immersive__media {
+			--m-drift: 2.5%;
+			--m-drift-scale: 1.09;
 		}
 		.work__stack {
 			grid-template-columns: 1fr;

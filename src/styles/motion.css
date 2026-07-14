@@ -109,3 +109,104 @@
 		}
 	}
 }
+
+/* ================================================================= *
+ * P6.2 — SCROLL-LINKED DEPTH VOCABULARY (motion architecture, D-37).
+ *
+ * The pre-P6.2 motion layer was entirely one-shot ENTRANCE reveals (rise / mask / curtain) plus CSS
+ * hover feedback: once a beat had revealed, the page became fully static (runtime-audited — zero
+ * scroll-linked motion, zero reversible motion). The blueprint distinguishes scroll-TRIGGERED (fires
+ * once) from scroll-LINKED (progress tied to scroll position — 7.25) and explicitly endorses selective
+ * scroll-linked image movement + subtle hero/section parallax (7.22, 7.68, 7.70) and mask/image reveals
+ * as the signature "Architectural Reveal Motion" direction (7.139/7.152).
+ *
+ * This block adds the reusable, scroll-LINKED half of the motion language so the interface stays quietly
+ * ALIVE and REVERSIBLE during scroll without any one-shot restlessness. Character (7.2/7.70/7.133):
+ * weighted, slow, line-and-depth — a long-exposure architectural space that has depth, not darting
+ * decoration. Photography moves only via overscanned transform drift (never crop/distort/rotate).
+ *
+ * Implementation is NATIVE CSS scroll-driven animations (blueprint 7.105) — no GSAP/ScrollTrigger/Lenis
+ * (see D-37 tooling decision). Progressive enhancement is structural, three ways:
+ *   1. `@supports (animation-timeline: view())` — browsers without scroll-driven animations get NO
+ *      declaration at all, so the element keeps its base (final, static) transform = the frozen baseline.
+ *      (The @supports guard is essential: without it, an unsupported browser would fall back to the
+ *      document timeline and PLAY these keyframes as a time animation — the guard prevents that.)
+ *   2. `@media (prefers-reduced-motion: no-preference)` — reduced-motion users never arm it.
+ *   3. transform/opacity only, off the main thread; the global reduce guard above is the final backstop.
+ * Every base (un-animated) state below is the composition at rest, so unsupported / reduced / any
+ * fallback path renders the exact frozen D-29 art direction.
+ * ================================================================= */
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		/*
+		 * DEPTH-DRIFT (`.u-depth`): a photograph drifts slowly WITHIN its own clip as it passes through the
+		 * viewport — the "camera holds, the space breathes" long-exposure feel. Reversible by construction
+		 * (progress = the element's own view() passage). Overscanned (scale) so the ±drift never exposes an
+		 * edge. Neutral (scale 1.12, no shift) at mid-passage; tune travel via `--m-drift`.
+		 */
+		/* Longhands (NOT the `animation` shorthand) on purpose: the CSS minifier folds a trailing
+		   `animation-timeline` into the `animation` shorthand, which per spec RESETS the timeline to `auto`
+		   and silently disables the scroll link. Longhands cannot be folded that way. */
+		.u-depth {
+			animation-name: m-depth-drift;
+			animation-timing-function: linear;
+			animation-fill-mode: both;
+			animation-timeline: view();
+			animation-range: cover 0% cover 100%;
+			will-change: transform;
+		}
+		@keyframes m-depth-drift {
+			from {
+				transform: translateY(calc(-1 * var(--m-drift, 4%))) scale(var(--m-drift-scale, 1.12));
+			}
+			to {
+				transform: translateY(var(--m-drift, 4%)) scale(var(--m-drift-scale, 1.12));
+			}
+		}
+
+		/*
+		 * HERO PARALLAX (`.u-parallax`): linked to the document scroller over the first viewport of scroll.
+		 * Neutral at the top of the page (transform:none = exact baseline framing — the frozen hero is NOT
+		 * recomposed at rest), then the photograph lags the content upward as the hero scrolls away (7.68
+		 * subtle hero parallax). Overscan grows with the drift so no top/bottom gap appears mid-scroll.
+		 */
+		.u-parallax {
+			animation-name: m-parallax;
+			animation-timing-function: linear;
+			animation-fill-mode: both;
+			animation-timeline: scroll(root block);
+			animation-range: 0 100vh;
+			will-change: transform;
+		}
+		@keyframes m-parallax {
+			from {
+				transform: none;
+			}
+			to {
+				transform: translateY(calc(-1 * var(--m-parallax, 6%))) scale(var(--m-parallax-scale, 1.12));
+			}
+		}
+
+		/*
+		 * LINE-DRAW (`.u-line-draw`): an architectural hairline is DRAWN from its centre as its context
+		 * enters — the gold structural seam becomes a line being struck, not a static rule. Reversible
+		 * (redraws/retracts with scroll). The base rule (in the consuming page) keeps `transform:scaleX(1)`
+		 * so unsupported/reduced render the complete seam; this only re-times its appearance.
+		 */
+		.u-line-draw {
+			transform-origin: center;
+			animation-name: m-line-draw;
+			animation-timing-function: linear;
+			animation-fill-mode: both;
+			animation-range: entry 0% cover 22%;
+		}
+		@keyframes m-line-draw {
+			from {
+				transform: scaleX(0);
+			}
+			to {
+				transform: scaleX(1);
+			}
+		}
+	}
+}
