@@ -52,6 +52,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			widths={[640, 1024, 1400, 1920]}
 			sizes="100vw"
 			class="home-hero__media u-parallax"
+			data-ptilt="11"
 		/>
 		<div class="home-hero__scrim"></div>
 		<div class="home-hero__content u-container u-container--wide u-reveal">
@@ -66,7 +67,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 				het blauwe uur tot zorgvuldig opgebouwd kunstlicht.
 			</p>
 			<div class="home-hero__actions" style="--reveal-index: 3">
-				<a class="home-hero__cta" href="/portfolio/">
+				<a class="home-hero__cta" href="/portfolio/" data-magnetic="8">
 					Bekijk het portfolio
 					<svg
 						width="20"
@@ -97,9 +98,9 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		<div class="pos">
 			<div class="pos__lead">
 				<p class="t-eyebrow t-eyebrow--accent">Positionering</p>
-				<h2 class="t-display pos__statement">Architectuur en interieur in balans.</h2>
+				<h2 class="t-display pos__statement u-mask-up">Architectuur en interieur in balans.</h2>
 			</div>
-			<div class="pos__body u-inview">
+			<div class="pos__body u-settle">
 				<p class="t-lead pos__intro">
 					Een goed gebouw of interieur is zorgvuldig ontworpen. De fotografie moet dat verhaal
 					versterken, niet verstoren.
@@ -175,7 +176,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		}
 		{
 			featured && (
-				<a class="work-immersive u-inview" href={`/portfolio/${featured.id}/`}>
+				<a class="work-immersive u-inview" href={`/portfolio/${featured.id}/`} data-plight>
 					<Media
 						src={featured.data.coverImage}
 						alt={featured.data.coverImageAlt}
@@ -214,9 +215,9 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			{
 				secondary.map((project, i) => (
 					<a
-						class="work-plate u-inview"
+						class="work-plate u-settle"
 						href={`/portfolio/${project.id}/`}
-						style={`--reveal-index: ${i}`}
+						style={`--settle-rise: 1.2rem; animation-range: entry ${4 + i * 6}% entry ${44 + i * 6}%`}
 					>
 						<Media
 							src={project.data.coverImage}
@@ -246,7 +247,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		<p class="t-eyebrow t-eyebrow--accent">Specialisaties</p>
 		<h2 class="t-display spec__title">Twee disciplines, één benadering.</h2>
 		<div class="spec__grid">
-			<a class="spec-card spec-card--arch u-inview" href="/diensten/architectuurfotografie/">
+			<a class="spec-card spec-card--arch u-settle" href="/diensten/architectuurfotografie/">
 				<Media
 					src={amersfoortImg}
 					alt="Een historische torenspits met de Onze Lieve Vrouwetoren van Amersfoort erachter, tegen een dramatische bewolkte lucht."
@@ -255,6 +256,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 					ratio="3/4"
 					position="center"
 					class="spec-card__media"
+					data-ptilt="10"
 				/>
 				<div class="spec-card__text">
 					<h3 class="t-h3 spec-card__name">Architectuurfotografie</h3>
@@ -268,7 +270,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 					</span>
 				</div>
 			</a>
-			<a class="spec-card spec-card--int u-inview" href="/diensten/interieurfotografie/" style="--reveal-index: 1">
+			<a class="spec-card spec-card--int u-settle" href="/diensten/interieurfotografie/" style="--settle-rise: 1.9rem; animation-range: entry 10% entry 50%">
 				<Media
 					src={eemhuisImg}
 					alt="De leeszaal van het Eemhuis in Amersfoort met een golvend, verlicht plafond boven warme houten leestafels."
@@ -277,6 +279,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 					ratio="4/3"
 					position="center"
 					class="spec-card__media"
+					data-ptilt="12"
 				/>
 				<div class="spec-card__text">
 					<h3 class="t-h3 spec-card__name">Interieurfotografie</h3>
@@ -306,7 +309,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			<h2 class="t-h2 method__title">Rustig, precies, altijd op locatie.</h2>
 		</div>
 		<ol class="method__list">
-			<li class="method__item u-inview">
+			<li class="method__item u-rise-linked" style="animation-range: entry 0% entry 58%">
 				<span class="method__num">01</span>
 				<div>
 					<h3 class="t-h4 method__name">Fotografie op locatie</h3>
@@ -316,7 +319,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 					</p>
 				</div>
 			</li>
-			<li class="method__item u-inview" style="--reveal-index: 1">
+			<li class="method__item u-rise-linked" style="animation-range: entry 8% entry 66%">
 				<span class="method__num">02</span>
 				<div>
 					<h3 class="t-h4 method__name">Doordacht voorbereid</h3>
@@ -326,7 +329,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 					</p>
 				</div>
 			</li>
-			<li class="method__item u-inview" style="--reveal-index: 2">
+			<li class="method__item u-rise-linked" style="animation-range: entry 16% entry 74%">
 				<span class="method__num">03</span>
 				<div>
 					<h3 class="t-h4 method__name">Nauwkeurig vastgelegd</h3>
@@ -349,37 +352,146 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		secondaryHref="/diensten/"
 	/>
 
-	<!-- P6.2 (D-37) — pointer catch-light on the immersive plate. Progressive enhancement, `is:inline` so it
-	     emits NO JS bundle (site stays 0-bundle). Attaches only on a fine desktop pointer with motion allowed;
-	     otherwise the glow layer is simply never lit (touch / no-JS / reduced-motion = plate fully intact).
-	     rAF-throttled, passive, transform-free (writes two custom properties only) — no layout thrashing. -->
+	<!-- ============================================================================================= *
+	     P6.2 RECOVERY — HOMEPAGE REALTIME INTERACTION RUNTIME (D-38).
+	     One small unified `is:inline` runtime (emits NO JS bundle; the site stays 0-bundle) providing the
+	     realtime, input-driven feedback the owner asked for — VARIED families, not one copied effect:
+	       · scroll-direction / scrolled signal  → data-attrs + class on <html> (a cheap signal, drives CSS).
+	       · [data-plight]   pointer light        → writes --gx/--gy (generalised catch-light).
+	       · [data-ptilt]    pointer parallax+light→ the inner photo eases TOWARD the pointer within its clip
+	                                                 (a DIFFERENT photography response than the plate's light),
+	                                                 with lerp inertia + a tracking light.
+	       · [data-magnetic] magnetic pull        → element eases toward the pointer, springs back on leave.
+	     Pointer families attach ONLY on a fine desktop pointer with motion allowed (touch / no-JS /
+	     reduced-motion → simply absent, composition fully intact). Every loop is rAF-throttled, passive and
+	     SELF-HALTING (stops when settled) so there is no permanent animation. Writes custom properties only
+	     (no layout reads in the loop) — compositor-friendly. -->
 	<script is:inline>
 		(function () {
-			var glow = document.querySelector('.work-immersive__glow');
-			if (!glow) return;
-			var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+			var docEl = document.documentElement;
 			var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-			if (!fine || reduce) return;
-			var host = glow.closest('.work-immersive');
-			if (!host) return;
-			var raf = 0,
-				gx = 50,
-				gy = 38;
-			host.addEventListener(
-				'pointermove',
-				function (e) {
-					var r = host.getBoundingClientRect();
-					gx = ((e.clientX - r.left) / r.width) * 100;
-					gy = ((e.clientY - r.top) / r.height) * 100;
-					if (!raf)
-						raf = requestAnimationFrame(function () {
-							raf = 0;
-							glow.style.setProperty('--gx', gx + '%');
-							glow.style.setProperty('--gy', gy + '%');
-						});
-				},
-				{ passive: true }
-			);
+
+			// --- Scroll-state signal (always on; a signal, not motion — drives CSS transitions only) ---
+			var lastY = window.scrollY,
+				dir = '',
+				ticking = false;
+			function onScroll() {
+				if (ticking) return;
+				ticking = true;
+				requestAnimationFrame(function () {
+					var y = window.scrollY;
+					var d = y > lastY + 2 ? 'down' : y < lastY - 2 ? 'up' : dir;
+					if (d !== dir) {
+						dir = d;
+						docEl.dataset.scrollDir = d;
+					}
+					docEl.classList.toggle('is-scrolled', y > 8);
+					lastY = y;
+					ticking = false;
+				});
+			}
+			window.addEventListener('scroll', onScroll, { passive: true });
+			onScroll();
+
+			var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+			if (!fine || reduce) return; // pointer families are enhancement only
+
+			// --- Pointer light (generalised catch-light): write --gx/--gy on the host; children inherit. ---
+			document.querySelectorAll('[data-plight]').forEach(function (host) {
+				var raf = 0,
+					gx = 50,
+					gy = 40;
+				host.addEventListener(
+					'pointermove',
+					function (e) {
+						var r = host.getBoundingClientRect();
+						gx = ((e.clientX - r.left) / r.width) * 100;
+						gy = ((e.clientY - r.top) / r.height) * 100;
+						if (!raf)
+							raf = requestAnimationFrame(function () {
+								raf = 0;
+								host.style.setProperty('--gx', gx.toFixed(1) + '%');
+								host.style.setProperty('--gy', gy.toFixed(1) + '%');
+							});
+					},
+					{ passive: true }
+				);
+			});
+
+			// --- Pointer parallax + light on photography: the photo eases toward the pointer (lerp). ---
+			document.querySelectorAll('[data-ptilt]').forEach(function (host) {
+				var img = host.querySelector('img');
+				var amt = parseFloat(host.dataset.ptilt) || 8;
+				var tx = 0, ty = 0, cx = 0, cy = 0, gx = 50, gy = 40, cgx = 50, cgy = 40;
+				var raf = 0, over = false;
+				function loop() {
+					cx += (tx - cx) * 0.11;
+					cy += (ty - cy) * 0.11;
+					cgx += (gx - cgx) * 0.11;
+					cgy += (gy - cgy) * 0.11;
+					if (img) {
+						img.style.setProperty('--ptx', cx.toFixed(2) + 'px');
+						img.style.setProperty('--pty', cy.toFixed(2) + 'px');
+					}
+					host.style.setProperty('--gx', cgx.toFixed(1) + '%');
+					host.style.setProperty('--gy', cgy.toFixed(1) + '%');
+					var settled = Math.abs(tx - cx) < 0.05 && Math.abs(ty - cy) < 0.05 && Math.abs(gx - cgx) < 0.05;
+					if (over || !settled) raf = requestAnimationFrame(loop);
+					else raf = 0;
+				}
+				host.addEventListener(
+					'pointermove',
+					function (e) {
+						var r = host.getBoundingClientRect();
+						var nx = (e.clientX - r.left) / r.width - 0.5;
+						var ny = (e.clientY - r.top) / r.height - 0.5;
+						tx = nx * amt * 2;
+						ty = ny * amt * 2;
+						gx = 50 + nx * 100;
+						gy = 50 + ny * 100;
+						over = true;
+						if (!raf) raf = requestAnimationFrame(loop);
+					},
+					{ passive: true }
+				);
+				host.addEventListener('pointerleave', function () {
+					tx = ty = 0;
+					gx = 50;
+					gy = 40;
+					over = false;
+					if (!raf) raf = requestAnimationFrame(loop);
+				});
+			});
+
+			// --- Magnetic pull (hero CTA only): eases toward the pointer, springs back on leave. ---
+			document.querySelectorAll('[data-magnetic]').forEach(function (el) {
+				var pull = parseFloat(el.dataset.magnetic) || 9;
+				var tx = 0, ty = 0, cx = 0, cy = 0, raf = 0, over = false;
+				function loop() {
+					cx += (tx - cx) * 0.2;
+					cy += (ty - cy) * 0.2;
+					el.style.setProperty('--mx', cx.toFixed(2) + 'px');
+					el.style.setProperty('--my', cy.toFixed(2) + 'px');
+					if (over || Math.abs(tx - cx) > 0.05 || Math.abs(ty - cy) > 0.05) raf = requestAnimationFrame(loop);
+					else raf = 0;
+				}
+				el.addEventListener(
+					'pointermove',
+					function (e) {
+						var r = el.getBoundingClientRect();
+						tx = ((e.clientX - (r.left + r.width / 2)) / (r.width / 2)) * pull;
+						ty = ((e.clientY - (r.top + r.height / 2)) / (r.height / 2)) * pull;
+						over = true;
+						if (!raf) raf = requestAnimationFrame(loop);
+					},
+					{ passive: true }
+				);
+				el.addEventListener('pointerleave', function () {
+					tx = ty = 0;
+					over = false;
+					if (!raf) raf = requestAnimationFrame(loop);
+				});
+			});
 		})();
 	</script>
 </BaseLayout>
@@ -440,16 +552,20 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		color: var(--color-text);
 		padding-bottom: var(--space-2xs);
 		border-bottom: 1px solid var(--color-accent);
-		transition: gap var(--dur-interaction) var(--ease-out), color var(--dur-interaction) var(--ease-standard),
-			transform var(--dur-feedback) var(--ease-standard);
+		transition: gap var(--dur-interaction) var(--ease-out), color var(--dur-interaction) var(--ease-standard);
+		/* Magnetic pull (P6.2 RECOVERY / D-38): the runtime lerps --mx/--my toward the pointer; press
+		   compresses via --press. The rAF loop is the smoothing, so transform carries NO CSS transition
+		   (a transition would lag the frame loop). Defaults compose to identity without JS / on touch. */
+		transform: translate(var(--mx, 0px), var(--my, 0px)) scale(var(--press, 1));
 	}
 	.home-hero__cta:hover {
 		gap: var(--space-md);
 		color: var(--color-accent-strong);
 	}
-	/* Tactile press (P6.2 / D-37) — a 1px settle so the CTA feels physical to click/tap. */
+	/* Tactile press — a short compression so the CTA feels physical to click/tap (also fires on touch, where
+	   the magnetic pull is absent). */
 	.home-hero__cta:active {
-		transform: translateY(1px);
+		--press: 0.96;
 	}
 	/* Scroll cue — a slim descending hairline, calm and non-distracting. */
 	.home-hero__scroll {
@@ -467,6 +583,15 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		height: 2.4rem;
 		background: linear-gradient(to bottom, transparent, var(--color-text));
 		opacity: 0.7;
+	}
+	/* P6.2 RECOVERY: the scroll-cue retires once the reader has taken over scrolling — a small acknowledgement
+	   of scroll STATE (the runtime toggles html.is-scrolled). Homepage-scoped; pure CSS off a class signal. */
+	.home-hero__scroll {
+		transition: opacity var(--dur-component) var(--ease-standard);
+	}
+	:global(html.is-scrolled) .home-hero__scroll {
+		opacity: 0;
+		pointer-events: none;
 	}
 	@media (prefers-reduced-motion: no-preference) {
 		.home-hero__scroll span {
@@ -655,6 +780,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		align-items: flex-end;
 		min-height: clamp(26rem, 66svh, 44rem);
 		isolation: isolate;
+		/* P6.2 RECOVERY: clip the plate box so the depth-drift's overscanned media can never spill past the
+		   plate edges into the neighbouring stack (defensive — the media already clips its own img, and the
+		   scrim/edge treatment is anchored to this box). */
+		overflow: clip;
 		background: var(--color-bg-abyss); /* P4.6 — the plate emerges from real depth, not the flat deep fill */
 	}
 	/* Inset focus ring — the plate is edge-to-edge, so an outset ring would sit at the viewport edge; an
@@ -846,10 +975,11 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		.work-immersive {
 			min-height: clamp(22rem, 60svh, 32rem);
 		}
-		/* Gentler plate depth-drift on small screens (7.128) — its own reduced amount, not the desktop travel. */
+		/* Gentler plate depth-drift on small screens (7.128) — its own reduced amount, not the desktop travel.
+		   (Recovery: overscan still exceeds the shift so the centre-identity anchor never exposes an edge.) */
 		.work-immersive__media {
 			--m-drift: 2.5%;
-			--m-drift-scale: 1.09;
+			--m-drift-scale: 1.06;
 		}
 		.work__stack {
 			grid-template-columns: 1fr;
@@ -998,6 +1128,100 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		.method__list {
 			grid-template-columns: 1fr;
 			gap: var(--space-xl);
+		}
+	}
+
+	/* ================================================================= *
+	 * P6.2 RECOVERY (D-38) — REALTIME-INTERACTION CONSUMING STYLES.
+	 * Each rule reads a custom property written by the homepage runtime (--ptx/--pty pointer-parallax,
+	 * --gx/--gy pointer-light, --mx/--my magnetic). All are ENHANCEMENT: without JS / on touch / under
+	 * reduced-motion the properties are never written and the base transform is identity, so every element
+	 * renders in its resting (frozen-composition) state. The pointer-parallax base overscan is gated on
+	 * `html.js` + fine-pointer + no-preference so no-JS/touch/reduced-motion never see a re-cropped photo
+	 * (the same discipline as the depth-drift regression fix). Transforms are compositor-only; the rAF lerp
+	 * is the smoothing, so the lerped transforms carry no CSS transition.
+	 * ================================================================= */
+
+	/* Hero photograph — eases toward the pointer within its clip (7.47 "lichte pointer-based beeldreactie"),
+	   composed under the scroll parallax on the wrapper. */
+	.home-hero__media :global(img) {
+		will-change: transform;
+	}
+	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		:global(html.js) .home-hero__media :global(img) {
+			transform: scale(1.035) translate(var(--ptx, 0px), var(--pty, 0px));
+		}
+	}
+
+	/* Specialisaties photography — a DIFFERENT family than the plate catch-light: the discipline photo eases
+	   toward the pointer (parallax within its frame) with a soft directional light that tracks it, turning
+	   two formerly inert photos into the section's realtime centre. */
+	.spec-card__media {
+		position: relative;
+		will-change: transform;
+	}
+	.spec-card__media::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+		opacity: 0;
+		background: radial-gradient(
+			44% 44% at var(--gx, 50%) var(--gy, 40%),
+			rgba(var(--p-atmos-warm), 0.17) 0%,
+			rgba(var(--p-atmos-warm), 0.05) 46%,
+			rgba(var(--p-atmos-warm), 0) 72%
+		);
+		mix-blend-mode: screen;
+		transition: opacity 520ms var(--ease-standard);
+	}
+	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		:global(html.js) .spec-card__media :global(img) {
+			transform: scale(1.08) translate(var(--ptx, 0px), var(--pty, 0px));
+		}
+		.spec-card:hover .spec-card__media::after,
+		.spec-card:focus-visible .spec-card__media::after {
+			opacity: 1;
+		}
+	}
+
+	/* Werkwijze — a gold hairline is STRUCK across each numeral row as it enters (reversible, tied to each
+	   row's own view() passage), so the method chapter carries continuous structural motion instead of one
+	   staggered rise then freeze. The static border-top stays the base (unsupported/reduced/no-JS). */
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			.method__item {
+				position: relative;
+			}
+			.method__item::before {
+				content: '';
+				position: absolute;
+				top: -1px;
+				left: 0;
+				right: 0;
+				height: 1px;
+				transform-origin: left;
+				transform: scaleX(0);
+				background: linear-gradient(
+					90deg,
+					rgba(var(--p-atmos-warm), 0.85) 0%,
+					rgba(var(--p-atmos-warm), 0) 92%
+				);
+				animation-name: method-draw;
+				animation-timing-function: linear;
+				animation-fill-mode: both;
+				animation-timeline: view();
+				animation-range: entry 4% cover 20%;
+			}
+			@keyframes method-draw {
+				from {
+					transform: scaleX(0);
+				}
+				to {
+					transform: scaleX(1);
+				}
+			}
 		}
 	}
 

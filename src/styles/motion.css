@@ -141,8 +141,18 @@
 		/*
 		 * DEPTH-DRIFT (`.u-depth`): a photograph drifts slowly WITHIN its own clip as it passes through the
 		 * viewport — the "camera holds, the space breathes" long-exposure feel. Reversible by construction
-		 * (progress = the element's own view() passage). Overscanned (scale) so the ±drift never exposes an
-		 * edge. Neutral (scale 1.12, no shift) at mid-passage; tune travel via `--m-drift`.
+		 * (progress = the element's own view() passage).
+		 *
+		 * P6.2 RECOVERY (regression fix): D-37 ran scale 1.12 -> 1.12 (a CONSTANT 12% zoom), so even at the
+		 * plate's centred rest position the photograph was permanently re-cropped 12% tighter than the frozen
+		 * D-29 composition — shifting the immersive plate's bright building-bases into its fixed bottom scrim
+		 * band and shrinking the dark building on the left edge, defeating the "dark photographic edge
+		 * treatment" at exactly the moment the viewer looks at the plate (owner-reported edge regression,
+		 * root-caused by A/B-toggling `.u-depth` in the live runtime). Now the MID-passage keyframe (50% = the
+		 * plate comfortably in view) is IDENTITY — the exact frozen composition, scrim over the intended dark
+		 * content. The drift only deviates as the plate ENTERS/LEAVES: a small matched zoom+shift whose
+		 * overscan (`--m-drift-scale`) always exceeds the shift (`--m-drift`), settling back through identity
+		 * every time the plate is centred. Reversible and self-neutralising.
 		 */
 		/* Longhands (NOT the `animation` shorthand) on purpose: the CSS minifier folds a trailing
 		   `animation-timeline` into the `animation` shorthand, which per spec RESETS the timeline to `auto`
@@ -157,10 +167,13 @@
 		}
 		@keyframes m-depth-drift {
 			from {
-				transform: translateY(calc(-1 * var(--m-drift, 4%))) scale(var(--m-drift-scale, 1.12));
+				transform: translateY(calc(-1 * var(--m-drift, 3%))) scale(var(--m-drift-scale, 1.08));
+			}
+			50% {
+				transform: none; /* centred = the frozen composition, exactly (regression anchor) */
 			}
 			to {
-				transform: translateY(var(--m-drift, 4%)) scale(var(--m-drift-scale, 1.12));
+				transform: translateY(var(--m-drift, 3%)) scale(var(--m-drift-scale, 1.08));
 			}
 		}
 
@@ -206,6 +219,97 @@
 			}
 			to {
 				transform: scaleX(1);
+			}
+		}
+
+		/* ============================================================= *
+		 * P6.2 RECOVERY — reversible scroll-linked primitives so the page stays ALIVE on scroll AND
+		 * return-scroll, instead of freezing after a one-shot rise. All view()-timeline based (reversible
+		 * by construction), gated so the base state is the frozen composition (unsupported/reduced/no-JS).
+		 * ============================================================= */
+
+		/*
+		 * SETTLE (`.u-settle`): the reversible replacement for the one-shot `.u-inview` rise. A beat lifts +
+		 * fades in as it ENTERS and settles; because it is view()-linked it also GENTLY responds when the
+		 * viewer scrolls back (it re-eases only at the viewport's own bottom fringe, never mid-screen), so a
+		 * section is never frozen the instant it has appeared. Tune the lift with `--settle-rise`.
+		 */
+		/* html.js gate: these three reveals HIDE content (opacity/clip) from a rest state, so — exactly like
+		   the JS `.u-inview` before them (D-14 / MOT-08) — they are armed only when JS is present. Without JS
+		   the class is never added and the content ships fully visible; the reveal itself still needs no JS
+		   logic (pure CSS scroll-driven), the gate only guarantees content is never hidden waiting on it.
+		   (The photography transforms `.u-depth`/`.u-parallax` are NOT gated this way — they never hide
+		   content, only move an already-visible image.) */
+		html.js .u-settle {
+			animation-name: m-settle;
+			animation-timing-function: var(--ease-out);
+			animation-fill-mode: both;
+			animation-timeline: view();
+			animation-range: entry 4% entry 42%;
+		}
+		@keyframes m-settle {
+			from {
+				opacity: 0;
+				transform: translateY(var(--settle-rise, 1.5rem));
+			}
+			to {
+				opacity: 1;
+				transform: none;
+			}
+		}
+
+		/*
+		 * MASK-UP (`.u-mask-up`): a scroll-linked geometric statement reveal — the architectural mask
+		 * direction (7.152), but linked to scroll and reversible rather than a one-shot on-load play. The
+		 * content wipes up from behind an edge as its section enters; it keeps a legibility floor so text is
+		 * never fully clipped mid-view. Base (unsupported/reduced) = fully revealed.
+		 */
+		html.js .u-mask-up {
+			animation-name: m-mask-up;
+			animation-timing-function: var(--ease-emphasized);
+			animation-fill-mode: both;
+			animation-timeline: view();
+			/* entry-based: the statement is FULLY revealed by the time it has comfortably entered (and holds),
+			   so it is never left half-clipped when the reader rests on it; it only re-wipes at the viewport's
+			   own bottom fringe on the way out (reversible, but never dims legible resting text). */
+			animation-range: entry 6% entry 72%;
+		}
+		@keyframes m-mask-up {
+			from {
+				clip-path: inset(-4% 0 100% 0);
+				opacity: 0;
+				transform: translateY(0.4rem);
+			}
+			to {
+				clip-path: inset(-4% 0 -8% 0);
+				opacity: 1;
+				transform: none;
+			}
+		}
+
+		/*
+		 * RISE-LINKED (`.u-rise-linked`): a scroll-linked, reversible small rise for structural items
+		 * (list rows, numerals). Distinct from `.u-settle` (no fade to zero — the item stays legible), it
+		 * expresses continuous depth as a column of items passes, so the werkwijze/numeral chapter breathes
+		 * instead of playing one staggered rise and freezing. Stagger via each item's own `animation-range`.
+		 */
+		html.js .u-rise-linked {
+			animation-name: m-rise-linked;
+			animation-timing-function: var(--ease-out);
+			animation-fill-mode: both;
+			animation-timeline: view();
+			/* entry-based so a row is fully legible once it has entered and holds (reversible only at the
+			   bottom fringe) — text is never left dim mid-screen. */
+			animation-range: entry 2% entry 66%;
+		}
+		@keyframes m-rise-linked {
+			from {
+				opacity: 0.35;
+				transform: translateY(1.1rem);
+			}
+			to {
+				opacity: 1;
+				transform: none;
 			}
 		}
 	}
