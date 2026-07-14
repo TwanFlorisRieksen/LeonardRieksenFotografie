@@ -18,6 +18,7 @@ gallery:
     caption: "Zithoek bij de gevel"
 featured: false
 order: 5
+leadLayout: "duo-lead"
 draft: false
 ---
 

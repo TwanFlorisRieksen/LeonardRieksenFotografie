@@ -19,6 +19,7 @@ gallery:
     caption: "Horeca-inrichting"
 featured: false
 order: 4
+leadLayout: "editorial"
 draft: false
 ---
 

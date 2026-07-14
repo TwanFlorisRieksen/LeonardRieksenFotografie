@@ -23,6 +23,7 @@ gallery:
     caption: "Paleis Soestdijk"
 featured: false
 order: 1
+leadLayout: "editorial"
 draft: false
 ---
 

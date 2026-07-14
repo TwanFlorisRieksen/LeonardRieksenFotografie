@@ -15,6 +15,7 @@ gallery:
     caption: "Skyline met de Erasmusbrug"
 featured: false
 order: 3
+leadLayout: "duo-lead"
 draft: false
 ---
 

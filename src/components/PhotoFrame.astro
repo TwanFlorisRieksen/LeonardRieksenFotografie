@@ -1,0 +1,146 @@
+---
+/*
+ * PhotoFrame — an openable photograph (P6 recovery — D-34 / PH-13).
+ *
+ * Wraps <Media> in an anchor that points at an OPTIMISED derivative (never the source master — PH-08).
+ * Without JavaScript the anchor simply opens that large image (photography stays fully usable, MOT-08 /
+ * progressive enhancement). With JavaScript, Lightbox.astro intercepts the click and opens the full
+ * viewer, cycling within the shared `group`. The image itself is shown WHOLE by default (intrinsic ratio,
+ * no forced crop — 2.14/8.14); a `ratio` may be opted in only for deliberate framed slots.
+ */
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Media from './Media.astro';
+
+interface Props {
+	image: ImageMetadata;
+	alt: string;
+	caption?: string;
+	group: string;
+	widths?: number[];
+	sizes?: string;
+	priority?: boolean;
+	ratio?: string;
+	fit?: 'cover' | 'contain';
+	position?: string;
+	showCaption?: boolean;
+	class?: string;
+	mediaClass?: string;
+}
+
+const {
+	image,
+	alt,
+	caption,
+	group,
+	widths = [480, 800, 1200, 1700],
+	sizes = '100vw',
+	priority = false,
+	ratio,
+	fit,
+	position,
+	showCaption = false,
+	class: className,
+	mediaClass,
+} = Astro.props;
+
+// One large derivative for the full viewer (and the no-JS anchor target). Capped to source width by
+// astro:assets, so no upscaling; WebP keeps the payload reasonable. Not fetched until the anchor is
+// activated (anchors don't preload), so this adds nothing to initial page weight.
+const full = await getImage({ src: image, width: Math.min(image.width, 1700), format: 'webp' });
+---
+
+<figure class:list={['pf', className]}>
+	<a
+		class="pf__open"
+		href={full.src}
+		data-lightbox={group}
+		data-lb-full={full.src}
+		data-lb-w={image.width}
+		data-lb-h={image.height}
+		data-lb-alt={alt}
+		data-lb-caption={caption ?? ''}
+		aria-label={`Bekijk vergroot: ${alt}`}
+	>
+		<Media
+			src={image}
+			alt={alt}
+			widths={widths}
+			sizes={sizes}
+			priority={priority}
+			ratio={ratio}
+			fit={fit}
+			position={position}
+			class={mediaClass}
+		/>
+		<span class="pf__hint" aria-hidden="true">
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+				<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+			</svg>
+		</span>
+	</a>
+	{showCaption && caption && <figcaption class="t-caption pf__caption">{caption}</figcaption>}
+</figure>
+
+<style>
+	.pf {
+		margin: 0;
+		min-width: 0;
+	}
+	.pf__open {
+		position: relative;
+		display: block;
+		cursor: zoom-in;
+		outline-offset: 3px;
+	}
+	.pf__open :global(.media) {
+		/* a very quiet settle on hover — the photograph lifts a touch, never a spectacle (MOT priority). */
+		transition: filter var(--dur-interaction) var(--ease-standard);
+	}
+	.pf__open:hover :global(.media),
+	.pf__open:focus-visible :global(.media) {
+		filter: brightness(1.04);
+	}
+	/* Zoom affordance (UX-05: visible, not hover-only in meaning — it only *appears* on hover but the
+	   whole image is a labelled link, so touch/keyboard users still get the action + aria-label). */
+	.pf__hint {
+		position: absolute;
+		top: var(--space-sm);
+		right: var(--space-sm);
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		color: var(--p-paper-50);
+		background: rgba(6, 8, 11, 0.42);
+		backdrop-filter: blur(2px);
+		border: 1px solid var(--p-white-a14);
+		border-radius: var(--radius-sm);
+		opacity: 0;
+		transform: translateY(-2px);
+		transition: opacity var(--dur-interaction) var(--ease-standard),
+			transform var(--dur-interaction) var(--ease-standard);
+		pointer-events: none;
+	}
+	.pf__open:hover .pf__hint,
+	.pf__open:focus-visible .pf__hint {
+		opacity: 1;
+		transform: none;
+	}
+	.pf__caption {
+		margin-top: var(--space-sm);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.pf__open :global(.media),
+		.pf__hint {
+			transition: none;
+		}
+	}
+	/* Touch devices can't hover — reveal the affordance so the action is discoverable. */
+	@media (hover: none) {
+		.pf__hint {
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>

@@ -23,6 +23,7 @@ gallery:
     caption: "Verkeersruimte in het centrum"
 featured: true
 order: 0
+leadLayout: "cinematic"
 draft: false
 ---
 

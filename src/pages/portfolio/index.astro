@@ -1,281 +1,420 @@
 ---
 /*
- * Portfolio overview (P3 vertical slice — D-08/D-19). Real content, real photography, real content
- * architecture (getCollection over the projects collection; draft entries never render, ARCH-07).
+ * Portfolio overview — the exhibition (P6 recovery — D-34).
  *
- * Layout intent (PH-09/PH-12/VIS-18): a curated index, not an undirected equal-card grid. The
- * curator-flagged project (featured:true / lowest order) gets a large "lead" treatment — a big image
- * moment paired with an asymmetric text panel — the remaining projects follow in a ratio-flexible
- * 2-column index that scales cleanly as more projects are added later (P6). No image is force-cropped
- * to a uniform tile ratio (2.14/8.14); each keeps its own intrinsic aspect ratio.
+ * Not an equal-card grid. A single curated scroll that presents ALL authorised photography (every
+ * standalone work + every series) through a composed rhythm of block shapes whose geometry is driven by
+ * each photograph's REAL orientation and a curatorial scale (see lib/portfolio.ts). Statements run
+ * full-bleed, portraits and landscapes pair into asymmetric duos, the quieter frames punctuate, and the
+ * genuine multi-image series appear as lead+preview blocks linking to their stories. The photography
+ * determines the presentation; the layout never repeats a template down the page. Every standalone photo
+ * opens the shared lightbox; every series image opens the lightbox on its detail page.
  */
-import { getCollection } from 'astro:content';
+import { getOverview } from '../../lib/portfolio';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Section from '../../components/Section.astro';
 import Media from '../../components/Media.astro';
+import PhotoFrame from '../../components/PhotoFrame.astro';
+import Lightbox from '../../components/Lightbox.astro';
 
-// PH-06/CLS: only the lead project's cover is priority-loaded (it is the page's LCP candidate); every
-// other cover stays lazy. Draft entries (12.90 workflow states) never render here.
-const allProjects = await getCollection('projects', ({ data }) => !data.draft);
-const projects = allProjects.sort((a, b) => a.data.order - b.data.order);
-const [lead, ...rest] = projects;
-
+const { blocks, total, workCount, seriesCount } = await getOverview();
 const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
+const LB = 'portfolio';
+
+// The first photograph on the page is the LCP candidate — mark only that one as priority.
+let prioritySpent = false;
+const takePriority = () => {
+	if (prioritySpent) return false;
+	prioritySpent = true;
+	return true;
+};
 ---
 
 <BaseLayout
 	title="Portfolio"
-	description="Portfolio van Leonard Rieksen Fotografie — gecureerde architectuur- en interieurfotografie, per project gepresenteerd."
+	description="Het volledige portfolio van Leonard Rieksen Fotografie — architectuur- en interieurfotografie als één gecureerde beeldreeks, van losse werken tot complete projecten."
 >
-	<Section tight class="port-sec">
+	<header class="exh-intro u-container">
 		<p class="t-eyebrow t-eyebrow--accent">Architectuur- &amp; interieurfotografie</p>
-		<h1 class="t-display port-title">Portfolio</h1>
-		<p class="t-lead port-intro">
-			Een selectie van projecten, elk als geheel gefotografeerd — van een enkel gebouw tot een dag
-			in een stad. Open een project voor de volledige beeldreeks.
+		<h1 class="t-display exh-intro__title">Portfolio</h1>
+		<p class="t-lead exh-intro__lead">
+			Het volledige werk als één doorlopende reeks — losse beelden en complete projecten, in een
+			opbouw die het licht en de compositie van elke foto volgt. Klik op een beeld om het schermvullend
+			te bekijken; open een reeks voor het hele verhaal.
 		</p>
+	</header>
 
-		<ul class="port-index">
-			{
-				lead && (
-					<li class="port-index__item port-index__item--lead">
-						<a class="port-lead" href={`/portfolio/${lead.id}/`}>
-							<Media
-								src={lead.data.coverImage}
-								alt={lead.data.coverImageAlt}
-								priority={true}
-								widths={[480, 800, 1200, 1700]}
-								sizes="(min-width: 56rem) 60vw, 100vw"
-								class="port-lead__media"
-							/>
-							<div class="port-lead__panel">
-								<span class="port-ord port-ord--lead" aria-hidden="true">01</span>
-								<p class="t-eyebrow">
-									{categoryLabel[lead.data.category]}
-									{lead.data.location && <> &middot; {lead.data.location}</>}
-									{lead.data.year && <> &middot; {lead.data.year}</>}
-								</p>
-								<h2 class="t-h2 port-lead__title">{lead.data.title}</h2>
-								<p class="t-secondary port-lead__summary">{lead.data.summary}</p>
-								<span class="port-cta">
-									Bekijk project
-									<svg
-										class="port-cta__arrow"
-										width="18"
-										height="18"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="1.75"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										aria-hidden="true"
-										focusable="false"
-									>
-										<path d="M4 12h15M13 6l6 6-6 6" />
-									</svg>
-								</span>
-							</div>
-						</a>
-					</li>
-				)
-			}
-			{
-				rest.map((project, i) => (
-					<li class="port-index__item">
-						<a class="port-card" href={`/portfolio/${project.id}/`}>
-							<Media
-								src={project.data.coverImage}
-								alt={project.data.coverImageAlt}
-								widths={[400, 800, 1200]}
-								sizes="(min-width: 56rem) 48vw, 100vw"
-								class="port-card__media"
-							/>
-							<div class="port-card__caption">
-								<div class="port-card__meta">
-									<span class="port-ord" aria-hidden="true">{String(i + 2).padStart(2, '0')}</span>
-									<p class="t-eyebrow">
-										{categoryLabel[project.data.category]}
-										{project.data.location && <> &middot; {project.data.location}</>}
-									</p>
+	<div class="exh">
+		{
+			blocks.map((block) => {
+				if (block.type === 'series') {
+					const p = block.project;
+					const previews = p.data.gallery.slice(0, 3);
+					return (
+						<section class="exh-block exh-series u-inview" aria-labelledby={`s-${p.id}`}>
+							<a class="exh-series__link" href={`/portfolio/${p.id}/`}>
+								<div class="exh-series__lead">
+									<Media
+										src={p.data.coverImage}
+										alt={p.data.coverImageAlt}
+										widths={[480, 800, 1200, 1700]}
+										sizes="(min-width: 60rem) 60vw, 100vw"
+										class="exh-series__lead-media"
+									/>
 								</div>
-								<h2 class="t-h3 port-card__title">{project.data.title}</h2>
+								<div class="exh-series__body">
+									<p class="t-eyebrow exh-series__kicker">
+										Reeks
+										<span class="exh-series__dot" aria-hidden="true">·</span>
+										{categoryLabel[p.data.category]}
+										{p.data.location && <> · {p.data.location}</>}
+									</p>
+									<h2 class="t-h2 exh-series__title" id={`s-${p.id}`}>
+										{p.data.title}
+									</h2>
+									<p class="t-secondary exh-series__summary">{p.data.summary}</p>
+									<span class="exh-series__cta">
+										Bekijk reeks
+										<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+									</span>
+								</div>
+								{previews.length > 0 && (
+									<div class="exh-series__strip" aria-hidden="true">
+										{previews.map((g) => (
+											<Media
+												src={g.image}
+												alt=""
+												widths={[240, 480]}
+												sizes="30vw"
+												ratio="4/3"
+												class="exh-series__thumb"
+											/>
+										))}
+									</div>
+								)}
+							</a>
+						</section>
+					);
+				}
+
+				if (block.type === 'statement') {
+					const it = block.item;
+					return (
+						<section class={`exh-block exh-statement exh-statement--${it.orientation} u-inview`}>
+							<PhotoFrame
+								image={it.image}
+								alt={it.alt}
+								caption={it.caption}
+								group={LB}
+								priority={takePriority()}
+								widths={[800, 1200, 1700, 2200]}
+								sizes="100vw"
+								mediaClass="exh-statement__media"
+							/>
+							<div class="exh-cap">
+								<span class="exh-cap__label">{categoryLabel[it.category]}</span>
+								{it.caption && <span class="exh-cap__text">{it.caption}</span>}
 							</div>
-						</a>
-					</li>
-				))
-			}
-		</ul>
-	</Section>
+						</section>
+					);
+				}
+
+				if (block.type === 'wide') {
+					const it = block.item;
+					return (
+						<section class="exh-block exh-wide u-inview">
+							<PhotoFrame
+								image={it.image}
+								alt={it.alt}
+								caption={it.caption}
+								group={LB}
+								priority={takePriority()}
+								widths={[800, 1200, 1700, 2200]}
+								sizes="(min-width: 105rem) 1680px, 100vw"
+								mediaClass="exh-wide__media"
+							/>
+							<div class="exh-cap">
+								<span class="exh-cap__label">{categoryLabel[it.category]}</span>
+								{it.caption && <span class="exh-cap__text">{it.caption}</span>}
+							</div>
+						</section>
+					);
+				}
+
+				if (block.type === 'duo') {
+					const [a, b] = block.items;
+					// The portrait leads the tall column; two same-orientation works alternate emphasis.
+					const portraitFirst = a.orientation === 'portrait' && b.orientation !== 'portrait';
+					return (
+						<section class={`exh-block exh-duo u-inview ${portraitFirst ? 'exh-duo--portrait-lead' : ''}`}>
+							{[a, b].map((it) => (
+								<div class="exh-duo__cell">
+									<PhotoFrame
+										image={it.image}
+										alt={it.alt}
+										caption={it.caption}
+										group={LB}
+										priority={takePriority()}
+										widths={[480, 800, 1200]}
+										sizes="(min-width: 48rem) 48vw, 100vw"
+									/>
+									{it.caption && <p class="t-caption exh-duo__cap">{it.caption}</p>}
+								</div>
+							))}
+						</section>
+					);
+				}
+
+				if (block.type === 'quiet') {
+					return (
+						<section class={`exh-block exh-quiet exh-quiet--${block.items.length} u-inview`}>
+							{block.items.map((it) => (
+								<figure class="exh-quiet__cell">
+									<PhotoFrame
+										image={it.image}
+										alt={it.alt}
+										caption={it.caption}
+										group={LB}
+										widths={[360, 640]}
+										sizes="(min-width: 48rem) 30vw, 100vw"
+									/>
+									{it.caption && <figcaption class="t-caption exh-quiet__cap">{it.caption}</figcaption>}
+								</figure>
+							))}
+						</section>
+					);
+				}
+
+				// single
+				const it = block.item;
+				return (
+					<section class="exh-block exh-single u-inview">
+						<PhotoFrame
+							image={it.image}
+							alt={it.alt}
+							caption={it.caption}
+							group={LB}
+							priority={takePriority()}
+							widths={[600, 900, 1300]}
+							sizes="(min-width: 60rem) 60rem, 100vw"
+							mediaClass="exh-single__media"
+						/>
+						{it.caption && <p class="t-caption exh-single__cap">{it.caption}</p>}
+					</section>
+				);
+			})
+		}
+	</div>
+
+	<footer class="exh-outro u-container">
+		<p class="t-caption exh-outro__count">
+			{workCount} losse werken · {seriesCount} projecten · {total} foto's
+		</p>
+	</footer>
+
+	<Lightbox />
 </BaseLayout>
 
-
 <style>
-	/* P4.8 CROSS-SITE (D-28) — the portfolio's signature is a refined, NUMBERED editorial index (curation made
-	 * explicit, 8.2/PH-09), not a photo-coloured wash. The masthead's large empty upper-right negative space is
-	 * modelled with a single soft *diagonal linear* tonal lift from that corner (using the dead space, giving the
-	 * type spatial depth) — a directional wall gradient, deliberately NOT a radial bubble and NOT the diensten
-	 * top-raked wall. Photography still dominates the page below (quiet gallery, photos carry it). */
-	.port-sec {
-		position: relative;
-		isolation: isolate;
-		overflow-x: clip;
+	/* --- Intro masthead --- */
+	.exh-intro {
+		padding-top: clamp(2.5rem, 1.5rem + 6vw, 6rem);
+		padding-bottom: clamp(2rem, 1.5rem + 3vw, 4rem);
 	}
-	/* P4.9 (D-29) — strengthen the site's strongest existing cross-boundary moment (the owner's cited example: the
-	   lead photograph straddles the masthead field→base). The colourful Arnhem lead (a pink-sunset sky over
-	   cyan/green glass) now appears to CAST ITS OWN warm light into the field: a low, wide warm pool peaks in the
-	   negative space at the lead image's lower-left, so the crossing reads as photographic light-spill, not just a
-	   photo laid over a tonal wall (Limitation 2). The pool is achromatic-safe elsewhere — it is anchored ONLY to
-	   this warm-skied image; the field stays cool where the type sits. Low alpha, below the photo's own luminance. */
-	.port-sec::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: clamp(22rem, 16rem + 20vw, 42rem);
-		z-index: -1;
-		pointer-events: none;
-		background:
-			radial-gradient(
-				58% 46% at 25% 86%,
-				rgba(var(--p-atmos-warm), 0.11) 0%,
-				rgba(var(--p-atmos-warm), 0.03) 46%,
-				rgba(var(--p-atmos-warm), 0) 66%
-			),
-			linear-gradient(
-				218deg,
-				rgba(var(--p-atmos-cool), 0.17) 0%,
-				rgba(var(--p-atmos-cool), 0.05) 32%,
-				rgba(var(--p-atmos-cool), 0) 66%
-			);
-	}
-	.port-title {
+	.exh-intro__title {
 		margin-block: var(--space-sm) var(--space-lg);
 	}
-	.port-intro {
-		max-width: 46ch;
+	.exh-intro__lead {
+		max-width: 52ch;
 	}
 
-	/* Refined index numbering — the one NEW gold role here: small champagne ordinals aligned to each entry's
-	   category label, marking the curated sequence. A precision/tabular hierarchy (6.11), distinct from the
-	   monumental gold werkwijze numerals elsewhere (those are display-scale; these are fine metadata markers). */
-	.port-ord {
-		font-family: var(--font-display);
-		font-weight: var(--fw-display);
-		font-size: var(--fs-caption);
-		line-height: 1;
-		letter-spacing: 0.04em;
-		color: var(--color-accent);
-		font-variant-numeric: tabular-nums;
-	}
-	.port-ord--lead {
-		display: block;
-		font-size: var(--fs-h4);
-		margin-bottom: var(--space-sm);
-	}
-	.port-card__meta {
+	/* --- Exhibition flow: the frame is wide; statements break fully out of it. --- */
+	.exh {
+		--exh-frame: min(100% - 2 * var(--gutter), var(--container-wide));
 		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: clamp(3.25rem, 2.4rem + 3.5vw, 6.5rem);
+		overflow-x: clip;
+	}
+	.exh-block {
+		width: var(--exh-frame);
+		max-width: 100%;
+	}
+
+	/* Captions shared style — quiet metadata under statements/singles. */
+	.exh-cap {
+		display: flex;
+		flex-wrap: wrap;
 		align-items: baseline;
-		gap: var(--space-sm);
+		gap: var(--space-sm) var(--space-md);
+		margin-top: var(--space-md);
+	}
+	.exh-cap__label {
+		font-size: var(--fs-eyebrow);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-eyebrow);
+		text-transform: uppercase;
+		color: var(--color-accent);
+	}
+	.exh-cap__text {
+		font-size: var(--fs-caption);
+		color: var(--color-text-muted);
 	}
 
-	.port-index {
+	/* --- Statement: a big quiet moment. Panoramas break to full viewport width. --- */
+	.exh-statement--pano {
+		width: 100vw;
+	}
+	.exh-statement :global(.exh-statement__media) {
+		width: 100%;
+	}
+
+	/* --- Wide: a big panorama held INSIDE the frame (calmer than a full-bleed statement) — the shape
+	   difference from a statement is the frame gutter, giving the eye a change of register. --- */
+	.exh-wide :global(.exh-wide__media) {
+		width: 100%;
+	}
+
+	/* --- Duo: two unequal columns, portrait↔landscape interplay. --- */
+	.exh-duo {
 		display: grid;
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: 1fr 1fr;
+		gap: clamp(1rem, 0.5rem + 2vw, 2.5rem);
 		align-items: start;
-		gap: var(--space-3xl) var(--space-2xl);
-		margin-top: clamp(3rem, 2rem + 4vw, 5.5rem);
 	}
-	.port-index__item {
-		min-width: 0;
-	}
-	.port-index__item--lead {
-		grid-column: 1 / -1;
-	}
-
-	/* --- Lead entry: big image moment + asymmetric text panel (VIS-18) --- */
-	.port-lead {
-		display: grid;
-		grid-template-columns: 1.5fr 1fr;
-		gap: var(--space-2xl);
+	.exh-duo--portrait-lead {
+		grid-template-columns: 0.82fr 1.18fr;
 		align-items: end;
 	}
-	.port-lead__media {
-		grid-row: 1;
-	}
-	.port-lead__panel {
-		grid-row: 1;
-		padding-bottom: var(--space-sm);
-	}
-	.port-lead__title {
-		margin-block: var(--space-sm) var(--space-md);
-	}
-	.port-lead__summary {
-		max-width: 40ch;
+	.exh-duo__cap {
+		margin-top: var(--space-sm);
 	}
 
-	/* --- Shared "view project" affordance (UX-05 — visible, not hover-only) --- */
-	.port-cta {
+	/* --- Quiet: small contained punctuation, centred with air. --- */
+	.exh-quiet {
+		display: grid;
+		justify-content: center;
+		gap: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+		max-width: min(100%, 68rem);
+	}
+	.exh-quiet--1 {
+		grid-template-columns: minmax(0, 26rem);
+	}
+	.exh-quiet--2 {
+		grid-template-columns: repeat(2, minmax(0, 22rem));
+	}
+	.exh-quiet--3 {
+		grid-template-columns: repeat(3, minmax(0, 19rem));
+	}
+	.exh-quiet__cell {
+		margin: 0;
+	}
+	.exh-quiet__cap {
+		margin-top: var(--space-xs);
+	}
+
+	/* --- Single: a calm contained beat. --- */
+	.exh-single {
+		width: min(var(--exh-frame), 62rem);
+	}
+
+	/* --- Series: lead + preview strip, the one block that links to a story. --- */
+	.exh-series__link {
+		display: grid;
+		grid-template-columns: 1.5fr 1fr;
+		grid-template-areas: 'lead body' 'lead strip';
+		gap: var(--space-lg) clamp(1.5rem, 1rem + 2vw, 3rem);
+		align-items: start;
+	}
+	.exh-series__lead {
+		grid-area: lead;
+	}
+	.exh-series__lead-media {
+		width: 100%;
+		transition: filter var(--dur-interaction) var(--ease-standard);
+	}
+	.exh-series__link:hover .exh-series__lead-media,
+	.exh-series__link:focus-visible .exh-series__lead-media {
+		filter: brightness(1.04);
+	}
+	.exh-series__body {
+		grid-area: body;
+		align-self: center;
+	}
+	.exh-series__kicker {
+		color: var(--color-text-muted);
+	}
+	.exh-series__dot {
+		margin-inline: 0.4em;
+		color: var(--color-accent);
+	}
+	.exh-series__title {
+		margin-block: var(--space-sm) var(--space-md);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.exh-series__link:hover .exh-series__title,
+	.exh-series__link:focus-visible .exh-series__title {
+		color: var(--color-accent);
+	}
+	.exh-series__summary {
+		max-width: 42ch;
+	}
+	.exh-series__cta {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-xs);
-		margin-top: var(--space-xl);
+		margin-top: var(--space-lg);
 		font-size: var(--fs-body-sm);
 		font-weight: var(--fw-semibold);
 		color: var(--color-text);
 	}
-	.port-cta__arrow {
+	.exh-series__cta svg {
 		transition: transform var(--dur-interaction) var(--ease-out);
 	}
-	.port-lead:hover .port-cta__arrow,
-	.port-lead:focus-visible .port-cta__arrow {
+	.exh-series__link:hover .exh-series__cta svg,
+	.exh-series__link:focus-visible .exh-series__cta svg {
 		transform: translateX(3px);
 	}
-	.port-lead:hover .port-lead__title,
-	.port-lead:focus-visible .port-lead__title {
-		color: var(--color-accent);
-	}
-	.port-lead__title {
-		transition: color var(--dur-interaction) var(--ease-standard);
-	}
-
-	/* --- Remaining projects: ratio-flexible 2-col index --- */
-	.port-card {
-		display: block;
-	}
-	.port-card__caption {
-		margin-top: var(--space-md);
-	}
-	.port-card__title {
-		margin-top: var(--space-2xs);
-		transition: color var(--dur-interaction) var(--ease-standard);
-	}
-	.port-card:hover .port-card__title,
-	.port-card:focus-visible .port-card__title {
-		color: var(--color-accent);
+	.exh-series__strip {
+		grid-area: strip;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--space-sm);
+		align-self: end;
 	}
 
-	@media (max-width: 56rem) {
-		.port-lead {
+	/* --- Outro count --- */
+	.exh-outro {
+		margin-top: clamp(3rem, 2rem + 4vw, 6rem);
+		padding-bottom: var(--space-2xl);
+		text-align: center;
+	}
+
+	/* ---------------- Responsive ---------------- */
+	@media (max-width: 60rem) {
+		.exh-series__link {
 			grid-template-columns: 1fr;
-			align-items: start;
+			grid-template-areas: 'lead' 'body' 'strip';
+			gap: var(--space-lg);
 		}
-		/* Desktop pins media/panel into the same row (side-by-side, end-aligned); a 1-column grid must
-		   release that back to normal flow or the two children overlap instead of stacking. */
-		.port-lead__media,
-		.port-lead__panel {
-			grid-row: auto;
-		}
-		.port-lead__panel {
-			padding-bottom: 0;
-			margin-top: var(--space-xl);
+		.exh-series__body {
+			align-self: start;
 		}
 	}
 	@media (max-width: 40rem) {
-		.port-index {
+		.exh-duo,
+		.exh-duo--portrait-lead {
 			grid-template-columns: 1fr;
-			gap: var(--space-2xl);
+			gap: var(--space-lg);
+		}
+		.exh-quiet--2,
+		.exh-quiet--3 {
+			grid-template-columns: 1fr 1fr;
+		}
+		.exh-quiet__cell:last-child:nth-child(odd) {
+			grid-column: 1 / -1;
+			justify-self: center;
+			max-width: 60%;
 		}
 	}
 </style>

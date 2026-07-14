@@ -1,0 +1,360 @@
+{
+  "works": [
+    {
+      "id": "glazen-paviljoen",
+      "image": "./glazen-paviljoen.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een strak geometrisch glazen paviljoen boven stil water, met de constructie weerspiegeld in het wateroppervlak."
+    },
+    {
+      "id": "industriele-oever-nacht",
+      "image": "./industriele-oever-nacht.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een extreem breed nachtpanorama van een verlichte industriële oever."
+    },
+    {
+      "id": "lichtkunst-groen",
+      "image": "./lichtkunst-groen.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Groene laserstralen van een lichtkunstwerk waaieren uit over een nachtelijke locatie."
+    },
+    {
+      "id": "brug-avondrood",
+      "image": "./brug-avondrood.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Het silhouet van een gebogen brugconstructie tegen een diep oranje avondlucht."
+    },
+    {
+      "id": "gebogen-lichtruimte",
+      "image": "./gebogen-lichtruimte.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een warme, gebogen ruimte waarin gefilterd licht langs vloeiende wanden valt."
+    },
+    {
+      "id": "eemhuis-bibliotheek",
+      "image": "./eemhuis-bibliotheek.jpg",
+      "category": "interieur",
+      "scale": "standard",
+      "alt": "Het warme, houten trappen- en boekenlandschap van de bibliotheek in het Eemhuis.",
+      "caption": "Eemhuis, Amersfoort",
+      "location": "Amersfoort",
+      "year": 2014
+    },
+    {
+      "id": "olv-toren-amersfoort",
+      "image": "./olv-toren-amersfoort.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "De Onze Lieve Vrouwetoren in Amersfoort, van onderaf tegen de lucht gefotografeerd.",
+      "caption": "Onze Lieve Vrouwetoren, Amersfoort",
+      "location": "Amersfoort",
+      "year": 2014
+    },
+    {
+      "id": "westerveld-koepel",
+      "image": "./westerveld-koepel.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Een geometrische glazen koepel van crematorium Westerveld, van binnenuit gezien tegen de lucht.",
+      "caption": "Crematorium Westerveld",
+      "year": 2014
+    },
+    {
+      "id": "kerk-deventer-avond",
+      "image": "./kerk-deventer-avond.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een historische kerk in Deventer, 's avonds aangelicht onder een diepblauwe lucht.",
+      "caption": "Deventer",
+      "location": "Deventer",
+      "year": 2015
+    },
+    {
+      "id": "nemo-amsterdam",
+      "image": "./nemo-amsterdam.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Het groene, getrapte dak van sciencemuseum NEMO in Amsterdam loopt als een landschap omhoog.",
+      "caption": "NEMO, Amsterdam",
+      "location": "Amsterdam",
+      "year": 2015
+    },
+    {
+      "id": "baarnsche-bos-boog",
+      "image": "./baarnsche-bos-boog.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Een stenen boogdoorgang in het Baarnsche Bos, in zwart-wit, met licht aan het einde van de tunnel.",
+      "caption": "Baarnsche Bos, Baarn",
+      "location": "Baarn",
+      "year": 2016
+    },
+    {
+      "id": "lindenlaan-baarn",
+      "image": "./lindenlaan-baarn.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Een lindelaan met een pad door het Baarnsche Bos op een heldere dag.",
+      "caption": "Baarnsche Bos, Baarn",
+      "location": "Baarn",
+      "year": 2016
+    },
+    {
+      "id": "wintertuin-cantonspark",
+      "image": "./wintertuin-cantonspark.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "De wintertuin van het Cantonspark in Baarn, met glas en groen in daglicht.",
+      "caption": "Wintertuin, Cantonspark",
+      "location": "Baarn",
+      "year": 2016
+    },
+    {
+      "id": "soestdijk-lichtshow",
+      "image": "./soestdijk-lichtshow.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Paleis Soestdijk 's avonds, overgoten met een kleurrijke lichtprojectie.",
+      "caption": "Lichtshow, Paleis Soestdijk",
+      "location": "Soestdijk",
+      "year": 2018
+    },
+    {
+      "id": "zonnepanelen-veld",
+      "image": "./zonnepanelen-veld.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een luchtopname van een uitgestrekt veld met zonnepanelen op een industrieel terrein.",
+      "year": 2019
+    },
+    {
+      "id": "stadsgezicht-nacht",
+      "image": "./stadsgezicht-nacht.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een breed, donker nachtelijk stadsgezicht met verspreide lichtpunten."
+    },
+    {
+      "id": "gewelfde-hal-warm",
+      "image": "./gewelfde-hal-warm.jpg",
+      "category": "interieur",
+      "scale": "standard",
+      "alt": "Een gewelfde betonnen hal, warm uitgelicht zodat de ronding van het plafond oplicht."
+    },
+    {
+      "id": "interieurdetail-licht",
+      "image": "./interieurdetail-licht.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Een verticaal interieurdetail waarin licht en schaduw langs een strakke wand spelen."
+    },
+    {
+      "id": "tuibrug-blauwe-uur",
+      "image": "./tuibrug-blauwe-uur.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Een moderne tuibrug in het blauwe uur, met de pyloon weerspiegeld in het water."
+    },
+    {
+      "id": "witte-villa-park",
+      "image": "./witte-villa-park.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een symmetrische witte villa met parkaanleg ervoor, in helder daglicht."
+    },
+    {
+      "id": "tunnel-warm-eindpunt",
+      "image": "./tunnel-warm-eindpunt.jpg",
+      "category": "interieur",
+      "scale": "standard",
+      "alt": "Een tunnelvormige ruimte die naar een warm oplichtend eindpunt loopt."
+    },
+    {
+      "id": "witte-zaal-boog",
+      "image": "./witte-zaal-boog.jpg",
+      "category": "interieur",
+      "scale": "standard",
+      "alt": "Een lichte, witte museumzaal met een boogvormige doorgang."
+    },
+    {
+      "id": "gevel-warm-blauwe-uur",
+      "image": "./gevel-warm-blauwe-uur.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Een gebouw in het blauwe uur met warm verlichte ramen tegen een diepblauwe lucht."
+    },
+    {
+      "id": "modern-gebouw-schemering",
+      "image": "./modern-gebouw-schemering.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een strak modern gebouw in de schemering, met warm licht achter de gevel."
+    },
+    {
+      "id": "glasgevel-avondlicht",
+      "image": "./glasgevel-avondlicht.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een glazen gevel die 's avonds van binnenuit oplicht."
+    },
+    {
+      "id": "skyline-schemering",
+      "image": "./skyline-schemering.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Een kleurrijke skyline in de schemering, weerspiegeld in het water."
+    },
+    {
+      "id": "brug-skyline-blauwe-uur",
+      "image": "./brug-skyline-blauwe-uur.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Een panoramische skyline met een verlichte brug in het blauwe uur."
+    },
+    {
+      "id": "lichtlijnen-roze",
+      "image": "./lichtlijnen-roze.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Een abstracte compositie van roze en paarse lichtlijnen tegen het donker."
+    },
+    {
+      "id": "monumentale-zaal",
+      "image": "./monumentale-zaal.jpg",
+      "category": "interieur",
+      "scale": "standard",
+      "alt": "Een monumentale zaal met hoge boogramen en kroonluchters."
+    },
+    {
+      "id": "lichtbol-studie",
+      "image": "./lichtbol-studie.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Een bol van gekleurde lichtsporen, gevormd met een lange sluitertijd — een abstracte lichtstudie."
+    },
+    {
+      "id": "oranje-gevel-verticaal",
+      "image": "./oranje-gevel-verticaal.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een warm oranje verlichte gevel, verticaal in beeld gebracht."
+    },
+    {
+      "id": "witte-gang-lang",
+      "image": "./witte-gang-lang.jpg",
+      "category": "interieur",
+      "scale": "feature",
+      "alt": "Een lange, minimalistische witte gang die diep de ruimte in loopt."
+    },
+    {
+      "id": "stadsstraat-schemering",
+      "image": "./stadsstraat-schemering.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een stadsstraat in de schemering met warme straatverlichting."
+    },
+    {
+      "id": "interieurgang-warm",
+      "image": "./interieurgang-warm.jpg",
+      "category": "interieur",
+      "scale": "standard",
+      "alt": "Een warm getinte interieurgang met een strak lijnenspel."
+    },
+    {
+      "id": "waterfront-panorama",
+      "image": "./waterfront-panorama.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Een zeer breed panorama van een waterfront in het blauwe uur."
+    },
+    {
+      "id": "gebouw-avond-vierkant",
+      "image": "./gebouw-avond-vierkant.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een warm verlicht gebouw in de avond, vierkant gekaderd."
+    },
+    {
+      "id": "zeilboot-haven",
+      "image": "./zeilboot-haven.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Een witte zeilboot in een jachthaven op een heldere dag."
+    },
+    {
+      "id": "parkboom-daglicht",
+      "image": "./parkboom-daglicht.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Een grote, volgroeide boom in een park in vol daglicht."
+    },
+    {
+      "id": "gebouw-spiegeling-water",
+      "image": "./gebouw-spiegeling-water.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Een modern gebouw dat symmetrisch weerspiegelt in het water eronder, onder een blauwe lucht."
+    },
+    {
+      "id": "baksteen-woontoren",
+      "image": "./baksteen-woontoren.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een bakstenen woontoren tegen een strakblauwe lucht, van onderaf gefotografeerd."
+    },
+    {
+      "id": "glasgevel-kleurvlakken",
+      "image": "./glasgevel-kleurvlakken.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Een kleurrijke glasgevel waarin gekleurde panelen een abstract patroon vormen."
+    },
+    {
+      "id": "nachtbeeld-blauw-licht",
+      "image": "./nachtbeeld-blauw-licht.jpg",
+      "category": "architectuur",
+      "scale": "feature",
+      "alt": "Een breed nachtbeeld waarin een gebouw baadt in blauw en wit licht."
+    },
+    {
+      "id": "skyline-woonbebouwing",
+      "image": "./skyline-woonbebouwing.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een panoramische skyline van moderne woonbebouwing bij daglicht."
+    },
+    {
+      "id": "baksteenarchitectuur-water",
+      "image": "./baksteenarchitectuur-water.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een blok moderne baksteenarchitectuur langs het water, onder een blauwe lucht."
+    },
+    {
+      "id": "parkscene-bomen",
+      "image": "./parkscene-bomen.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Een groene parkscène met bomen in vol daglicht."
+    },
+    {
+      "id": "parklaan-pad",
+      "image": "./parklaan-pad.jpg",
+      "category": "architectuur",
+      "scale": "quiet",
+      "alt": "Een breed beeld van een parklaan met bomen langs het pad."
+    },
+    {
+      "id": "modernistische-gevel-zw",
+      "image": "./modernistische-gevel-zw.jpg",
+      "category": "architectuur",
+      "scale": "standard",
+      "alt": "Een strak modernistisch gebouw in zwart-wit, teruggebracht tot lijn en vlak."
+    }
+  ]
+}

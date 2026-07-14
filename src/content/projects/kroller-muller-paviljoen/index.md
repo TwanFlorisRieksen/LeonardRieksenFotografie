@@ -15,6 +15,7 @@ gallery:
     caption: "Het paviljoen vanaf het bospad"
 featured: false
 order: 2
+leadLayout: "cinematic"
 draft: false
 ---
 

@@ -1,5 +1,7 @@
 # build output
 dist/
+# local validation screenshots (scratch — never commit)
+screenshots/
 # generated types
 .astro/
 

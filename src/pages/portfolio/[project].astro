@@ -1,253 +1,240 @@
 ---
 /*
- * Project detail (P3 vertical slice — D-08/D-19). One template, reused by every published project
- * (ARCH-07/13.94). Layout intent: a big lead-image moment (PH-01/VIS-18), a short editorial "spec +
- * text" intro, then a curated image sequence where each photo's own ratio decides its treatment — wide
- * shots run full-bleed, the portrait closing shot gets a contained, paired-with-text ending (no universal
- * crop, 2.14/8.14). Real content only; no invented facts (CLAUDE §4.6/§9.2).
+ * Project detail (P6 recovery — D-34). One maintainable template, a bounded set of OPENING treatments.
+ *
+ * The rejected pattern — every project opening on the same cropped, darkened cover with the title burned
+ * over it — is gone. The lead photograph is now shown WHOLE (intrinsic ratio, no scrim, no overlaid
+ * title); the title is set as its own typography. Which opening a project uses is chosen by its
+ * `leadLayout` (cinematic / editorial / duo-lead), so different projects open with different rhythm while
+ * staying one template. The beeldreeks below is composed by each image's real orientation (composeGallery),
+ * and every photograph opens the shared lightbox. Metadata + story are preserved but SUPPORT the images.
  */
 import { getCollection, render } from 'astro:content';
 import { getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
-import Media from '../../components/Media.astro';
+import PhotoFrame from '../../components/PhotoFrame.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import { composeGallery } from '../../lib/portfolio';
 
-// ARCH-07 / 13.94: one static route per published project entry, generated from the CMS collection.
-// Draft entries (12.90) never generate a public route — this is the enforcement point, not just a filter.
 export async function getStaticPaths() {
 	const projects = await getCollection('projects', ({ data }) => !data.draft);
-	return projects.map((project) => ({
-		params: { project: project.id },
-		props: { project },
-	}));
+	return projects.map((project) => ({ params: { project: project.id }, props: { project } }));
 }
 
 const { project } = Astro.props;
 const { Content } = await render(project);
 const data = project.data;
+const LB = 'project';
 
 const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
 
-// P5.1 (D-32) — contextual return to the discipline this project belongs to (UX-03 / IA). A project reached
-// via Diensten → Architectuur-/Interieurfotografie → "Relevante projecten" previously offered only a route back
-// to Portfolio, dropping the service context. The content model's `category` is the AUTHORITATIVE relationship
-// (see content.config.ts — "drives … which Diensten page cross-links here"), so this link is derived from the
-// project itself, NOT from browser history: it is truthful wherever the visitor arrived from (a project may be
-// reached from both Portfolio and either service page). Paired with the existing Portfolio return, never replacing it.
 const serviceReturn: Record<string, { href: string; label: string }> = {
 	architectuur: { href: '/diensten/architectuurfotografie/', label: 'Meer over architectuurfotografie' },
 	interieur: { href: '/diensten/interieurfotografie/', label: 'Meer over interieurfotografie' },
 };
 const service = serviceReturn[data.category];
 
-// SEO-04/12.51-12.52: per-entry override with a quality fallback, never a blank tag.
 const seoTitle = data.seoTitle ?? data.title;
 const seoDescription = data.seoDescription ?? data.summary;
-
-// SEO-06 / image protection (12.3): og:image MUST be an optimized derivative, never the raw source
-// original — see D-09. Width 1200 = standard OG width; not cropped to a fixed ratio (2.14/8.14 forbid
-// arbitrary cropping of photography).
 const ogSourceImage = data.socialImage ?? data.coverImage;
 const ogImage = await getImage({ src: ogSourceImage, width: 1200, format: 'jpeg' });
 
-// The portrait/tall closing image (if any) gets the paired "ending" treatment instead of running
-// full-bleed like the wide shots — a deliberate curation decision, not an accident of markup order.
-const lastIndex = data.gallery.length - 1;
+// duo-lead consumes the first gallery image in the opening; the rest form the sequence below.
+const layout = data.leadLayout;
+const duoPartner = layout === 'duo-lead' ? data.gallery[0] : undefined;
+const gallerySource = duoPartner ? data.gallery.slice(1) : data.gallery;
+const galleryBlocks = composeGallery(gallerySource);
 ---
 
 <BaseLayout title={seoTitle} description={seoDescription} socialImage={ogImage.src}>
-	<article>
-		<!-- Lead image moment: full-bleed cover + scrim title panel (proven pattern from /styleguide's
-		     hero — not experimental here). This is the page's LCP candidate: eager + high priority. -->
-		<div class="proj-hero">
-			<Media
-				src={data.coverImage}
-				alt={data.coverImageAlt}
-				priority={true}
-				widths={[480, 800, 1200, 1700]}
-				sizes="100vw"
-				class="proj-hero__media"
-			/>
-			<div class="proj-hero__scrim"></div>
-			<div class="proj-hero__content u-container u-container--wide">
-				<p class="t-eyebrow t-eyebrow--accent">
-					{categoryLabel[data.category]}
-					{data.location && <> &middot; {data.location}</>}
-					{data.year && <> &middot; {data.year}</>}
-				</p>
-				<h1 class="t-display proj-hero__title">{data.title}</h1>
-			</div>
-		</div>
+	<article class={`proj proj--${layout}`}>
+		<!-- ===================== OPENING ===================== -->
+		{
+			layout === 'editorial' ? (
+				<Section tight as="header" class="proj-open proj-open--editorial">
+					<p class="t-eyebrow t-eyebrow--accent proj-open__eyebrow">
+						{categoryLabel[data.category]}
+						{data.location && <> &middot; {data.location}</>}
+						{data.year && <> &middot; {data.year}</>}
+					</p>
+					<h1 class="t-display proj-open__title">{data.title}</h1>
+					<p class="t-lead proj-open__lead">{data.summary}</p>
+				</Section>
+			) : (
+				<header class="proj-open">
+					<div class={`proj-open__frame ${layout === 'cinematic' ? 'proj-open__frame--wide' : 'proj-open__frame--duo'}`}>
+						{layout === 'duo-lead' && duoPartner ? (
+							<div class="proj-open__duo">
+								<PhotoFrame image={data.coverImage} alt={data.coverImageAlt} group={LB} priority widths={[600, 1000, 1400]} sizes="(min-width: 52rem) 58vw, 100vw" />
+								<PhotoFrame image={duoPartner.image} alt={duoPartner.alt} caption={duoPartner.caption} group={LB} priority widths={[480, 800, 1100]} sizes="(min-width: 52rem) 40vw, 100vw" />
+							</div>
+						) : (
+							<PhotoFrame image={data.coverImage} alt={data.coverImageAlt} group={LB} priority widths={[800, 1200, 1700, 2200]} sizes="100vw" mediaClass="proj-open__media" />
+						)}
+					</div>
+					<div class="proj-open__headings u-container">
+						<p class="t-eyebrow t-eyebrow--accent">
+							{categoryLabel[data.category]}
+							{data.location && <> &middot; {data.location}</>}
+							{data.year && <> &middot; {data.year}</>}
+						</p>
+						<h1 class="t-display proj-open__title">{data.title}</h1>
+					</div>
+				</header>
+			)
+		}
 
-		<!-- Editorial intro: a small "spec" column beside the storytelling text (13.30-35) — real
-		     metadata only, no fields shown when the project has no evidence for them (CLAUDE §4.6). -->
+		<!-- ===================== INTRO: spec sheet + story ===================== -->
 		<Section tight>
-			<div class="proj-intro">
+			<div class={`proj-intro ${layout === 'editorial' ? 'proj-intro--lead-shown' : ''}`}>
 				<dl class="proj-meta">
 					<div class="proj-meta__row">
 						<dt class="t-caption">Categorie</dt>
 						<dd>{categoryLabel[data.category]}</dd>
 					</div>
-					{
-						data.location && (
-							<div class="proj-meta__row">
-								<dt class="t-caption">Locatie</dt>
-								<dd>{data.location}</dd>
-							</div>
-						)
-					}
-					{
-						data.year && (
-							<div class="proj-meta__row">
-								<dt class="t-caption">Jaar</dt>
-								<dd>{data.year}</dd>
-							</div>
-						)
-					}
+					{data.location && (
+						<div class="proj-meta__row">
+							<dt class="t-caption">Locatie</dt>
+							<dd>{data.location}</dd>
+						</div>
+					)}
+					{data.year && (
+						<div class="proj-meta__row">
+							<dt class="t-caption">Jaar</dt>
+							<dd>{data.year}</dd>
+						</div>
+					)}
+					<div class="proj-meta__row">
+						<dt class="t-caption">Beelden</dt>
+						<dd>{data.gallery.length + 1}</dd>
+					</div>
 				</dl>
 				<div class="prose proj-intro__text">
-					<p class="t-lead proj-intro__lead">{data.summary}</p>
+					{layout !== 'editorial' && <p class="t-lead proj-intro__lead">{data.summary}</p>}
 					<Content />
 				</div>
 			</div>
 		</Section>
 
-		<!-- Curated image sequence — each photo's own ratio decides its treatment (no universal crop). -->
+		<!-- Editorial layout shows its lead image here, AFTER the quiet typographic opening. -->
 		{
-			data.gallery.length > 0 && (
+			layout === 'editorial' && (
+				<Section width="wide" as="div" class="proj-editorial-lead">
+					<PhotoFrame image={data.coverImage} alt={data.coverImageAlt} group={LB} widths={[800, 1200, 1700]} sizes="(min-width: 90rem) 84rem, 100vw" mediaClass="proj-open__media" />
+				</Section>
+			)
+		}
+
+		<!-- ===================== BEELDREEKS (composed by orientation) ===================== -->
+		{
+			galleryBlocks.length > 0 && (
 				<Section width="wide" as="div" class="proj-gallery-sec">
 					<div class="proj-gallery">
-					{data.gallery.map((item, i) =>
-						i === lastIndex && lastIndex > 0 ? (
-							<div class="proj-gallery__ending">
-								<Media
-									src={item.image}
-									alt={item.alt}
-									widths={[400, 800, 1200]}
-									sizes="(min-width: 48rem) 32rem, 80vw"
-									class="proj-gallery__ending-media"
-								/>
-								{item.caption && <p class="t-caption proj-gallery__caption">{item.caption}</p>}
-							</div>
-						) : (
-							<figure class="proj-gallery__item">
-								<Media
-									src={item.image}
-									alt={item.alt}
-									widths={[480, 800, 1200, 1700]}
-									sizes="100vw"
-								/>
-								{item.caption && (
-									<figcaption class="t-caption proj-gallery__caption">{item.caption}</figcaption>
-								)}
-							</figure>
-						),
-					)}
+						{galleryBlocks.map((block) => {
+							if (block.type === 'wide') {
+								return (
+									<div class="proj-g proj-g--wide">
+										<PhotoFrame image={block.item.image} alt={block.item.alt} caption={block.item.caption} group={LB} widths={[800, 1200, 1700, 2200]} sizes="100vw" showCaption />
+									</div>
+								);
+							}
+							if (block.type === 'pair') {
+								return (
+									<div class="proj-g proj-g--pair">
+										{block.items.map((it) => (
+											<PhotoFrame image={it.image} alt={it.alt} caption={it.caption} group={LB} widths={[480, 800]} sizes="(min-width: 48rem) 42vw, 100vw" showCaption />
+										))}
+									</div>
+								);
+							}
+							if (block.type === 'portrait') {
+								return (
+									<div class="proj-g proj-g--portrait">
+										<PhotoFrame image={block.item.image} alt={block.item.alt} caption={block.item.caption} group={LB} widths={[480, 800, 1100]} sizes="(min-width: 48rem) 34rem, 90vw" showCaption />
+									</div>
+								);
+							}
+							return (
+								<div class="proj-g proj-g--plate">
+									<PhotoFrame image={block.item.image} alt={block.item.alt} caption={block.item.caption} group={LB} widths={[700, 1100, 1500]} sizes="(min-width: 72rem) 68rem, 100vw" showCaption />
+								</div>
+							);
+						})}
 					</div>
 				</Section>
 			)
 		}
 
-		<!-- Ending / navigation (UX-03: never a dead end). A hairline rule closes the article so the
-		     return link reads as a deliberate final beat rather than an orphaned link stranded in the
-		     open space after the last image (P3.5 ending-resolution refinement). -->
+		<!-- ===================== OUTRO ===================== -->
 		<div class="proj-outro u-container">
 			<a class="proj-back" href="/portfolio/">
-				<svg
-					width="18"
-					height="18"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="1.75"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					aria-hidden="true"
-					focusable="false"
-				>
-					<path d="M20 12H5M11 6l-6 6 6 6" />
-				</svg>
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 12H5M11 6l-6 6 6 6" /></svg>
 				Terug naar portfolio
 			</a>
-			{
-				service && (
-					<a class="proj-service-link" href={service.href}>
-						{service.label}
-						<svg
-							width="18"
-							height="18"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.75"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
-							focusable="false"
-						>
-							<path d="M4 12h15M13 6l6 6-6 6" />
-						</svg>
-					</a>
-				)
-			}
+			{service && (
+				<a class="proj-service-link" href={service.href}>
+					{service.label}
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+				</a>
+			)}
 		</div>
 	</article>
+
+	<Lightbox />
 </BaseLayout>
 
 <style>
-	.proj-hero {
-		position: relative;
-		min-height: min(74vh, 720px);
-		display: flex;
-		align-items: flex-end;
-		padding-block: var(--space-3xl);
-		overflow: clip;
+	/* ===================== OPENING ===================== */
+	.proj-open {
+		padding-top: clamp(1.5rem, 1rem + 2vw, 3rem);
 	}
-	.proj-hero__media {
-		position: absolute;
-		inset: 0;
+	.proj-open__frame {
+		margin-inline: auto;
 	}
-	.proj-hero__media :global(picture) {
-		display: block;
+	.proj-open__frame--wide {
 		width: 100%;
-		height: 100%;
 	}
-	.proj-hero__media :global(img) {
+	.proj-open__frame--wide :global(.proj-open__media) {
 		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		object-position: center 60%;
 	}
-	.proj-hero__scrim {
-		position: absolute;
-		inset: 0;
-		background: var(--color-image-scrim-corner);
+	.proj-open__frame--duo {
+		width: min(100% - 2 * var(--gutter), var(--container-wide));
 	}
-	.proj-hero__content {
-		position: relative;
+	.proj-open__duo {
+		display: grid;
+		grid-template-columns: 1.35fr 1fr;
+		gap: clamp(1rem, 0.5rem + 1.5vw, 2rem);
+		align-items: end;
 	}
-	.proj-hero__title {
+	.proj-open__headings {
+		margin-top: clamp(1.25rem, 0.8rem + 1.5vw, 2.25rem);
+	}
+	.proj-open__title {
 		margin-top: var(--space-sm);
-		max-width: 20ch;
-	}
-	@media (max-width: 40rem) {
-		.proj-hero {
-			min-height: min(64vh, 560px);
-		}
+		max-width: 22ch;
 	}
 
-	/* --- Editorial intro: metadata column + text --- */
+	/* Editorial opening: quiet, typographic, image comes later. */
+	.proj-open--editorial {
+		padding-top: clamp(2rem, 1.2rem + 4vw, 4.5rem);
+	}
+	.proj-open--editorial .proj-open__title {
+		margin-block: var(--space-sm) var(--space-md);
+	}
+	.proj-open--editorial .proj-open__lead {
+		max-width: 52ch;
+	}
+	.proj-editorial-lead {
+		margin-top: clamp(1.5rem, 1rem + 2vw, 3rem);
+	}
+
+	/* ===================== INTRO ===================== */
 	.proj-intro {
 		display: grid;
 		grid-template-columns: 13rem 1fr;
 		gap: var(--space-2xl);
 	}
-	/* P4.8 CROSS-SITE (D-28) — the metadata column becomes a precise editorial SPEC SHEET (this page's NON-
-	 * photographic premium moment, and its distinct gold role): a short champagne DATUM RULE leads the column,
-	 * hairline-ruled rows give it the measured, architectural precision of a drawing's title block (6.11
-	 * "belangrijke visuele lijnen"). Gold stays a selective structural mark here — no gold headings/fills. This
-	 * is a refined tabular precision, deliberately different from the portfolio index ordinals and the monumental
-	 * gold werkwijze numerals. */
 	.proj-meta {
 		position: relative;
 		display: flex;
@@ -260,12 +247,7 @@ const lastIndex = data.gallery.length - 1;
 		top: 0;
 		width: clamp(2rem, 1.4rem + 2vw, 3rem);
 		height: 1px;
-		background: linear-gradient(
-			90deg,
-			rgba(224, 197, 140, 0.92) 0%,
-			rgba(199, 165, 106, 0.5) 66%,
-			rgba(199, 165, 106, 0) 100%
-		);
+		background: linear-gradient(90deg, rgba(224, 197, 140, 0.92) 0%, rgba(199, 165, 106, 0.5) 66%, rgba(199, 165, 106, 0) 100%);
 	}
 	.proj-meta__row {
 		padding-block: var(--space-md);
@@ -288,87 +270,42 @@ const lastIndex = data.gallery.length - 1;
 		color: var(--color-text);
 		margin-bottom: var(--space-md);
 	}
-	@media (max-width: 40rem) {
-		.proj-intro {
-			grid-template-columns: 1fr;
-			gap: var(--space-lg);
-		}
-		.proj-meta {
-			flex-direction: row;
-			flex-wrap: wrap;
-			gap: var(--space-lg) var(--space-xl);
-			padding-top: var(--space-lg);
-		}
-		/* On mobile the spec rows sit side-by-side, so the column hairlines would read as odd vertical-stack
-		   rules — drop them and let the datum rule + spacing carry the precision instead. */
-		.proj-meta__row {
-			padding-block: 0;
-			border-top: 0;
-		}
-	}
 
-	/* --- Gallery sequence.
-	 * P4.8 CROSS-SITE (D-28): an ACHROMATIC DEPTH FIELD frames the beeldreeks. This project's sequence is largely
-	 * black-and-white, so a coloured wash (the homepage/service colour mechanisms) would be exactly wrong — it
-	 * would tint monochrome photography (6.16). Instead the surrounding field is modelled toward the true abyss in
-	 * the negative space at the sequence's head and foot, so the photographs read as emerging from architectural
-	 * depth without any hue. Photography stays completely dominant; the interface only deepens around it. --- */
+	/* ===================== BEELDREEKS ===================== */
 	.proj-gallery-sec {
 		position: relative;
 		isolation: isolate;
 	}
-	.proj-gallery-sec::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		pointer-events: none;
-		background: linear-gradient(
-			180deg,
-			rgba(6, 8, 12, 0.7) 0%,
-			rgba(6, 8, 12, 0) 14%,
-			rgba(6, 8, 12, 0) 86%,
-			rgba(6, 8, 12, 0.75) 100%
-		);
-	}
 	.proj-gallery {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-3xl);
-	}
-	.proj-gallery__item {
-		display: block;
-	}
-	.proj-gallery__caption {
-		margin-top: var(--space-sm);
-	}
-
-	/* The closing portrait image is a deliberate ending beat, not another full-bleed slab: contained,
-	   with room to breathe either side so the sequence visibly slows down before the page ends. */
-	.proj-gallery__ending {
-		display: flex;
-		flex-direction: column;
+		gap: clamp(2.5rem, 1.8rem + 3vw, 5rem);
 		align-items: center;
 	}
-	.proj-gallery__ending-media {
-		max-width: 32rem;
+	.proj-g {
 		width: 100%;
 	}
-	.proj-gallery__ending .proj-gallery__caption {
-		text-align: center;
+	.proj-g--wide {
+		width: 100%;
+	}
+	.proj-g--pair {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: clamp(1rem, 0.5rem + 1.5vw, 2rem);
+		align-items: start;
+	}
+	.proj-g--portrait {
+		width: min(100%, 34rem);
+	}
+	.proj-g--plate {
+		width: min(100%, 68rem);
 	}
 
-	/* --- Article close + back navigation --- */
-	/* A restrained full-measure hairline terminates the article (idiomatic to the design system's
-	   hairline language) so the return link resolves the page instead of floating in the trailing void.
-	   The space above the rule stays generous — calm before the close, now framed rather than open. */
+	/* ===================== OUTRO ===================== */
 	.proj-outro {
 		border-top: 1px solid var(--color-border-subtle);
-		/* Bottom stays modest — the footer already carries its own generous top breathing room, so a large
-		   bottom pad here would only double it and leave the return link stranded high above the footer. */
 		padding-block: var(--space-xl) var(--space-2xl);
-		/* P5.1 (D-32) — two return paths sit on one line: Portfolio (broad) at the start, the discipline (specific)
-		   at the end, reading left→right as "back to the overview / onward to this discipline". Wraps on narrow. */
+		margin-top: clamp(3rem, 2rem + 4vw, 6rem);
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -391,7 +328,6 @@ const lastIndex = data.gallery.length - 1;
 	.proj-service-link:focus-visible {
 		color: var(--color-text);
 	}
-	/* The discipline link points onward (gold on hover), matching the site's forward link-arrow idiom. */
 	.proj-service-link:hover,
 	.proj-service-link:focus-visible {
 		color: var(--color-accent);
@@ -407,5 +343,33 @@ const lastIndex = data.gallery.length - 1;
 	.proj-back:hover svg,
 	.proj-back:focus-visible svg {
 		transform: translateX(-3px);
+	}
+
+	/* ===================== RESPONSIVE ===================== */
+	@media (max-width: 52rem) {
+		.proj-open__duo {
+			grid-template-columns: 1fr;
+			gap: var(--space-md);
+		}
+	}
+	@media (max-width: 40rem) {
+		.proj-intro {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+		}
+		.proj-meta {
+			flex-direction: row;
+			flex-wrap: wrap;
+			gap: var(--space-lg) var(--space-xl);
+			padding-top: var(--space-lg);
+		}
+		.proj-meta__row {
+			padding-block: 0;
+			border-top: 0;
+		}
+		.proj-g--pair {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+		}
 	}
 </style>

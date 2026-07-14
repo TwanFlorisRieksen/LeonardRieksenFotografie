@@ -1,0 +1,345 @@
+---
+/*
+ * Lightbox — full-viewport photo viewer (P6 recovery — D-34 / PH-13, blueprint 8.36).
+ *
+ * Progressive enhancement: the markup below is inert until the script upgrades the `a[data-lb-full]`
+ * anchors on the page. Without JS every photograph is still openable (the anchor targets an optimised
+ * derivative) and every image is server-rendered — nothing hides behind the viewer (MOT-08). With JS the
+ * viewer shows each photograph WHOLE (object-fit: contain — never cropped, 2.14/8.14), cycles within its
+ * group, and is fully keyboard- and touch-operable with focus management and a scroll lock.
+ *
+ * One instance per page (included by the portfolio overview + project detail). The script is small and
+ * Astro inlines it (no emitted JS bundle — the site's PE baseline is preserved and only grows a little).
+ */
+---
+
+<div class="lb" id="lightbox" hidden>
+	<div class="lb__backdrop" data-lb-close></div>
+	<div class="lb__dialog" role="dialog" aria-modal="true" aria-label="Foto­weergave" tabindex="-1">
+		<figure class="lb__figure">
+			<img class="lb__img" alt="" decoding="async" />
+			<figcaption class="lb__caption" hidden></figcaption>
+		</figure>
+
+		<div class="lb__bar">
+			<span class="lb__counter" aria-hidden="true"></span>
+		</div>
+
+		<button type="button" class="lb__btn lb__btn--close" data-lb-close aria-label="Sluiten">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
+		</button>
+		<button type="button" class="lb__btn lb__btn--prev" data-lb-prev aria-label="Vorige foto">
+			<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M15 5l-7 7 7 7" /></svg>
+		</button>
+		<button type="button" class="lb__btn lb__btn--next" data-lb-next aria-label="Volgende foto">
+			<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M9 5l7 7-7 7" /></svg>
+		</button>
+	</div>
+</div>
+
+<style>
+	.lb {
+		position: fixed;
+		inset: 0;
+		z-index: var(--z-modal);
+		display: grid;
+		place-items: center;
+	}
+	.lb[hidden] {
+		display: none;
+	}
+	/* The dark field is a solid, un-transitioned CHILD layer (also the click-to-close hit area). Painting
+	   it here — a normal absolutely-positioned child with a flat background and no opacity animation —
+	   rasterises reliably the instant the overlay is shown; putting it on the fixed parent, or fading it
+	   via an opacity transition, could leave a stale/empty composited layer until the next repaint. The
+	   image itself still scales/fades in (is-open + is-ready) for motion. */
+	.lb__backdrop {
+		position: absolute;
+		inset: 0;
+		/* Opaque, not translucent: a photo viewer reads best on a solid dark field (full focus on the
+		   image), and an opaque fill also composites reliably as a fixed overlay across browsers. */
+		background: #06080c;
+	}
+	.lb__dialog {
+		position: relative;
+		width: min(100vw, 1800px);
+		height: 100dvh;
+		display: grid;
+		place-items: center;
+		padding: clamp(1rem, 0.5rem + 3vw, 3.5rem);
+		outline: none;
+	}
+	.lb__figure {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-md);
+		max-width: 100%;
+		max-height: 100%;
+	}
+	.lb__img {
+		display: block;
+		max-width: 100%;
+		/* leave room for the caption + breathing space; the image is shown WHOLE (contain), never cropped. */
+		max-height: min(84vh, 84dvh);
+		width: auto;
+		height: auto;
+		object-fit: contain;
+		background: var(--color-bg-abyss);
+		box-shadow: var(--shadow-overlay);
+		opacity: 0;
+		transform: scale(0.985);
+		transition: opacity var(--dur-component) var(--ease-out),
+			transform var(--dur-component) var(--ease-out);
+	}
+	.lb.is-open .lb__img.is-ready {
+		opacity: 1;
+		transform: none;
+	}
+	.lb__caption {
+		max-width: 62ch;
+		text-align: center;
+		color: var(--color-text-secondary);
+		font-size: var(--fs-body-sm);
+		line-height: var(--lh-snug);
+	}
+	.lb__bar {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: clamp(0.75rem, 0.4rem + 1vw, 1.5rem);
+		display: flex;
+		justify-content: center;
+		pointer-events: none;
+	}
+	.lb__counter {
+		font-family: var(--font-display);
+		font-size: var(--fs-caption);
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+	.lb__btn {
+		position: absolute;
+		display: grid;
+		place-items: center;
+		width: 3rem;
+		height: 3rem;
+		color: var(--p-paper-50);
+		background: rgba(10, 13, 18, 0.55);
+		border: 1px solid var(--p-white-a14);
+		border-radius: var(--radius-pill);
+		cursor: pointer;
+		transition: background var(--dur-interaction) var(--ease-standard),
+			border-color var(--dur-interaction) var(--ease-standard),
+			transform var(--dur-interaction) var(--ease-standard);
+	}
+	.lb__btn:hover {
+		background: rgba(20, 25, 34, 0.8);
+		border-color: var(--p-white-a24);
+	}
+	.lb__btn:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
+	}
+	.lb__btn--close {
+		top: clamp(0.75rem, 0.4rem + 1vw, 1.75rem);
+		right: clamp(0.75rem, 0.4rem + 1vw, 1.75rem);
+	}
+	.lb__btn--prev {
+		left: clamp(0.5rem, 0.2rem + 1vw, 1.5rem);
+		top: 50%;
+		transform: translateY(-50%);
+	}
+	.lb__btn--next {
+		right: clamp(0.5rem, 0.2rem + 1vw, 1.5rem);
+		top: 50%;
+		transform: translateY(-50%);
+	}
+	.lb__btn--prev:hover {
+		transform: translateY(-50%) translateX(-2px);
+	}
+	.lb__btn--next:hover {
+		transform: translateY(-50%) translateX(2px);
+	}
+	.lb__btn[hidden] {
+		display: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.lb__backdrop,
+		.lb__img,
+		.lb__btn {
+			transition: none;
+		}
+		.lb__img {
+			transform: none;
+		}
+	}
+	/* Touch: the arrows can crowd a small screen; keep them but slightly smaller, and swipe also works. */
+	@media (max-width: 34rem) {
+		.lb__btn {
+			width: 2.75rem;
+			height: 2.75rem;
+		}
+	}
+</style>
+
+<script>
+	(() => {
+		const root = document.getElementById('lightbox');
+		if (!root) return;
+		const anchors = Array.from(
+			document.querySelectorAll<HTMLAnchorElement>('a[data-lb-full]'),
+		);
+		if (!anchors.length) return;
+
+		const dialog = root.querySelector<HTMLElement>('.lb__dialog')!;
+		const img = root.querySelector<HTMLImageElement>('.lb__img')!;
+		const cap = root.querySelector<HTMLElement>('.lb__caption')!;
+		const counter = root.querySelector<HTMLElement>('.lb__counter')!;
+		const btnPrev = root.querySelector<HTMLButtonElement>('.lb__btn--prev')!;
+		const btnNext = root.querySelector<HTMLButtonElement>('.lb__btn--next')!;
+		const closers = Array.from(root.querySelectorAll<HTMLElement>('[data-lb-close]'));
+
+		// Group anchors by their data-lightbox value so next/prev cycles within one exhibition context.
+		const groups = new Map<string, HTMLAnchorElement[]>();
+		anchors.forEach((a) => {
+			const g = a.getAttribute('data-lightbox') || 'default';
+			(groups.get(g) ?? groups.set(g, []).get(g)!).push(a);
+		});
+
+		let current: HTMLAnchorElement[] = [];
+		let index = 0;
+		let lastFocus: HTMLElement | null = null;
+
+		const preload = (src: string) => {
+			const im = new Image();
+			im.src = src;
+		};
+
+		const show = (i: number) => {
+			const n = current.length;
+			index = ((i % n) + n) % n;
+			const a = current[index];
+			const full = a.getAttribute('data-lb-full')!;
+			const alt = a.getAttribute('data-lb-alt') || '';
+			const caption = a.getAttribute('data-lb-caption') || '';
+			img.classList.remove('is-ready');
+			img.src = full;
+			img.alt = alt;
+			const reveal = () => img.classList.add('is-ready');
+			if (img.complete) reveal();
+			else img.addEventListener('load', reveal, { once: true });
+			if (caption) {
+				cap.textContent = caption;
+				cap.hidden = false;
+			} else {
+				cap.textContent = '';
+				cap.hidden = true;
+			}
+			const single = n < 2;
+			btnPrev.hidden = single;
+			btnNext.hidden = single;
+			counter.textContent = single ? '' : `${index + 1} / ${n}`;
+			// Preload neighbours for snappy nav.
+			if (!single) {
+				preload(current[(index + 1) % n].getAttribute('data-lb-full')!);
+				preload(current[(index - 1 + n) % n].getAttribute('data-lb-full')!);
+			}
+		};
+
+		const focusables = () =>
+			Array.from(
+				root.querySelectorAll<HTMLElement>(
+					'button:not([hidden]), [tabindex="-1"].lb__dialog',
+				),
+			).filter((el) => el.offsetParent !== null || el === dialog);
+
+		const onKey = (e: KeyboardEvent) => {
+			if (root.hidden) return;
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				close();
+			} else if (e.key === 'ArrowRight') {
+				e.preventDefault();
+				if (current.length > 1) show(index + 1);
+			} else if (e.key === 'ArrowLeft') {
+				e.preventDefault();
+				if (current.length > 1) show(index - 1);
+			} else if (e.key === 'Tab') {
+				// Simple focus trap across the visible controls.
+				const f = focusables();
+				if (!f.length) return;
+				const first = f[0];
+				const last = f[f.length - 1];
+				if (e.shiftKey && document.activeElement === first) {
+					e.preventDefault();
+					last.focus();
+				} else if (!e.shiftKey && document.activeElement === last) {
+					e.preventDefault();
+					first.focus();
+				}
+			}
+		};
+
+		const open = (group: string, i: number, trigger: HTMLElement) => {
+			current = groups.get(group) ?? [];
+			if (!current.length) return;
+			lastFocus = trigger;
+			root.hidden = false;
+			document.documentElement.style.overflow = 'hidden';
+			show(i);
+			// Paint the (dark, opacity:0) overlay one frame, THEN flip is-open so the fade actually runs
+			// instead of being batched into the un-hide (a Chrome compositor quirk if toggled same frame).
+			requestAnimationFrame(() => root.classList.add('is-open'));
+			document.addEventListener('keydown', onKey);
+			(dialog as HTMLElement).focus({ preventScroll: true });
+		};
+
+		const close = () => {
+			root.classList.remove('is-open');
+			document.removeEventListener('keydown', onKey);
+			document.documentElement.style.overflow = '';
+			root.hidden = true;
+			img.src = '';
+			img.classList.remove('is-ready');
+			lastFocus?.focus({ preventScroll: true });
+		};
+
+		anchors.forEach((a) => {
+			a.addEventListener('click', (e) => {
+				e.preventDefault();
+				const g = a.getAttribute('data-lightbox') || 'default';
+				const list = groups.get(g)!;
+				open(g, list.indexOf(a), a);
+			});
+		});
+		closers.forEach((c) => c.addEventListener('click', close));
+		btnPrev.addEventListener('click', () => show(index - 1));
+		btnNext.addEventListener('click', () => show(index + 1));
+
+		// Touch swipe (mobile) — horizontal drag beyond a threshold pages the viewer.
+		let sx = 0;
+		let sy = 0;
+		dialog.addEventListener(
+			'touchstart',
+			(e) => {
+				sx = e.changedTouches[0].clientX;
+				sy = e.changedTouches[0].clientY;
+			},
+			{ passive: true },
+		);
+		dialog.addEventListener(
+			'touchend',
+			(e) => {
+				const dx = e.changedTouches[0].clientX - sx;
+				const dy = e.changedTouches[0].clientY - sy;
+				if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4 && current.length > 1) {
+					show(dx < 0 ? index + 1 : index - 1);
+				}
+			},
+			{ passive: true },
+		);
+	})();
+</script>

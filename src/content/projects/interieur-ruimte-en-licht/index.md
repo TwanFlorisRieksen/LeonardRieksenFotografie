@@ -23,6 +23,7 @@ gallery:
     caption: "Detail — verlichting"
 featured: false
 order: 7
+leadLayout: "editorial"
 draft: false
 ---
 

@@ -18,6 +18,7 @@ gallery:
     caption: "Vathorst"
 featured: false
 order: 6
+leadLayout: "cinematic"
 draft: false
 ---
 

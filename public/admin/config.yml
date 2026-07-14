@@ -75,6 +75,15 @@ collections:
             hint: "Beschrijf wat er te zien is — niet de bestandsnaam herhalen."
           - { label: "Bijschrift (optioneel)", name: "caption", widget: "string", required: false }
       - { label: "Uitgelicht", name: "featured", widget: "boolean", default: false }
+      - label: "Openingsopmaak"
+        name: "leadLayout"
+        widget: "select"
+        default: "cinematic"
+        hint: "Bepaalt hoe de projectpagina opent — kies wat bij de fotografie past."
+        options:
+          - { label: "Filmisch (grote beeldopening, titel eronder)", value: "cinematic" }
+          - { label: "Redactioneel (titel + tekst eerst, dan beeld)", value: "editorial" }
+          - { label: "Diptiek (twee beelden naast elkaar bovenaan)", value: "duo-lead" }
       - label: "Volgorde"
         name: "order"
         widget: "number"
@@ -101,3 +110,54 @@ collections:
         widget: "image"
         required: false
         hint: "Leeg laten gebruikt automatisch het coverbeeld hierboven."
+
+  # Standalone portfolio works (P6 recovery — D-34): the images that don't belong to a multi-image
+  # project, published as one curated set on the portfolio exhibition. Edited as a single JSON file with
+  # a list field; images colocate next to it (same media path Astro's image() helper resolves).
+  - name: "works"
+    label: "Losse portfoliowerken"
+    files:
+      - name: "works"
+        label: "Losse werken"
+        file: "src/content/portfolio/works.json"
+        media_folder: ""
+        public_folder: ""
+        fields:
+          - label: "Werken"
+            name: "works"
+            widget: "list"
+            summary: "{{fields.id}} — {{fields.category}}"
+            fields:
+              - { label: "ID (map-/bestandsnaam)", name: "id", widget: "string", hint: "Korte kebab-case naam; komt overeen met de afbeelding." }
+              - { label: "Afbeelding", name: "image", widget: "image" }
+              - label: "Categorie"
+                name: "category"
+                widget: "select"
+                options:
+                  - { label: "Architectuur", value: "architectuur" }
+                  - { label: "Interieur", value: "interieur" }
+              - label: "Prominentie"
+                name: "scale"
+                widget: "select"
+                default: "standard"
+                hint: "Bepaalt hoe prominent het beeld in de reeks valt."
+                options:
+                  - { label: "Statement (volle breedte)", value: "feature" }
+                  - { label: "Standaard", value: "standard" }
+                  - { label: "Rustpunt (klein)", value: "quiet" }
+              - label: "Alt-tekst"
+                name: "alt"
+                widget: "string"
+                hint: "Beschrijf wat er te zien is — niet de bestandsnaam herhalen."
+              - { label: "Bijschrift (optioneel)", name: "caption", widget: "string", required: false }
+              - label: "Locatie (optioneel)"
+                name: "location"
+                widget: "string"
+                required: false
+                hint: "Alleen invullen als de plaats echt bekend is — nooit raden."
+              - label: "Jaar (optioneel)"
+                name: "year"
+                widget: "number"
+                value_type: "int"
+                required: false
+                hint: "Alleen invullen als het opnamejaar echt bekend is — nooit raden."
