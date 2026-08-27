@@ -3,10 +3,8 @@
 # Netlify Identity and Git Gateway are both officially deprecated — deliberately NOT used here.
 
 backend:
-  name: github
-  # PLACEHOLDER: set to the real "owner/repo" once the GitHub repository for this site exists
-  # (DECISIONS.md D-01b, external prerequisite #1). Config is inert until this is corrected.
-  repo: leonard-rieksen-fotografie/website
+  name: TwanFlorisRieksen
+  repo: LeonardRieksenFotografie
   branch: main
 
 # Decap's config schema requires a root-level media_folder/public_folder even though the only
