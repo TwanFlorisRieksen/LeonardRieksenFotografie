@@ -37,6 +37,7 @@
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { scrubFor, COARSE_QUERY } from './scroll-weight.js';
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 // Smoothstep — eases the environment blends so the descent settles into each altitude rather than tracking
@@ -71,9 +72,14 @@ export function initHomeCinema() {
 		{
 			motion: '(prefers-reduced-motion: no-preference)',
 			desktop: '(min-width: 52.0625rem)',
+			/* P14: touch is a first-class input, not a narrow screen. Declared as a matchMedia CONDITION
+			   rather than read once at build time so GSAP tears this context down and rebuilds it if the
+			   primary input ever changes (a tablet gaining a trackpad) — the same guarantee `motion` and
+			   `desktop` already have. See src/scripts/scroll-weight.js. */
+			coarse: COARSE_QUERY,
 		},
 		(ctx) => {
-			const { motion, desktop } = ctx.conditions;
+			const { motion, desktop, coarse } = ctx.conditions;
 			// Reduced motion: build nothing; the honest stacked composition renders and the stage stays inert.
 			if (!motion) {
 				docEl.classList.remove('motion-scene');
@@ -193,7 +199,7 @@ export function initHomeCinema() {
 							trigger: hero,
 							start: 'top top',
 							end: '+=86%',
-							scrub: 0.8,
+							scrub: scrubFor(0.8, coarse),
 							pin: true,
 							pinSpacing: true,
 							fastScrollEnd: true,
@@ -283,7 +289,7 @@ export function initHomeCinema() {
 					gsap.to(heroMedia, {
 						scale: 1.12,
 						ease: 'none',
-						scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: 0.8 },
+						scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: scrubFor(0.8, coarse) },
 					});
 					// THE MELT MUST TAKE THE WHOLE SHOT WITH IT — the root cause of the owner's "dark bars
 					// between sections" on mobile, and the reason the desktop hand-off never had one.
@@ -303,13 +309,13 @@ export function initHomeCinema() {
 					gsap.to([heroMedia, heroScrim].filter(Boolean), {
 						opacity: 0,
 						ease: 'none',
-						scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: 0.8 },
+						scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: scrubFor(0.8, coarse) },
 					});
 					gsap.to(heroContent, {
 						yPercent: -14,
 						opacity: 0,
 						ease: 'none',
-						scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom 65%', scrub: 0.8 },
+						scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom 65%', scrub: scrubFor(0.8, coarse) },
 					});
 				}
 			}
@@ -339,7 +345,7 @@ export function initHomeCinema() {
 							trigger: workImmersive,
 							start: 'top top',
 							end: '+=72%',
-							scrub: 0.8,
+							scrub: scrubFor(0.8, coarse),
 							pin: true,
 							pinSpacing: true,
 							fastScrollEnd: true,
@@ -365,7 +371,7 @@ export function initHomeCinema() {
 						{
 							scale: 1.02,
 							ease: 'none',
-							scrollTrigger: { trigger: workImmersive, start: 'top bottom', end: 'top top', scrub: 0.8 },
+							scrollTrigger: { trigger: workImmersive, start: 'top bottom', end: 'top top', scrub: scrubFor(0.8, coarse) },
 						}
 					);
 				}
@@ -378,7 +384,7 @@ export function initHomeCinema() {
 				gsap
 					.timeline({
 						defaults: { ease: 'none' },
-						scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 1.2 },
+						scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: scrubFor(1.2, coarse) },
 					})
 					.fromTo(el, { yPercent: -amt * A, scale }, { yPercent: 0, scale: 1 })
 					.to(el, { yPercent: amt * A, scale });

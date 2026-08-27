@@ -241,6 +241,13 @@ const kvk = '32169926';
 		isolation: isolate;
 		overflow-x: clip;
 		--cross-rise: clamp(2.25rem, 0.5rem + 5.5vw, 6.5rem);
+		/* P14 — TWO PAGE DESCENTS STACKED SAW-TOOTH (see --seam-approach in tokens.css).
+		   `--grad-sapphire-quiet` (the intro, above) ends on #060a14; `--grad-sapphire-page` (this block)
+		   OPENS on --p-sapphire-850, its lightest rung. Each field is correct on its own and the boundary
+		   between them was measured stepping rgb(6,10,20) → rgb(16,24,42) in one row at 390 and 768. The
+		   approach resolves this field to the colour the one above it actually ends on, so the page reads as
+		   one continuous descent rather than two that each restart. */
+		--seam-from: #060a14;
 		/* P8.5 (D-76) re-derived the field onto the sapphire scale; P8.6 (D-77) fixes what that still left
 		   flat. MEASURED on the render: the single light source sat at 12% 6% and reached zero by 70%, so the
 		   entire right-hand half of a 1400px-tall section, which is exactly where the form is, i.e. the one
@@ -248,7 +255,9 @@ const kvk = '32169926';
 		   is the "vlakke doffe blauwtint" of brief item 8, and it was not the colour's fault: a flat area has
 		   no light in it at any hue. `--grad-sapphire-page` lights it from a high-left source AND a low-right
 		   counter-light over the same descent, so the form side is modelled rather than filled. */
-		background: var(--grad-sapphire-page);
+		background:
+			var(--seam-approach) top / 100% var(--seam-run) no-repeat,
+			var(--grad-sapphire-page);
 	}
 	/* Reduced top padding so the photograph's negative margin actually lifts it ACROSS the seam into the
 	   intro field (rather than merely trimming a large default padding), the D-30 robust-crossing pattern.
@@ -268,7 +277,10 @@ const kvk = '32169926';
 		   approach instead of ending on a dark band and then starting again, one continuous fall. */
 		background: linear-gradient(
 			180deg,
-			rgba(5, 7, 11, 0.42) 0%,
+			/* P14: 0 at the edge itself, so the frame RAMPS IN over the approach instead of landing its
+			   darkest value on the boundary row. Same frame, same depth, one row later. */
+			rgba(5, 7, 11, 0) 0%,
+			rgba(5, 7, 11, 0.42) 7%,
 			rgba(5, 7, 11, 0) 22%,
 			rgba(5, 7, 11, 0) 88%,
 			rgba(5, 7, 11, 0.22) 100%

@@ -72,6 +72,7 @@
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { scrubFor, COARSE_QUERY } from './scroll-weight.js';
 import { clamp01, lerp, smoothstep } from './motion-math.js';
 
 /** A 0..1 ramp between two altitudes, eased so it settles rather than tracking linearly. */
@@ -127,9 +128,14 @@ export function initArchCinema() {
 		{
 			motion: '(prefers-reduced-motion: no-preference)',
 			desktop: '(min-width: 52.0625rem)',
+			/* P14: touch is a first-class input, not a narrow screen. Declared as a matchMedia CONDITION
+			   rather than read once at build time so GSAP tears this context down and rebuilds it if the
+			   primary input ever changes (a tablet gaining a trackpad) — the same guarantee `motion` and
+			   `desktop` already have. See src/scripts/scroll-weight.js. */
+			coarse: COARSE_QUERY,
 		},
 		(ctx) => {
-			const { motion, desktop } = ctx.conditions;
+			const { motion, desktop, coarse } = ctx.conditions;
 			// Reduced motion: build nothing at all. The honest static composition is the render.
 			if (!motion) {
 				docEl.classList.remove('motion-scene');
@@ -538,7 +544,7 @@ export function initArchCinema() {
 					   position, so a wheel notch or a trackpad flick is delivered as a step; 0.5s of
 					   catch-up is what turns those steps into one continuous move without ever detaching
 					   the movement from the reader's hand (item 9: "geen schokken, geen haperingen"). */
-					scrub: 0.5,
+					scrub: scrubFor(0.5, coarse),
 					fastScrollEnd: true,
 					onUpdate: (self) => {
 						turn = self.progress;
@@ -564,7 +570,7 @@ export function initArchCinema() {
 				for (const p of plates) {
 					gsap.timeline({
 						defaults: { ease: 'none' },
-						scrollTrigger: { trigger: p.el, start: 'top 86%', end: 'center 46%', scrub: 0.8 },
+						scrollTrigger: { trigger: p.el, start: 'top 86%', end: 'center 46%', scrub: scrubFor(0.8, coarse) },
 					})
 						.fromTo(p.shade, { opacity: 0.7 }, { opacity: 0, ease: 'power2.out' }, 0)
 						.fromTo(p.copy, { autoAlpha: 0.34 }, { autoAlpha: 1, ease: 'power2.out' }, 0);
@@ -592,7 +598,7 @@ export function initArchCinema() {
 					   was entirely spent during the APPROACH: MEASURED, by the time the section was
 					   properly in view every row had already settled and the reader met a wall the light
 					   had finished crossing. The beat is timed to the reading, not to the section box. */
-					scrollTrigger: { trigger: scopeSec, start: 'top 64%', end: 'bottom 82%', scrub: 0.9 },
+					scrollTrigger: { trigger: scopeSec, start: 'top 64%', end: 'bottom 82%', scrub: scrubFor(0.9, coarse) },
 				});
 				appRows.forEach((row, i) => {
 					// The light reaches each row a beat after the last, holds on it, and moves on. `--tick`
@@ -626,7 +632,7 @@ export function initArchCinema() {
 			if (scopeSec && scopeMain && scopeApps) {
 				const crane = gsap.timeline({
 					defaults: { ease: 'none', force3D: true },
-					scrollTrigger: { trigger: scopeSec, start: 'top bottom', end: 'bottom top', scrub: 0.85 },
+					scrollTrigger: { trigger: scopeSec, start: 'top bottom', end: 'bottom top', scrub: scrubFor(0.85, coarse) },
 				});
 				// NEAR — travels far, and drifts laterally as well, because a camera moving past something
 				// close to it changes its bearing on it. The lateral term is small and inward-bound so no
@@ -666,7 +672,7 @@ export function initArchCinema() {
 				const span = 1 - STEP_IN * (steps.length - 1);
 				const descent = gsap.timeline({
 					defaults: { ease: 'none', force3D: true },
-					scrollTrigger: { trigger: methodBlock, start: 'top bottom', end: 'bottom top', scrub: 0.8 },
+					scrollTrigger: { trigger: methodBlock, start: 'top bottom', end: 'bottom top', scrub: scrubFor(0.8, coarse) },
 				});
 				steps.forEach((item, i) => {
 					const num = item.querySelector('.svc-method__num');
@@ -699,7 +705,7 @@ export function initArchCinema() {
 			if (relSec && relItems.length) {
 				const settle = gsap.timeline({
 					defaults: { force3D: true },
-					scrollTrigger: { trigger: relSec, start: 'top bottom', end: 'center 46%', scrub: 1 },
+					scrollTrigger: { trigger: relSec, start: 'top bottom', end: 'center 46%', scrub: scrubFor(1, coarse) },
 				});
 				if (relHead) settle.fromTo(relHead, { y: 30 * A }, { y: 0, ease: 'power3.out', duration: 1 }, 0);
 				relItems.forEach((item, i) => {
@@ -728,7 +734,7 @@ export function initArchCinema() {
 					{
 						'--datum': 1,
 						ease: 'none',
-						scrollTrigger: { trigger: ctaSec, start: 'top 92%', end: 'top 34%', scrub: 0.9 },
+						scrollTrigger: { trigger: ctaSec, start: 'top 92%', end: 'top 34%', scrub: scrubFor(0.9, coarse) },
 					}
 				);
 			}

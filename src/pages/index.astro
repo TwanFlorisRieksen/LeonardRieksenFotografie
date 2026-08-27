@@ -66,12 +66,20 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	<!-- HERO, the first large contact moment (13.14). Photography full-bleed and central; identity,
 	     positioning and one logical next step over it; no competing CTAs or long text (13.16). -->
 	<header class="home-hero">
+		<!-- `quality` is raised only here, and only because of what this photograph is asked to do. The master
+		     is 1536×1024, so on a 1440 CSS-px retina desktop it is presented at roughly twice its own
+		     resolution — and an encoder's artefacts are enlarged along with the picture. Measured against the
+		     master at 1400w: the project default lands at 35.6 dB PSNR for 48 KB, quality 64 at ~39 dB for
+		     ~85 KB. That is the one image on the site where those bytes buy something the visitor sees on the
+		     first screen; every other photograph keeps the default. The `sizes`/`widths` above are honest and
+		     unchanged — see Media.astro for why the largest candidate is now 1536 rather than 1400. -->
 		<Media
 			src={heroImg}
 			alt="De Reitdiephaven in Groningen tijdens het blauwe uur, kleurrijke houten woningen weerspiegeld in stil water."
 			priority={true}
 			widths={[640, 1024, 1400, 1920]}
 			sizes="100vw"
+			quality={64}
 			class="home-hero__media u-parallax"
 			data-ptilt="11"
 		/>
@@ -1652,7 +1660,12 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	   at/after the box's own bottom edge regardless of height, same anchors, alphas and colours, corrected
 	   reach. */
 	.pos-sec {
+		/* P14 (see --seam-approach in tokens.css): the afterglow arrives from the floor rather than opening at
+		   full strength on the section's own first row, and the base is the floor the rest of the site rests
+		   on. Applies to the honest baseline; under `html.motion-scene` this whole background yields to the
+		   continuous fixed stage below, which has no boundary to resolve. */
 		background:
+			var(--seam-approach) top / 100% var(--seam-run) no-repeat,
 			radial-gradient(
 				128% 170% at 50% -14%,
 				rgba(var(--p-atmos-cool), 0.21) 0%,
@@ -1664,7 +1677,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 				rgba(var(--p-atmos-warm), 0.07) 0%,
 				rgba(var(--p-atmos-warm), 0) 60%
 			),
-			var(--color-bg);
+			var(--surface-floor);
 	}
 	.pos {
 		display: grid;

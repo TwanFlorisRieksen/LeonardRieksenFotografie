@@ -44,6 +44,12 @@ const {
 ---
 
 <Section as="section" class="cta" aria-labelledby="cta-heading">
+	<!-- The block's own light, on its own element so it can have a resolving top edge (P14 — see the note in
+	     the stylesheet). Decorative and inert: aria-hidden, pointer-events:none, behind the content. It is a
+	     real element rather than a pseudo because both of this block's pseudo-elements already carry the gold
+	     datum and its corner riser, which are content of a different kind and must stay. `.u-container` is
+	     unpositioned, so `inset: 0` resolves against `.cta` and the light stays full-bleed. -->
+	<span class="cta__light" aria-hidden="true"></span>
 	<div class="cta__inner">
 		<div class="cta__lead">
 			<p class="t-eyebrow t-eyebrow--accent">{eyebrow}</p>
@@ -84,11 +90,30 @@ const {
 	   form field uses the identical token, so the site's two conversion surfaces are demonstrably the same
 	   material rather than two similar-looking guesses. Still additive light over the page's own
 	   background, never an opaque panel. */
+	/* P14 — THE CLOSING BLOCK'S LIGHT NOW ARRIVES (see --seam-mask-top in tokens.css).
+	   `--grad-sapphire-field` is a radial anchored `at 3% 0%`: its peak is ON this block's top-left corner, so
+	   row 0 is the brightest row the block will ever have. This is the site's most-repeated boundary — the
+	   closing block appears on the homepage, /diensten/, both service pages and /over-mij/ — and it was
+	   measured stepping in a single pixel row at every one of them (homepage 390: rgb(25,23,29) →
+	   rgb(34,33,40); /over-mij/: rgb(8,12,23) → rgb(21,25,38)).
+	   The light is additive here by design (it composes over whatever the page already has, never an opaque
+	   panel), so there is nothing to fade an opaque layer to. It moves instead onto its own decorative
+	   element and is masked in from zero over --seam-run. Same gradient, same alpha, same hue, same token —
+	   it now has a top edge that resolves instead of one that starts. The gold datum hairline still marks the
+	   boundary, which is the point: the LINE is intentional, the slab under it never was. */
 	.cta {
 		position: relative;
 		isolation: isolate;
 		overflow-x: clip;
+	}
+	.cta__light {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
 		background: var(--grad-sapphire-field);
+		-webkit-mask-image: var(--seam-mask-top);
+		mask-image: var(--seam-mask-top);
 	}
 	/* Gold datum top rule (champagne caught at the left → neutral hairline across the full width). */
 	.cta::before {

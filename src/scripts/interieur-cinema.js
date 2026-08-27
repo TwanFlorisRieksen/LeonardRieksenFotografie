@@ -66,6 +66,7 @@
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { scrubFor, COARSE_QUERY } from './scroll-weight.js';
 import { clamp01, smoothstep } from './motion-math.js';
 
 const ramp = (v, a, b) => smoothstep(clamp01((v - a) / (b - a)));
@@ -121,9 +122,14 @@ export function initInterieurCinema() {
 		{
 			motion: '(prefers-reduced-motion: no-preference)',
 			desktop: '(min-width: 52.0625rem)',
+			/* P14: touch is a first-class input, not a narrow screen. Declared as a matchMedia CONDITION
+			   rather than read once at build time so GSAP tears this context down and rebuilds it if the
+			   primary input ever changes (a tablet gaining a trackpad) — the same guarantee `motion` and
+			   `desktop` already have. See src/scripts/scroll-weight.js. */
+			coarse: COARSE_QUERY,
 		},
 		(ctx) => {
-			const { motion, desktop } = ctx.conditions;
+			const { motion, desktop, coarse } = ctx.conditions;
 			if (!motion) {
 				docEl.classList.remove('motion-scene');
 				return;
@@ -565,7 +571,7 @@ export function initInterieurCinema() {
 					   position, so a wheel notch or a trackpad flick is delivered as a step; 0.5s of
 					   catch-up is what turns those steps into one continuous move without ever detaching
 					   the movement from the reader's hand (item 9: "geen schokken, geen haperingen"). */
-					scrub: 0.5,
+					scrub: scrubFor(0.5, coarse),
 					fastScrollEnd: true,
 					onUpdate: (self) => {
 						turn = self.progress;
@@ -590,7 +596,7 @@ export function initInterieurCinema() {
 				for (const p of plates) {
 					gsap.timeline({
 						defaults: { ease: 'none' },
-						scrollTrigger: { trigger: p.el, start: 'top 86%', end: 'center 46%', scrub: 0.8 },
+						scrollTrigger: { trigger: p.el, start: 'top 86%', end: 'center 46%', scrub: scrubFor(0.8, coarse) },
 					})
 						.fromTo(p.shade, { opacity: 0.5 }, { opacity: 0, ease: 'power2.out' }, 0)
 						.fromTo(p.copy, { autoAlpha: 0.36 }, { autoAlpha: 1, ease: 'power2.out' }, 0);
@@ -620,7 +626,7 @@ export function initInterieurCinema() {
 			if (uitleg && uitTextEl && uitAsideEl) {
 				const drift = gsap.timeline({
 					defaults: { ease: 'none', force3D: true },
-					scrollTrigger: { trigger: uitleg, start: 'top bottom', end: 'bottom top', scrub: 0.85 },
+					scrollTrigger: { trigger: uitleg, start: 'top bottom', end: 'bottom top', scrub: scrubFor(0.85, coarse) },
 				});
 				drift.fromTo(uitTextEl, { x: 34 * A, y: 20 * A }, { x: -14 * A, y: -20 * A, duration: 1 }, 0);
 				drift.fromTo(uitAsideEl, { x: 9 * A, y: 7 * A }, { x: -4 * A, y: -7 * A, duration: 1 }, 0);
@@ -637,7 +643,7 @@ export function initInterieurCinema() {
 			if (seq && seqItems.length) {
 				const corridor = gsap.timeline({
 					defaults: { ease: 'none' },
-					scrollTrigger: { trigger: seq, start: 'top 72%', end: 'bottom 78%', scrub: 0.9 },
+					scrollTrigger: { trigger: seq, start: 'top 72%', end: 'bottom 78%', scrub: scrubFor(0.9, coarse) },
 				});
 				seqItems.forEach((row, i) => {
 					const at = 0.06 + i * 0.24;
@@ -660,7 +666,7 @@ export function initInterieurCinema() {
 			if (rel && relItemEls.length) {
 				const out = gsap.timeline({
 					defaults: { force3D: true },
-					scrollTrigger: { trigger: rel, start: 'top bottom', end: 'center 44%', scrub: 1 },
+					scrollTrigger: { trigger: rel, start: 'top bottom', end: 'center 44%', scrub: scrubFor(1, coarse) },
 				});
 				if (relHeadEl) out.fromTo(relHeadEl, { y: 26 * A }, { y: 0, ease: 'power2.out', duration: 1 }, 0);
 				relItemEls.forEach((item, i) => {

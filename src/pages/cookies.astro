@@ -8,8 +8,11 @@
  * the same place, linked from the footer of every page and from the banner itself.
  *
  * THE INVENTORY IS MEASURED, NOT ASSUMED. Every row in the table below was taken from the code that writes
- * it: `lrf-consent` from src/scripts/consent.js, `pf-overture-seen` from src/scripts/portfolio-intro.js,
- * `tv-return-y` from src/scripts/traverse.js, and the two `_ga*` cookies from Google's own documentation.
+ * it: `lrf-consent` from src/scripts/consent.js, `tv-return-y` from src/scripts/traverse.js, and the two
+ * `_ga*` cookies from Google's own documentation. (P14 / D-86 removed a fourth row, `pf-overture-seen`: the
+ * portfolio entrance curtain it belonged to is deleted, so nothing writes that key any more. A legal
+ * document listing storage the site does not use is inaccurate in the same way as one omitting storage it
+ * does — this table has to be re-derived from the code whenever client storage changes.)
  * There is nothing else, the public site loads no external script, font, embed or pixel of any kind before
  * consent, so the list is complete rather than representative.
  *
@@ -87,15 +90,6 @@ const sections = [
 						te maken. Bevat een versienummer, een ja of nee, en het moment van uw keuze.
 					</td>
 					<td>Tot u de keuze wijzigt of de opslag van deze website wist.</td>
-				</tr>
-				<tr>
-					<th scope="row"><code>pf-overture-seen</code></th>
-					<td>Session storage</td>
-					<td>
-						Onthoudt dat u de openingsanimatie van het portfolio al heeft gezien, zodat die zich niet
-						bij iedere terugkeer herhaalt. Bevat alleen het cijfer 1.
-					</td>
-					<td>Tot u het tabblad sluit.</td>
 				</tr>
 				<tr>
 					<th scope="row"><code>tv-return-y</code></th>

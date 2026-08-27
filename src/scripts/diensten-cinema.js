@@ -54,6 +54,7 @@
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { scrubFor, COARSE_QUERY } from './scroll-weight.js';
 import { clamp01, lerp } from './motion-math.js';
 
 export function initDienstenCinema() {
@@ -96,9 +97,14 @@ export function initDienstenCinema() {
 		{
 			motion: '(prefers-reduced-motion: no-preference)',
 			desktop: '(min-width: 52.0625rem)',
+			/* P14: touch is a first-class input, not a narrow screen. Declared as a matchMedia CONDITION
+			   rather than read once at build time so GSAP tears this context down and rebuilds it if the
+			   primary input ever changes (a tablet gaining a trackpad) — the same guarantee `motion` and
+			   `desktop` already have. See src/scripts/scroll-weight.js. */
+			coarse: COARSE_QUERY,
 		},
 		(ctx) => {
-			const { motion, desktop } = ctx.conditions;
+			const { motion, desktop, coarse } = ctx.conditions;
 			// Reduced motion: build nothing. The honest static composition renders; the stage stays inert.
 			if (!motion) {
 				docEl.classList.remove('motion-scene');
@@ -233,7 +239,7 @@ export function initDienstenCinema() {
 					gsap.set(camera, { yPercent: -4 });
 					gsap.timeline({
 						defaults: { ease: 'none' },
-						scrollTrigger: { trigger: el, start: 'top 80%', end: 'center center', scrub: 0.8 },
+						scrollTrigger: { trigger: el, start: 'top 80%', end: 'center center', scrub: scrubFor(0.8, coarse) },
 					})
 						.fromTo(shade, { opacity: 0.5 }, { opacity: 0 }, 0)
 						.fromTo(camera, { yPercent: -4 }, { yPercent: 0 }, 0);
@@ -263,7 +269,7 @@ export function initDienstenCinema() {
 						trigger: el,
 						start: 'top top',
 						end: '+=70%',
-						scrub: 0.45,
+						scrub: scrubFor(0.45, coarse),
 						pin: true,
 						pinSpacing: true,
 						fastScrollEnd: true,

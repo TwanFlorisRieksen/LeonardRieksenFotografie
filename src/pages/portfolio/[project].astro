@@ -306,6 +306,12 @@ const projectSchema = [
 		inset: 0;
 		z-index: -1;
 		pointer-events: none;
+		/* P14: this afterglow is additive light with no base of its own, and both of its radials are anchored
+		   ABOVE the box (`at 12% -6%` / `at 92% -4%`), so row 0 is the brightest row it has. Masked in from
+		   zero over --seam-run so the light arrives under the cover photograph rather than starting at its
+		   edge. See --seam-mask-top in tokens.css. */
+		-webkit-mask-image: var(--seam-mask-top);
+		mask-image: var(--seam-mask-top);
 		background:
 			radial-gradient(
 				120% 160% at 12% -6%,

@@ -367,6 +367,51 @@ const CFG = {
 	narrowFit: 0.18,
 };
 
+/*
+ * THE TOUCH PROFILE (P14) — three numbers, and only numbers. No second engine, no branch in the loop.
+ *
+ * THE PRINCIPLE, the same one that governs the four cinematic runtimes (see scroll-weight.js): weight is
+ * what makes a WHEEL feel like a camera, because a wheel arrives in steps and the spring is what turns a
+ * staircase into a move. Under a finger there is no staircase — the browser is already tracking the hand
+ * 1:1 on the compositor — so the same spring is not weight, it is the world running behind the hand. That
+ * is what "alsof de site voor een muis is ontworpen" describes, and it is the reason the site can measure
+ * a clean 60 fps and still feel like it is resisting.
+ *
+ * 1. `damp` 0.15 -> 0.42. Arithmetic, not taste: the per-frame coefficient's time constant is
+ *    -16.7ms / ln(1 - k), so 0.15 is 103 ms (about 233 ms to cover 90% of a new target) and 0.42 is 31 ms
+ *    (about 78 ms). 78 ms is under the threshold at which a delay is felt as a delay at all, so the coil
+ *    starts and stops WITH the finger — while still being a spring, so the reading moment still settles
+ *    square-on rather than snapping. Note this changes only the LAG, never the gain: the coil already
+ *    travels exactly as far as the scrollbar (D-84).
+ *
+ * 2. `autoSpeed` 0.08 -> 0. The idle auto-drift (D-72) exists because a pointer visitor often simply rests
+ *    the mouse and the world should not freeze. A touch visitor has taken their hand off the glass, and
+ *    there the same behaviour is content moving on its own straight after a gesture — indistinguishable
+ *    from the page not having stopped where they put it. It also drags in the re-base (D-84), which settles
+ *    the accrued drift by writing `window.scrollY`; a programmatic scroll landing shortly after a momentum
+ *    fling is exactly the kind of thing a mobile browser answers by re-animating its own URL bar.
+ *    The world does NOT go still: the camera sway below is untouched in kind and keeps breathing. It moves
+ *    only `perspective-origin`, so it never touches the journey, the scrollbar or a photograph's framing —
+ *    which is precisely why it is the half that is safe to keep here and the drift is the half that is not.
+ *
+ * 3. `swayAmp` 3.4 -> 2.2. The sway is a percentage of the viewport, so the same number is a much larger
+ *    share of the visual field on a 390 pt screen than on a 1440 px one. Same breath, same periods, scaled
+ *    to the frame it lives in.
+ *
+ * Applied at mount, and only when `(pointer: coarse)` — the PRIMARY input, so a laptop with a touchscreen
+ * nobody uses keeps the pointer profile. Explicit `opts` still win, so the tuning harness is unaffected.
+ */
+const TOUCH_CFG = {
+	damp: 0.42,
+	autoSpeed: 0,
+	swayAmp: 2.2,
+};
+
+const prefersCoarse = () =>
+	typeof window !== 'undefined' &&
+	typeof window.matchMedia === 'function' &&
+	window.matchMedia('(pointer: coarse)').matches;
+
 const clampUnit = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
 /* sessionStorage key holding the exact coil scrollY the visitor left at when they opened a project, so the
@@ -374,7 +419,8 @@ const clampUnit = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const RETURN_Y_KEY = 'tv-return-y';
 
 export function createTraverse(root, opts = {}) {
-	const cfg = { ...CFG, ...opts };
+	// P14 — see TOUCH_CFG. Explicit opts still override, so the tuning harness reaches every value.
+	const cfg = { ...CFG, ...(prefersCoarse() ? TOUCH_CFG : null), ...opts };
 	const stage = root.querySelector('[data-tv-stage]');
 	const nodes = Array.from(root.querySelectorAll('[data-tv-work]'));
 	if (!stage || !nodes.length) return null;

@@ -24,6 +24,9 @@ interface Props {
 	ratio?: string; /* e.g. "3/2", "16/9" — opt-in framing for grids; omit for intrinsic ratio */
 	fit?: 'cover' | 'contain';
 	position?: string; /* object-position when framed, default "center" */
+	/** Encoder quality. Omit for the project default; raise only for a photograph that is presented
+	 *  full-bleed and therefore has to survive being enlarged past its own resolution. */
+	quality?: number;
 	class?: string;
 	[key: string]: unknown;
 }
@@ -38,14 +41,37 @@ const {
 	ratio,
 	fit = 'cover',
 	position = 'center',
+	quality,
 	class: className,
 	...rest
 } = Astro.props;
 
-// Never request widths larger than the source (prevents upscaling — R-04). astro:assets already caps,
-// but filtering keeps the generated srcset honest for the pre-1700px assets.
-const cappedWidths = widths.filter((w) => w <= src.width);
-const effectiveWidths = cappedWidths.length ? cappedWidths : [src.width];
+/*
+ * AN OVER-SIZED REQUEST IS CLAMPED TO THE MASTER, NEVER DROPPED (P14).
+ *
+ * THE DEFECT. This line was `widths.filter((w) => w <= src.width)`. Its intent — never upscale (R-04) — is
+ * right; its arithmetic threw away the master's own resolution whenever a caller asked for a width above it.
+ * The largest candidate then fell back to the next value DOWN in the list, which is wherever the author
+ * happened to put it. Measured on the built site:
+ *
+ *     homepage hero   master 1536 · asked [640, 1024, 1400, 1920] → 1920 dropped → largest candidate 1400
+ *     service hero    master 1536 · asked [480, 800, 1200, 1700]  → 1700 dropped → largest candidate 1200
+ *
+ * Both are full-bleed `sizes="100vw"` photographs. So on a 1440 CSS-px desktop at DPR 1 the hero was already
+ * being enlarged before retina entered the argument, and the service hero was being enlarged 1.2× at DPR 1
+ * and 2.4× at DPR 2 — with 336 px of real, paid-for detail sitting unused in the master. This is the whole
+ * of the "de hero ziet er op grote schermen laagresolutie uit" report that is actually fixable in code.
+ *
+ * THE RULE. Clamp to `src.width` and de-duplicate. No derivative is ever larger than the source, so R-04 and
+ * PH-08 are untouched, and the top of every srcset is now exactly as sharp as the photograph Leo delivered.
+ *
+ * WHAT THIS CANNOT FIX, and must not be reported as fixed: the masters themselves. `hero.jpeg` is 1536×1024
+ * and every archive master is 1700 px wide. At 1440 CSS px / DPR 2 the browser wants 2880 px and the file
+ * simply does not contain them. See documenten/ASSET_INVENTORY.md — a larger hero master is an owner input,
+ * not an implementation choice, and nothing here upscales to fake it.
+ */
+const requested = widths.map((w) => Math.min(w, src.width));
+const effectiveWidths = [...new Set(requested)].sort((a, b) => a - b);
 
 const styleVars = ratio ? `--media-ratio:${ratio};--media-fit:${fit};--media-pos:${position};` : undefined;
 ---
@@ -65,6 +91,7 @@ const styleVars = ratio ? `--media-ratio:${ratio};--media-fit:${fit};--media-pos
 		loading={priority ? 'eager' : 'lazy'}
 		decoding={priority ? 'auto' : 'async'}
 		fetchpriority={priority ? 'high' : 'auto'}
+		{...(quality ? { quality } : {})}
 	/>
 </div>
 

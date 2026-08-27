@@ -285,14 +285,27 @@ const svcSchema = [
 	 * zero-stop always lands at/after the box's own bottom edge regardless of height, same anchor, alpha
 	 * and colour, corrected reach. --- */
 	.svc-intro-sec {
-		background:
-			radial-gradient(
-				128% 175% at 50% -14%,
-				rgba(var(--p-atmos-warm), 0.15) 0%,
-				rgba(var(--p-atmos-warm), 0.05) 40%,
-				rgba(var(--p-atmos-warm), 0) 70%
-			),
-			var(--color-bg);
+		/* P14 — the warm afterglow now ARRIVES rather than starting at full strength on this box's first
+		   row. Identical construction and rationale to the same block in architectuurfotografie.astro; see
+		   --seam-mask-top in tokens.css. The gradient itself is byte-identical. */
+		position: relative;
+		isolation: isolate;
+		background: var(--surface-floor);
+	}
+	.svc-intro-sec::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		-webkit-mask-image: var(--seam-mask-top);
+		mask-image: var(--seam-mask-top);
+		background: radial-gradient(
+			128% 175% at 50% -14%,
+			rgba(var(--p-atmos-warm), 0.15) 0%,
+			rgba(var(--p-atmos-warm), 0.05) 40%,
+			rgba(var(--p-atmos-warm), 0) 70%
+		);
 	}
 	.svc-intro {
 		display: grid;
@@ -776,12 +789,10 @@ const svcSchema = [
 	 * the photograph. Nothing is done to the photograph itself, that rule is absolute. This page's glow
 	 * is WARM where the architectuur page's is COOL: the matched pair those two heroes actually are. */
 	:global(html.motion-scene) .svc-intro-sec {
-		background: radial-gradient(
-			128% 175% at 50% -14%,
-			rgba(var(--p-atmos-warm), 0.15) 0%,
-			rgba(var(--p-atmos-warm), 0.05) 40%,
-			rgba(var(--p-atmos-warm), 0) 70%
-		);
+		/* P14: the base fill is all that is handed to the stage now. The afterglow lives on this section's own
+		   masked ::before (see above), so the light that carries the hero's own colour down into the page is
+		   identical in both states and only the opaque slab yields — which is what this override always meant. */
+		background: transparent;
 		transition: background 900ms var(--ease-standard);
 	}
 	:global(html.motion-scene .site-header),

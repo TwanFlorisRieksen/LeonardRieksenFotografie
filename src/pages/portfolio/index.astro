@@ -38,6 +38,15 @@ const { items, worlds } = await getContinuum();
    interieur), so the runtime's work indices line up exactly with each world's `start` boundary. */
 const worldSlices = worlds.map((w) => ({ world: w, works: items.slice(w.start, w.start + w.count) }));
 
+/* The whole coil's length in works — the denominator the world rail's boundary ticks are placed against, so
+   the hairline map divides exactly where the collection does. Derived from the last world's boundary (the
+   same expression the chrome controller uses at runtime) rather than from `items.length`, so the two can
+   never disagree. */
+const totalWorks = Math.max(
+	(worlds[worlds.length - 1]?.start ?? 0) + (worlds[worlds.length - 1]?.count ?? 0),
+	1,
+);
+
 /*
  * LIGHTBOX DERIVATIVES for the loose works. One large AVIF derivative per loose work (WebP until P9/D-80
  * see PhotoFrame.astro for the measurement; ~56 KB against ~125 KB for the same 1700px photograph), the same optimised
@@ -75,44 +84,39 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 	bodyClass="is-portfolio"
 >
 	<div class="tv" data-tv-root>
-		<!-- THE OVERTURE (Phase 4, D-74). The premium entrance: a full-bleed brand curtain that holds while
-		     the crown imagery decodes, then dissolves as the coil resolves into focus beneath it. Shown ONLY
-		     with JS enabled (html.js) and NOT under reduced motion, so no-JS never sees a stuck curtain and
-		     reduced motion goes straight to the accessible document. Decorative (aria-hidden, unfocusable):
-		     the real H1 + three chapters live beneath it. Loading is felt, not bureaucratic, the hairline of
-		     light draws to full as the world becomes ready; there is no spinner, bar or percentage. -->
-		<div class="pf-overture" data-pf-overture aria-hidden="true">
-			<div class="pf-overture__inner">
-				<p class="pf-overture__brand">Leonard&nbsp;Rieksen</p>
-				<p class="pf-overture__eyebrow">Fotografie</p>
-				<p class="pf-overture__work">Portfolio</p>
-				<span class="pf-overture__line">
-					<span class="pf-overture__line-fill" data-pf-load-fill></span>
-				</span>
-			</div>
-		</div>
+		<!-- THE ENTRANCE IS NOT A CURTAIN ANY MORE (P14).
+		     WHAT WAS HERE. A full-bleed brand OVERTURE (D-74) held over the whole viewport while the crown
+		     photography decoded — up to a 4.2 s hard cap — with a hairline of light drawing to full, and only
+		     then dissolved as the coil emerged. It was built to solve a real problem (before it, the visitor
+		     watched empty dark rectangles fill in one at a time) and it solved that problem. But the owner's
+		     verdict on the result is the one that decides: entering the portfolio should feel like "ik ben in
+		     het portfolio", not "ik moet eerst door een intro heen". A brand panel between the visitor and the
+		     work is a wait, however beautifully it is drawn, and it is a wait on the one page whose entire
+		     purpose is the work.
+		     WHAT REPLACES IT. Nothing that gates. The engine mounts on the first frame and the coil is live,
+		     scrollable and touchable immediately; the arrival is a one-shot CSS emergence on the field itself
+		     (`tv-emerge`, traverse.css) that resolves the world out of a soft blur into focus while the visitor
+		     is already free to move it. Nothing waits on a decode, nothing covers the page, and there is no
+		     state to get stuck in — the animation cannot fail to end because nothing is listening for it.
+		     The original problem is still answered, and better: since D-80 the ENGINE decides what to fetch
+		     (the works near the camera, at the size it will present them) and the crown is `priority`, so what
+		     the emergence resolves into is the crown, not a scatter of empty frames.
+		     The veil that used to quiet the coil behind the overture's text goes with it: it existed to give
+		     the opening one subject while a brand panel was being read, and there is no longer a panel. -->
 
 		<!-- The scroll spacer: real page height, real scrollbar, real native paging. The runtime sets its
 		     height from the number of works, so the scrollbar is honest about how much work remains. -->
 		<div class="tv-scroll" data-tv-scroll aria-hidden="true"></div>
 
-		<!-- THE OVERTURE VEIL (P8.7 / D-78). The owner on the opening: "het is heel druk, heel veel
-		     verschillende dingen, je raakt er bijna van in paniek, op mobiel is het al helemaal een drama."
-		     The cause is arrival order: the D-74 entrance resolves the coil FULLY and then puts the brand
-		     overture on top of it, so the first thing the visitor meets is a finished 3D world of ~14
-		     photographs AND a title AND a lede AND a wayfinding marker, all at once and all at full strength.
-		     Nothing there is wrong on its own; there is simply no first beat.
-		     This is that beat: a calm field over the coil while the overture is being read, so the world is
-		     PRESENT but not yet the subject, you can see there is something there, and you are not asked to
-		     look at it yet. It lifts on the same signal the overture leaves on (the first real travel), which
-		     means it costs the reader nothing: one scroll and the world is theirs. Purely presentational and
-		     `aria-hidden`; it never gates content, and under reduced motion / no-JS the coil is not mounted at
-		     all, so it never appears. -->
-		<div class="pf-veil" data-pf-veil aria-hidden="true"></div>
-
 		<!-- THE OPENING (§3.1). In the baseline document this is the page heading + a quiet lead. Under the
-		     active coil it becomes the opening overlay at the crown and fades as the visitor descends, the
-		     "shape of the collection", stated once, quietly. The h1 stays for SEO/screen readers either way. -->
+		     active coil it is a small ORIENTATION MARK in the top-left corner, not a panel in the middle of
+		     the screen: it says which room you are in and gets out of the way, exactly as the world mark does
+		     at the bottom. It still fades on the first travel. The h1 stays for SEO/screen readers either way.
+		     P14: it used to be a centred, scrimmed overlay ~40rem wide holding an eyebrow, a title and a
+		     two-line lede across the middle of the crown — which is the second half of what the owner saw as
+		     "an intro to get through", and it survived the overture being dismissed. The words are unchanged;
+		     the composition is a corner, and the lede is dropped from the coil view (it remains in the
+		     accessible document, where it is the page's real lead paragraph). -->
 		<header class="pf-intro" data-pf-intro>
 			<p class="pf-intro__eyebrow">Leonard Rieksen Fotografie</p>
 			<h1 class="pf-intro__title">Portfolio</h1>
@@ -263,9 +267,10 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 		     script is far too late, stashes every coil `srcset` in `data-tv-srcset`. Nothing in the coil is then
 		     fetched from the markup at all. traverse.js measures, writes each work's TRUE presented width to its
 		     <source> elements, and restores the srcset for the works near the camera (CFG.loadAhead), so every
-		     photograph is requested at the right size and only when it is genuinely approaching. The overture
-		     waits on that restored crown instead of on the markup (portfolio-intro.js), so the entrance is
-		     unchanged: the curtain still holds until the crown's photography is decoded.
+		     photograph is requested at the right size and only when it is genuinely approaching. (P14: the entrance curtain
+		     that used to wait on that restored crown is deleted — see the note at the top of this file — but
+		     the delivery discipline this script sets up is unchanged and is now what makes an immediate,
+		     ungated arrival resolve into the crown rather than into empty frames.)
 
 		     GUARDS. Runs only when JavaScript is live AND motion is welcome, exactly when the coil will mount.
 		     Without JS nothing here executes; under reduced motion it returns before stashing. In both of those
@@ -317,84 +322,82 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 		<!-- All of this is hidden until [data-tv-active] (see portfolio-chrome.css): under no-JS and reduced
 		     motion the three headed chapters above are the wayfinding, and none of this exists. -->
 
-		<!-- PERSISTENT WAYFINDING MARKER (§7.2/§7.4): names the current world + position, expandable into a
-		     jump list that reaches any world from anywhere. Static text; only its wording changes. The jump
-		     items are real #work-<id> anchors, so they work natively when the chrome script is not driving. -->
-		<nav class="pf-wayfind" data-pf-wayfind aria-label="Waar je bent in het portfolio">
-			<button
-				type="button"
-				class="pf-wayfind__toggle"
-				data-pf-toggle
-				aria-expanded="false"
-				aria-controls="pf-worlds"
-			>
-				<span class="pf-wayfind__eyebrow">Portfolio</span>
-				<span class="pf-wayfind__now">
-					<span class="pf-wayfind__name" data-pf-now>{worlds[0]?.label}</span>
-					<span class="pf-wayfind__pos" data-pf-pos>1&#8202;/&#8202;{worlds.length}</span>
-				</span>
-				<!-- OVERALL PROGRESS (Phase 4, D-74): a hairline that fills as the visitor descends the whole
-				     coil, a constant, quiet sense of how far the journey has come, without a scrollbar. -->
-				<span class="pf-wayfind__track" aria-hidden="true">
-					<span class="pf-wayfind__track-fill" data-pf-progress-fill></span>
-				</span>
-			</button>
-			<div class="pf-wayfind__panel" id="pf-worlds" data-pf-list hidden>
-				<p class="pf-wayfind__heading">De reis</p>
-				<!-- THE MAP (Phase 4, D-74): the whole coil as three proportional world segments (sized by their
-				     work counts) with a live position node. Click anywhere to travel there instantly, the fast
-				     way across a long collection, and the far-left is the way back to the beginning. Decorative
-				     (aria-hidden): the labelled list below is the exact, keyboard-accessible equivalent. -->
-				<div class="pf-map" data-pf-map aria-hidden="true">
-					<div class="pf-map__track">
-						{
-							worlds.map((w) => (
-								<span class="pf-map__seg" data-pf-seg={w.id} style={`flex-grow:${w.count}`} />
-							))
-						}
-					</div>
-					<span class="pf-map__node" data-pf-node></span>
-				</div>
-				<ul class="pf-wayfind__list">
+		<!-- ============================================================================================= *
+		     THE WORLD RAIL (P14) — the portfolio's navigation, stated rather than hidden.
+
+		     WHAT WAS HERE, and why it went. A collapsed corner MARKER reading "PORTFOLIO / • Projecten 1/3"
+		     over a progress hairline, which opened — on click — into a panel holding a proportional journey
+		     map and a three-item jump list. Every one of those parts worked. Together they failed the only
+		     test that matters for navigation: the owner did not read the thing in the corner as a control at
+		     all. It looked like a status label, "1 / 3" does not say what the other two are, and the three
+		     destinations — the whole point — were behind a click nobody had a reason to make.
+
+		     WHAT IT IS NOW. One rail carrying all three worlds at once. The information hierarchy the brief
+		     asks for is simply present: PROJECTEN | ARCHITECTUUR | INTERIEUR, current one lit and marked,
+		     the other two visibly available. Nothing to discover, nothing to open, one tap to travel.
+
+		     It also ABSORBS the panel rather than deleting it: each segment's width is proportional to its
+		     work count, so the rail IS the journey map that used to live inside the dropdown, and the
+		     position node rides along it. Current world, all worlds, relative size, and exactly how far
+		     through the whole coil you are — one object, no state.
+
+		     THE MARKUP IS THE FALLBACK. Three real anchors to real `#work-<id>` targets, in the document,
+		     in tab order, working without JavaScript and without the engine (where they simply scroll the
+		     accessible chaptered column to that world). The chrome script upgrades a click into an instant,
+		     exact `focusWork()` — the same D-73 travel as before, unchanged. -->
+		<nav class="pf-worlds" data-pf-worlds-nav aria-label="Portfolio-werelden">
+			<!-- The world's own descriptor, shown briefly when you cross into a new one. This is what remains
+			     of the D-73 world-title BEAT, which was a full-viewport radial scrim under a display-size
+			     heading, fired on every boundary — the "same interruption again" the owner reports when
+			     changing worlds. A world change is navigation, so its feedback belongs to the navigation:
+			     the active segment lights, and this one line says what the room is. aria-hidden — the
+			     anchors' own `aria-current` carries the state for assistive technology. -->
+			<p class="pf-worlds__note" data-pf-note aria-hidden="true"></p>
+			<div class="pf-worlds__rail">
+				{
+					worlds.map((w, i) => (
+						<a
+							class="pf-world"
+							href={`#${w.anchorId}`}
+							data-pf-jump={w.id}
+							data-pf-index={w.start}
+							aria-current={i === 0 ? 'true' : undefined}
+							aria-label={`${w.label}, ${w.count} beelden`}
+						>
+							<span class="pf-world__label">{w.label}</span>
+							<span class="pf-world__count">{w.count}</span>
+						</a>
+					))
+				}
+				<!-- THE PROPORTIONAL MAP, on the track rather than in the segment widths. Sizing the three
+				     SEGMENTS by their work counts (9 / 40 / 7) is arithmetically honest and useless: it left
+				     "Projecten" and "Interieur" too narrow to hold their own names, and a navigation label
+				     that reads "PROJE…" fails the only test this control has. The segments are therefore
+				     equal and legible, and the proportion moves to the hairline underneath them, where the
+				     boundary ticks show how the collection actually divides and the fill + node give the
+				     exact position along the whole coil (D-74).
+				     The `aria-label` on each anchor exists because the visible text reads "Interieur" over
+				     "7", which an assistive technology concatenates to "Interieur7" — a number that says
+				     nothing. The accessible name states what the number IS and still CONTAINS the visible
+				     label, so WCAG 2.5.3 (Label in Name) holds and voice control can still say "Interieur". -->
+				<span class="pf-worlds__track" aria-hidden="true">
+					<span class="pf-worlds__fill" data-pf-progress-fill></span>
 					{
-						worlds.map((w, i) => (
-							<li>
-								<a
-									class="pf-jump"
-									href={`#${w.anchorId}`}
-									data-pf-jump={w.id}
-									data-pf-index={w.start}
-									aria-current={i === 0 ? 'true' : undefined}
-								>
-									<span class="pf-jump__label">{w.label}</span>
-									<span class="pf-jump__count">{w.count}</span>
-									<span class="pf-jump__sub">{w.sub}</span>
-								</a>
-							</li>
-						))
+						worlds
+							.slice(1)
+							.map((w) => (
+								<span
+									class="pf-worlds__tick"
+									style={`left:${((w.start / totalWorks) * 100).toFixed(2)}%`}
+								/>
+							))
 					}
-				</ul>
+				</span>
+				<span class="pf-worlds__node" data-pf-node aria-hidden="true"></span>
 			</div>
 		</nav>
 
-		<!-- WORLD-TITLE BEAT: eases in briefly when the visitor enters a world, then fades, "je komt een
-		     nieuwe wereld binnen", typographic. aria-hidden: the wayfinding nav and headings carry it for AT. -->
-		<div class="pf-beat" data-pf-beat aria-hidden="true">
-			<span class="pf-beat__name" data-pf-beat-name></span>
-			<!-- A gold hairline that draws as you cross into a new world (Fase 5, D-75), the site's seam-gold
-			     detail language marking each transition, never a fill or a heading. -->
-			<span class="pf-beat__seam"></span>
-			<span class="pf-beat__sub" data-pf-beat-sub></span>
-		</div>
-
-		<!-- THE SCROLL HINT IS GONE (P8.7 / D-78). It existed because "the coil fills upward, so which way is
-		     not obvious", but the coil now DESCENDS BY ITSELF when the reader is idle (the D-72 auto-drift),
-		     so the world states the direction by moving in it. A label telling you to do what the page is
-		     already visibly doing is one more thing on the busiest screen of the site, and the owner's note
-		     ("de aanwijzing om te scrollen kan in ieder geval weg, want hij begint nu automatisch met
-		     scrollen") is exactly right. Removed, not hidden: the markup, the CSS and its listeners are all
-		     deleted. -->
-
+		
 		<!-- The world boundaries, for the chrome controller. Structural data only (a JSON data island). -->
 		<script type="application/json" data-tv-worlds is:inline set:html={JSON.stringify(worlds)}></script>
 	</div>
@@ -413,7 +416,6 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 <script>
 	import { mountTraverse } from '../../scripts/traverse.js';
 	import { mountChrome } from '../../scripts/portfolio-chrome.js';
-	import { mountIntro } from '../../scripts/portfolio-intro.js';
 
 	const root = document.querySelector('[data-tv-root]');
 	if (root) {
@@ -421,16 +423,14 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 		// seam. Under reduced motion the runtime never mounts, so onFrame never fires and the chrome stays in
 		// its static state (the headed chapters do the wayfinding).
 		const chrome = mountChrome(root);
-		// THE OVERTURE (Phase 4, D-74) gates the engine mount: it holds the brand curtain while the crown
-		// imagery decodes, then reveals the coil emerging into focus. Under reduced motion / no-JS it mounts
-		// immediately (the curtain is CSS-hidden there), so the accessible document is never blocked.
-		mountIntro(root, {
-			mount() {
-				(window as unknown as Record<string, unknown>).__tv = mountTraverse(root, {
-					expose: true,
-					onFrame: chrome.onFrame,
-				});
-			},
+		// P14: THE ENGINE MOUNTS IMMEDIATELY. It used to be gated behind `mountIntro`, which held a brand
+		// curtain over the page until the crown photography had decoded (or 4.2 s elapsed). That controller
+		// is deleted — see the note at the top of this page's markup — and with it the only thing that ever
+		// stood between arriving and travelling. The arrival is now a one-shot CSS emergence on the field
+		// (traverse.css `tv-emerge`), which cannot gate anything because nothing waits on it.
+		(window as unknown as Record<string, unknown>).__tv = mountTraverse(root, {
+			expose: true,
+			onFrame: chrome.onFrame,
 		});
 	}
 </script>

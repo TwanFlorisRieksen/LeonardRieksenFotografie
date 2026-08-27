@@ -219,8 +219,7 @@
  * ============================================================================================ */
 
 .pf-intro,
-.pf-wayfind,
-.pf-beat {
+.pf-worlds {
 	/* Hidden by default: under no-JS the chapters do the work, and .pf-intro reverts to the page header
 	   below. Each is switched on under [data-tv-active]. */
 }
@@ -268,31 +267,47 @@
 	max-width: 38rem;
 }
 
-/* ENHANCED = a quiet opening overlay at the crown. The h1 is shrunk to a calm identification line (§3.1: the
-   portfolio must not open as a display banner), the brand + lead carry the identity, and the whole thing
-   eases away the moment the visitor starts to descend. */
+/* ENHANCED = a small ORIENTATION MARK in the top-left corner (P14).
+ *
+ * WHAT IT WAS. A fixed, centred, scrimmed overlay ~40rem wide, sitting across the middle of the crown with
+ * an eyebrow, a title and a two-line lede — held there until the visitor scrolled. The overture curtain got
+ * most of the blame for "ik moet eerst door een intro heen", but this is the half that SURVIVED the curtain
+ * lifting: a panel of brand copy between the reader and the photographs, on the page that is the
+ * photographs. It also owned the middle of the frame, which on this page belongs to the work.
+ *
+ * WHAT IT IS. The same words, in a corner, at chrome scale. Top-left mirrors the world rail at the
+ * bottom-left, so the coil is framed by two quiet marks in the same language instead of interrupted by a
+ * centred one, and the whole middle of the screen is the collection from the first frame. It still recedes
+ * on the first travel — but it never had to be got through, because it was never in the way.
+ * The lede is dropped from the coil view only; it remains the page's real lead paragraph in the accessible
+ * document beneath, which is where a reader who wants the shape of the collection actually gets it. */
 .tv[data-tv-active] .pf-intro {
 	position: fixed;
-	top: clamp(5rem, 15vh, 9.5rem);
-	left: 50%;
-	transform: translateX(-50%);
+	/* Clear of the site header, which is the other fixed thing in this corner (`.site-header__inner` is
+	   `min-height: 4.75rem`; this leaves a gutter under it at every viewport). */
+	top: calc(4.75rem + clamp(0.85rem, 2.5vh, 1.6rem));
+	left: clamp(1rem, 3vw, 2.25rem);
+	right: auto;
+	transform: none;
 	margin: 0;
+	padding: 0;
+	max-width: min(20rem, 62vw);
+	width: auto;
+	text-align: left;
 	z-index: var(--z-sticky);
-	width: min(90vw, 40rem);
 	pointer-events: none;
-	/* A soft, edgeless pocket of deeper dark behind the opening identification (§5.6) — the same cinematic
-	   scrim the world-title beat uses, never a boxed card. It guarantees the crown text stays legible over the
-	   blue-hour world at any viewport (notably on a narrow phone, where the two top blooms converge toward
-	   centre), and it fades away with the overlay the moment the visitor descends. */
-	padding-block: clamp(1rem, 3vh, 2rem);
-	background: radial-gradient(118% 128% at 50% 44%, rgb(5 7 11 / 0.62) 0%, rgb(5 7 11 / 0.3) 44%, transparent 72%);
+	background: none;
 	transition:
 		opacity 700ms var(--ease-standard),
 		transform 700ms var(--ease-standard);
 }
 
 .tv[data-tv-active] .pf-intro__eyebrow {
-	margin-bottom: 0.5rem;
+	font-size: var(--fs-eyebrow);
+	letter-spacing: 0.16em;
+	color: var(--color-text-muted);
+	margin: 0 0 0.25rem;
+	text-shadow: 0 1px 10px rgb(0 0 0 / 0.8);
 }
 
 .tv[data-tv-active] .pf-intro__title {
@@ -301,150 +316,234 @@
 	font-weight: var(--fw-display-soft);
 	text-transform: uppercase;
 	letter-spacing: 0.22em;
-	color: var(--color-text-secondary);
-	margin: 0 0 0.7rem;
-	text-shadow: 0 1px 12px rgb(0 0 0 / 0.7);
+	color: var(--color-text);
+	margin: 0;
+	text-shadow: 0 1px 12px rgb(0 0 0 / 0.85);
 }
 
+/* The lede belongs to the document, not to the corner (see above). */
 .tv[data-tv-active] .pf-intro__lead {
-	font-size: var(--fs-body);
-	color: var(--color-text-secondary);
-	text-shadow: 0 1px 10px rgb(0 0 0 / 0.6);
+	display: none;
 }
 
 .tv[data-tv-active] .pf-intro.is-gone {
 	opacity: 0;
-	transform: translateX(-50%) translateY(-10px);
+	transform: translateY(-8px);
 }
 
-/* ---- 3b. The persistent wayfinding marker (§7.2/§7.4) ---------------------------------------- */
+/* ---- 3b. THE WORLD RAIL (P14) — the portfolio's navigation ------------------------------------
+ *
+ * WHAT IT REPLACES. A collapsed corner marker ("PORTFOLIO / • Projecten 1/3") that opened, on click, into
+ * a panel holding a proportional journey map and a three-item jump list. Owner verdict: it did not read as
+ * a control, it was too text-heavy for what it said, and the three destinations — the only thing anyone
+ * comes to that corner for — were behind a click nobody had a reason to make.
+ *
+ * WHAT IT IS. One rail with all three worlds visible at once, the current one lit and marked, the other two
+ * plainly available. It absorbs the panel rather than deleting it: each segment's flex-grow is its work
+ * COUNT, so the rail is the proportional map, and the fill + node give exact position along the whole coil.
+ * Current world, all worlds, relative size, overall progress — one object, no state, one tap.
+ *
+ * It stays chrome, not a dashboard (§7.2/§7.4, and the brief's own list): a hairline-bounded bar of the
+ * site's own deep sapphire, uppercase micro-labels at reading weight, one gold tick on the current world,
+ * one gold node on the progress line. No pills, no tabs, no glass, no shadow stack, no gold fills — gold
+ * only ever appears as a mark or a hairline (6.11/6.12), and blue carries interaction and focus. */
 
-.pf-wayfind {
+.pf-worlds {
 	display: none;
 	position: fixed;
 	left: clamp(1rem, 3vw, 2.25rem);
+	right: auto;
 	/* `--consent-h` is 0 unless the cookie bar is up. While it is, it is a fixed strip at the bottom edge on
-	   a HIGHER layer, so the marker — the portfolio's whole wayfinding affordance — sat underneath it,
+	   a HIGHER layer, so the rail — the portfolio's whole wayfinding affordance — would sit underneath it,
 	   invisible and unclickable, for every first-time visitor (P12 / D-84; see scripts/consent.js). */
 	bottom: calc(clamp(1rem, 3vw, 2.25rem) + var(--consent-h, 0px));
+	/* Sized by its own labels, not by an arbitrary fraction: three Dutch world names at chrome scale need
+	   what they need, and the cap only stops it growing into the photography on a very wide screen. */
+	width: max-content;
+	max-width: min(34rem, 56vw);
 	z-index: var(--z-sticky);
 }
 
-.tv[data-tv-active] .pf-wayfind {
+.tv[data-tv-active] .pf-worlds {
 	display: block;
 }
 
-/* HELD BACK UNTIL THE READER TRAVELS (P8.7 / D-78). Wayfinding answers "where am I in this?", and on the
-   first screen that question does not exist yet — the marker was simply a fourth thing competing for the
-   opening. It now arrives once the visitor has actually begun to descend (the chrome controller drops
-   `is-held` on the first real travel), which is the moment it starts being useful. `visibility` rather than
-   opacity alone, so while held it is also out of the tab order — a control nobody can see must not be
-   reachable by keyboard either (WCAG 2.4.7/2.4.11). */
-.tv[data-tv-active] .pf-wayfind.is-held {
-	opacity: 0;
-	visibility: hidden;
-	transform: translateY(6px);
-	pointer-events: none;
-}
-.tv[data-tv-active] .pf-wayfind {
+/* HELD BACK UNTIL THE COIL HAS ARRIVED, and no longer than that (P14). It used to be held until the visitor
+   TRAVELLED (D-78) — correct while the opening was a brand panel that needed the screen to itself, and wrong
+   now: with the panel gone, a navigation control that is invisible until you have already started moving is
+   a control you have to discover by accident. It arrives with the world instead, on the same 900 ms beat the
+   coil emerges on, so the first complete screen the visitor sees already contains the way around.
+   `visibility` rather than opacity alone, so while held it is also out of the tab order — a control nobody
+   can see must not be reachable by keyboard either (WCAG 2.4.7/2.4.11). */
+.tv[data-tv-active] .pf-worlds {
 	opacity: 1;
 	visibility: visible;
 	transform: none;
 	transition:
-		opacity 700ms var(--ease-standard),
-		transform 700ms var(--ease-standard),
-		visibility 700ms;
+		opacity 600ms var(--ease-standard) 620ms,
+		transform 600ms var(--ease-standard) 620ms,
+		visibility 600ms 620ms;
+}
+@starting-style {
+	.tv[data-tv-active] .pf-worlds {
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(8px);
+	}
 }
 
 /* At the ending the coil dissolves into the contact invitation; the chrome recedes with it (§3.5). */
-.tv.is-tv-ending .pf-wayfind,
-.tv.is-tv-ending .pf-beat {
+.tv.is-tv-ending .pf-worlds {
 	opacity: 0;
 	pointer-events: none;
 	transition: opacity 450ms var(--ease-standard);
 }
 
-.pf-wayfind__toggle {
+/* The world's descriptor, shown for a beat when you cross a boundary. This is all that remains of the
+   full-viewport world-title BEAT: a world change is navigation, so its feedback lives with the navigation. */
+.pf-worlds__note {
+	margin: 0 0 0.55rem;
+	padding-left: 0.16em;
+	font-size: var(--fs-eyebrow);
+	text-transform: uppercase;
+	letter-spacing: 0.18em;
+	color: var(--color-accent);
+	text-shadow: 0 1px 10px rgb(0 0 0 / 0.85);
+	opacity: 0;
+	transform: translateY(4px);
+	transition:
+		opacity 420ms var(--ease-standard),
+		transform 420ms var(--ease-standard);
+	pointer-events: none;
+	min-height: 1em;
+}
+
+.pf-worlds__note.is-visible {
+	opacity: 1;
+	transform: none;
+}
+
+.pf-worlds__rail {
+	position: relative;
 	display: flex;
-	flex-direction: column;
-	gap: 0.15rem;
-	align-items: flex-start;
-	padding: 0.5rem 0.85rem;
-	/* Near-opaque, not merely tinted: the marker can sit over a bright photograph (notably on mobile, where
-	   the coil fills the width), and blur is not a contrast guarantee. This keeps the wayfinding text legible
-	   (AA) over ANY backdrop, while the blur still softens what shows through the last sliver. */
+	align-items: stretch;
+	/* Near-opaque, not merely tinted: the rail can sit over a bright photograph (notably on mobile, where
+	   the coil fills the width), and blur is not a contrast guarantee. The blur still softens the last
+	   sliver that shows through. */
 	background: rgb(8 11 16 / 0.86);
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-md);
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	color: var(--color-text);
-	cursor: pointer;
-	text-align: left;
-	transition:
-		background var(--dur-interaction) var(--ease-standard),
-		border-color var(--dur-interaction) var(--ease-standard);
-}
-
-.pf-wayfind__toggle:hover {
-	background: rgb(18 23 32 / 0.92);
-	border-color: var(--color-border-strong);
-}
-
-.pf-wayfind__toggle:focus-visible {
-	outline: 2px solid var(--color-focus);
-	outline-offset: 2px;
-}
-
-.pf-wayfind__eyebrow {
-	font-size: var(--fs-eyebrow);
-	text-transform: uppercase;
-	letter-spacing: 0.16em;
-	color: var(--color-text-muted);
-}
-
-.pf-wayfind__now {
-	display: flex;
-	align-items: baseline;
-	gap: 0.55rem;
-}
-
-.pf-wayfind__name {
-	font-family: var(--font-display);
-	font-weight: var(--fw-display-soft);
-	font-size: var(--fs-body);
-	color: var(--color-text);
-}
-
-/* A small gold tick before the current world's name — the one selective accent (§ premium detail). */
-.pf-wayfind__name::before {
-	content: '';
-	display: inline-block;
-	width: 0.4rem;
-	height: 0.4rem;
-	margin-right: 0.5rem;
-	border-radius: var(--radius-pill);
-	background: var(--color-accent);
-	vertical-align: middle;
-}
-
-.pf-wayfind__pos {
-	font-size: var(--fs-caption);
-	color: var(--color-text-muted);
-	font-variant-numeric: tabular-nums;
-}
-
-/* Overall progress hairline in the collapsed marker — fills as the visitor descends the whole coil. */
-.pf-wayfind__track {
-	display: block;
-	height: 1px;
-	width: 100%;
-	margin-top: 0.55rem;
-	background: var(--color-border);
 	overflow: hidden;
 }
 
-.pf-wayfind__track-fill {
+/* One world. A real anchor to a real #work-<id>, so this works with the engine off and with JS off.
+   `flex: 1 1 auto` with an intrinsic basis: the three segments share the rail evenly and none of them is
+   ever narrower than its own name (see the note in the markup about why the counts do NOT size these). */
+.pf-world {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	/* ≥44px tall including the border, so every segment is a comfortable touch target at every width
+	   (WCAG 2.5.8 / the brief's "no tiny text-only hit areas"). */
+	padding: 0.62rem 0.5rem 0.68rem;
+	text-decoration: none;
+	color: var(--color-text-muted);
+	text-align: left;
+	transition:
+		background var(--dur-feedback) var(--ease-standard),
+		color var(--dur-feedback) var(--ease-standard);
+}
+
+/* A hairline between segments — the rail reads as one divided object rather than three loose labels. */
+.pf-world + .pf-world {
+	box-shadow: inset 1px 0 0 var(--color-border);
+}
+
+.pf-world:hover,
+.pf-world:focus-visible {
+	background: var(--p-white-a08);
+	color: var(--color-text-secondary);
+}
+
+.pf-world:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: -2px;
+}
+
+.pf-world__label {
+	font-family: var(--font-display);
+	font-weight: var(--fw-display-soft);
+	font-size: var(--fs-caption);
+	text-transform: uppercase;
+	/* The tracking is what makes three uppercase words read as an architectural rail rather than as tabs.
+	   It is spent carefully: at 320px the three Dutch labels have to share ~250px, so it eases down with
+	   the viewport rather than being one fixed value that either crowds or under-sets. */
+	letter-spacing: clamp(0.04em, 0.2vw, 0.13em);
+	line-height: 1.15;
+	color: inherit;
+	white-space: nowrap;
+}
+
+.pf-world__count {
+	font-size: var(--fs-eyebrow);
+	color: var(--color-text-muted);
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.06em;
+}
+
+/* THE CURRENT WORLD. Lit type, and one gold tick — the site's single selective accent, as a MARK, never a
+   fill (6.11/6.12). State is carried by three separate signals (weight, brightness and the tick), so it is
+   never colour alone (A11Y-09), and `aria-current` carries it for assistive technology. */
+.pf-world[aria-current='true'] {
+	background: var(--p-white-a08);
+	color: var(--color-text);
+}
+
+.pf-world[aria-current='true'] .pf-world__label {
+	color: var(--color-text);
+}
+
+.pf-world[aria-current='true'] .pf-world__count {
+	color: var(--color-text-secondary);
+}
+
+.pf-world[aria-current='true']::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: var(--color-accent);
+}
+
+/* OVERALL PROGRESS along the WHOLE coil, on the rail's own foot: the hairline fills and the node marks the
+   exact position, so the rail answers "how far am I" continuously and not only "which world" (D-74). */
+.pf-worlds__track {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-border);
+	pointer-events: none;
+}
+
+/* Where the collection actually divides — one hairline tick per world boundary, on the map. */
+.pf-worlds__tick {
+	position: absolute;
+	top: -2px;
+	width: 1px;
+	height: 5px;
+	background: var(--color-border-strong);
+}
+
+.pf-worlds__fill {
 	display: block;
 	height: 100%;
 	width: 100%;
@@ -454,64 +553,9 @@
 	transition: transform 220ms var(--ease-standard);
 }
 
-/* The expanded panel — the dropdown container holding the journey map + the labelled jumps. */
-.pf-wayfind__panel {
+.pf-worlds__node {
 	position: absolute;
-	bottom: 100%;
-	left: 0;
-	margin: 0 0 0.5rem;
-	padding: 0.85rem;
-	min-width: 16.5rem;
-	background: rgb(8 11 16 / 0.85);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-md);
-	backdrop-filter: blur(14px);
-	-webkit-backdrop-filter: blur(14px);
-}
-
-.pf-wayfind__panel[hidden] {
-	display: none;
-}
-
-.pf-wayfind__heading {
-	font-size: var(--fs-eyebrow);
-	text-transform: uppercase;
-	letter-spacing: 0.16em;
-	color: var(--color-text-muted);
-	margin: 0 0 0.7rem;
-	padding-inline: 0.1rem;
-}
-
-/* THE JOURNEY MAP — three proportional world segments + a live position node; click to travel (§5.2). */
-.pf-map {
-	position: relative;
-	margin-bottom: 0.85rem;
-	padding: 0.45rem 0 0.3rem;
-	cursor: pointer;
-}
-
-.pf-map__track {
-	display: flex;
-	gap: 2px;
-	height: 4px;
-}
-
-.pf-map__seg {
-	display: block;
-	height: 100%;
-	border-radius: var(--radius-pill);
-	background: var(--p-white-a14);
-	transition: background var(--dur-interaction) var(--ease-standard);
-}
-
-.pf-map:hover .pf-map__seg,
-.pf-map:focus-within .pf-map__seg {
-	background: var(--p-white-a24);
-}
-
-.pf-map__node {
-	position: absolute;
-	top: 0.45rem;
+	bottom: 0;
 	left: 0;
 	width: 2px;
 	height: 4px;
@@ -520,217 +564,7 @@
 	background: var(--color-accent-strong);
 	box-shadow: 0 0 7px rgb(216 189 132 / 0.65);
 	transition: left 220ms var(--ease-standard);
-}
-
-.pf-wayfind__list {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-.pf-jump {
-	display: grid;
-	grid-template-columns: 1fr auto;
-	align-items: baseline;
-	column-gap: 0.75rem;
-	padding: 0.5rem 0.65rem;
-	border-radius: var(--radius-sm);
-	text-decoration: none;
-	color: var(--color-text-secondary);
-	transition: background var(--dur-feedback) var(--ease-standard);
-}
-
-.pf-jump:hover,
-.pf-jump:focus-visible {
-	background: var(--p-white-a08);
-	color: var(--color-text);
-}
-
-.pf-jump:focus-visible {
-	outline: 2px solid var(--color-focus);
-	outline-offset: -2px;
-}
-
-.pf-jump__label {
-	font-family: var(--font-display);
-	font-weight: var(--fw-display-soft);
-	font-size: var(--fs-body-sm);
-}
-
-.pf-jump__count {
-	font-size: var(--fs-caption);
-	color: var(--color-text-muted);
-	font-variant-numeric: tabular-nums;
-}
-
-.pf-jump__sub {
-	grid-column: 1 / -1;
-	font-size: var(--fs-caption);
-	color: var(--color-text-muted);
-	margin-top: 0.1rem;
-}
-
-.pf-jump[aria-current='true'] {
-	color: var(--color-text);
-}
-
-.pf-jump[aria-current='true'] .pf-jump__label::before {
-	content: '';
-	display: inline-block;
-	width: 0.35rem;
-	height: 0.35rem;
-	margin-right: 0.45rem;
-	border-radius: var(--radius-pill);
-	background: var(--color-accent);
-	vertical-align: middle;
-}
-
-/* ---- 3c. The world-title beat — "je komt een nieuwe wereld binnen" --------------------------- */
-
-.pf-beat {
-	display: none;
-	position: fixed;
-	top: clamp(3.5rem, 9vh, 7rem);
-	left: 0;
-	right: 0;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.55rem;
-	padding: clamp(1.5rem, 4vh, 3rem) 1rem clamp(2rem, 6vh, 4rem);
-	z-index: var(--z-sticky);
 	pointer-events: none;
-	opacity: 0;
-	transform: translateY(-10px);
-	transition:
-		opacity 800ms var(--ease-standard),
-		transform 1100ms var(--ease-out);
-	/* A soft radial scrim — chrome, not a card: it darkens the world a touch BEHIND the title so the name
-	   reads over any photograph, then fades to nothing at its edges. This is the world's light dimming for
-	   the title, a cinematic beat, never a boxed banner. */
-	background: radial-gradient(120% 150% at 50% 30%, rgb(4 6 10 / 0.62), rgb(4 6 10 / 0.28) 42%, transparent 72%);
-}
-
-.tv[data-tv-active] .pf-beat {
-	display: flex;
-}
-
-.pf-beat.is-visible {
-	opacity: 1;
-	transform: translateY(0);
-}
-
-.pf-beat__name {
-	font-family: var(--font-display);
-	font-weight: var(--fw-display-soft);
-	font-size: var(--fs-h2);
-	line-height: var(--lh-heading);
-	letter-spacing: 0.01em;
-	color: var(--color-text);
-	text-shadow: 0 2px 18px rgb(0 0 0 / 0.85);
-}
-
-.pf-beat__sub {
-	font-size: var(--fs-eyebrow);
-	text-transform: uppercase;
-	letter-spacing: 0.2em;
-	color: var(--color-accent);
-	text-shadow: 0 1px 10px rgb(0 0 0 / 0.85);
-}
-
-/* A gold hairline that DRAWS between the world's name and its descriptor as you cross a boundary (Fase 5,
-   D-75). This is the seam-gold language of the rest of the site (6.11/6.12) marking each world transition —
-   a controlled catch-light along a hairline, never a fill, heading or text-gradient. It draws with the beat's
-   own reveal and retreats with it, so gold appears only for the ~2s of the transition, never as decoration. */
-.pf-beat__seam {
-	width: clamp(3rem, 8vw, 5rem);
-	height: 1px;
-	background: var(--seam-gold);
-	transform: scaleX(0);
-	transform-origin: center;
-	opacity: 0;
-	transition:
-		transform 900ms var(--ease-out) 140ms,
-		opacity 600ms var(--ease-standard) 140ms;
-}
-
-.pf-beat.is-visible .pf-beat__seam {
-	transform: scaleX(1);
-	opacity: 1;
-}
-
-/* ---- 3d. THE OVERTURE VEIL (P8.7 / D-78) — replaces the scroll hint ---------------------------
- *
- * The scroll hint that lived here is deleted outright (see the page markup for why: the coil descends by
- * itself when idle, so a label telling you to scroll duplicates what the world is already doing).
- *
- * What takes its place is not another mark but the ABSENCE of several. The opening was busy because
- * everything arrived at once and at full strength; this is a calm field held over the coil while the
- * overture is read, so the first screen has one subject instead of four. It is deliberately NOT opaque —
- * the world stays visible through it, which is what makes the first scroll feel like stepping into
- * something that was already there rather than like a curtain going up.
- *
- * Three layers, all cheap: a vertical deepening (strongest where the coil is densest), a soft centre pocket
- * behind the overture text, and a whisper of the site's own blue so the veil is made of the world's
- * material rather than of grey. It is `position: fixed` over the viewport, `pointer-events: none` so it
- * never intercepts a click or a scroll, and it exists only while the coil is mounted. */
-
-.pf-veil {
-	display: none;
-	position: fixed;
-	inset: 0;
-	z-index: calc(var(--z-sticky) - 1);
-	pointer-events: none;
-	background:
-		radial-gradient(72% 52% at 50% 42%, rgb(6 9 16 / 0.5) 0%, rgb(6 9 16 / 0.22) 52%, transparent 78%),
-		linear-gradient(180deg, rgb(6 9 16 / 0.42) 0%, rgb(6 9 16 / 0.5) 46%, rgb(6 9 16 / 0.62) 100%);
-	opacity: 1;
-	transition: opacity 900ms var(--ease-standard);
-}
-
-.tv[data-tv-active] .pf-veil {
-	display: block;
-}
-
-/* It lifts on the first real travel, on the same signal the overture leaves on — and then it STOPS EXISTING
-   as far as the compositor is concerned. `visibility` is transitioned alongside the opacity, so it flips at
-   the end of the fade rather than during it: the veil is a full-viewport fixed layer over a 62-element 3D
-   scene, and leaving an invisible one of those stacked over the coil for the rest of the journey is exactly
-   the kind of thing that costs frames for no benefit. It is only ever needed for the opening. */
-.pf-veil {
-	transition:
-		opacity 900ms var(--ease-standard),
-		visibility 900ms;
-}
-.pf-veil.is-gone {
-	opacity: 0;
-	visibility: hidden;
-}
-
-/* THE COIL'S OWN CAPTIONS STAND DOWN FOR THE OVERTURE. Measured on the render: even behind the veil, the
-   reading work's caption ("Architectuur in Arnhem · REEKS · 4 BEELDEN →") sat directly under the overture's
-   lede and read as a second, competing headline — the opening still had two subjects. The engine keeps
-   writing `--tv-cap-o` exactly as before; this is a presentation override on the chrome layer that ends with
-   the overture, so nothing about the reading moment itself changes. */
-/* SCOPED TO THE MOUNTED COIL, and that qualification is load-bearing. Written as `.tv.is-overture` it also
-   matched the REDUCED-MOTION baseline, where the coil never mounts and `.tv-cap` is the static document's
-   own visible work title — measured: every caption at opacity 0 on the accessible fallback, i.e. the titles
-   of 62 photographs hidden from exactly the visitors who depend on that fallback. `[data-tv-active]` is the
-   engine's own "I am running" flag, so this can now only ever apply where there is a coil to quiet. */
-.tv[data-tv-active].is-overture .tv-cap {
-	opacity: 0;
-	transition: opacity 600ms var(--ease-standard);
-}
-
-/* MOBILE IS WHERE THIS MATTERS MOST ("op mobiel is het al helemaal een drama"). A phone shows the same coil
-   at a third of the width, so the same number of photographs arrives at three times the density and the
-   overture has to hold its own against all of them. The veil is correspondingly deeper there — and it is the
-   only difference: same beat, same signal, same lift. */
-@media (max-width: 40rem) {
-	.pf-veil {
-		background:
-			radial-gradient(96% 44% at 50% 34%, rgb(6 9 16 / 0.62) 0%, rgb(6 9 16 / 0.34) 54%, transparent 82%),
-			linear-gradient(180deg, rgb(6 9 16 / 0.6) 0%, rgb(6 9 16 / 0.66) 44%, rgb(6 9 16 / 0.76) 100%);
-	}
 }
 
 /* ---- 3e. Project recognition — the enterable series caption (Phase 4, D-74) ------------------
@@ -790,145 +624,53 @@
 }
 
 /* ============================================================================================
- * 5. THE OVERTURE — the premium entrance curtain (Phase 4, D-74)
+ * 5. THE ENTRANCE (P14) — deleted, not hidden
  * ============================================================================================
- * Server-rendered, shown ONLY with JS present (html.js, set before first paint) and NEVER under reduced
- * motion — so no-JS never sees a stuck curtain and reduced motion goes straight to the accessible document.
- * It holds the brand while the crown imagery decodes, its hairline of light drawing to full as the world
- * becomes ready, then dissolves as the coil emerges (portfolio-intro.js + the tv-emerge animation). It is
- * decorative: aria-hidden, unfocusable, retired from the layout once dismissed. */
-.pf-overture {
-	display: none;
-}
-
-:root.js .pf-overture {
-	display: flex;
-	position: fixed;
-	inset: 0;
-	z-index: var(--z-modal);
-	align-items: center;
-	justify-content: center;
-	/* A blue-hour field — the nocturne the coil is seen against, modelled with a faint vertical light so the
-	   curtain is never a flat black fill. This is the world a moment before its light comes up. */
-	background:
-		radial-gradient(120% 82% at 50% 30%, rgb(18 27 46 / 0.6) 0%, rgb(9 12 18 / 0) 60%),
-		linear-gradient(180deg, #0c1120 0%, #090c12 46%, #06080c 100%);
-	opacity: 1;
-	transition: opacity 900ms var(--ease-standard);
-	will-change: opacity;
-}
-
-:root.js .pf-overture.is-dismissed {
-	opacity: 0;
-	pointer-events: none;
-}
-
-/* Once retired by the controller, the overture is fully removed from the layout/compositor — the `:root.js`
-   display rule above out-specifies the UA `[hidden]{display:none}`, so this restores it. */
-:root.js .pf-overture[hidden] {
-	display: none;
-}
-
-.pf-overture__inner {
-	text-align: center;
-	padding-inline: 1.5rem;
-	transform: translateY(-3vh);
-}
-
-.pf-overture__brand {
-	font-family: var(--font-display);
-	font-weight: var(--fw-display);
-	font-size: clamp(2rem, 1.2rem + 3.4vw, 3.4rem);
-	letter-spacing: var(--ls-heading);
-	color: var(--color-text);
-	margin: 0;
-	transition:
-		transform 900ms var(--ease-standard),
-		opacity 700ms var(--ease-standard);
-}
-
-.pf-overture__eyebrow {
-	font-size: var(--fs-eyebrow);
-	text-transform: uppercase;
-	letter-spacing: 0.34em;
-	color: var(--color-text-muted);
-	margin: 0.6rem 0 0;
-	padding-left: 0.34em; /* optical: balance the wide tracking */
-}
-
-.pf-overture__work {
-	font-size: var(--fs-body-sm);
-	text-transform: uppercase;
-	letter-spacing: 0.42em;
-	color: var(--color-text-secondary);
-	margin: 2rem 0 0;
-	padding-left: 0.42em;
-}
-
-/* THE LINE OF LIGHT — loading, felt as a hairline drawing to full. `--pf-load` is written by the intro
-   controller from real decode progress; the fill is a champagne-gold seam, the site's one elevated accent.
-   There is no spinner, bar or percentage — the light IS the progress. */
-.pf-overture__line {
-	display: block;
-	width: min(46vw, 15rem);
-	height: 1px;
-	margin: 1.5rem auto 0;
-	background: var(--color-border);
-	overflow: hidden;
-}
-
-.pf-overture__line-fill {
-	display: block;
-	height: 100%;
-	width: 100%;
-	transform: scaleX(var(--pf-load, 0.06));
-	transform-origin: left center;
-	background: linear-gradient(90deg, rgb(199 165 106 / 0.3), var(--color-accent-strong));
-	transition: transform 500ms var(--ease-standard);
-}
-
-/* The brand recedes a touch as the curtain lifts, so the dissolve has direction. */
-:root.js .pf-overture.is-dismissed .pf-overture__brand {
-	transform: translateY(-8px);
-	opacity: 0.85;
-}
-
-/* ============================================================================================
- * 6. CHROME REVEAL — held until the world has emerged (Phase 4, D-74)
- * ============================================================================================
- * Until the intro controller adds `is-revealed`, the opening lead, wayfinding marker, world-title beat and
- * scroll hint are held at 0 so they never pop in DURING the coil's emergence. Scoped to the pre-reveal
- * window with `:not(.is-revealed)`, so once revealed the normal rules (and their own transitions, and the
- * `.is-gone` recede-on-scroll) govern untouched. Under reduced motion the coil never activates, so this
- * never applies and nothing is hidden. */
-.tv[data-tv-active]:not(.is-revealed) .pf-intro,
-.tv[data-tv-active]:not(.is-revealed) .pf-wayfind,
-.tv[data-tv-active]:not(.is-revealed) .pf-veil,
-.tv[data-tv-active]:not(.is-revealed) .pf-beat {
-	opacity: 0 !important;
-	transition: none !important;
-}
-
-/* The veil eases in gently once the world has arrived, so the overture is not read against a hard field.
-   (The opening lead has its own transition; the beat is driven by its own controller; the marker is held
-   back entirely until the visitor travels — see 3b.) */
-.tv[data-tv-active].is-revealed .pf-veil {
-	transition: opacity 800ms var(--ease-standard) 160ms;
-}
+ * Sections 5 and 6 held the OVERTURE (a full-bleed brand curtain over the whole viewport, holding while
+ * the crown photography decoded, up to a 4.2 s cap) and the CHROME REVEAL that kept every other overlay at
+ * opacity 0 until that curtain had lifted. Both are gone, along with `portfolio-intro.js`, the `.pf-veil`
+ * and the `is-revealed` / `is-overture` / `is-emerging` state machine that coordinated them.
+ *
+ * The owner's verdict is the reason and it is not about how the curtain looked: entering the portfolio must
+ * feel like "ik ben in het portfolio", not like something to get through. Every part of that machinery
+ * existed to make a wait feel considered, and the wait itself is what was rejected.
+ *
+ * What takes its place is one CSS animation on the field (`tv-emerge`, traverse.css), fired by the engine's
+ * own `[data-tv-active]` flag over a coil that is already live. Nothing gates, nothing waits on a decode,
+ * nothing has to be dismissed, and there is no state left that can be got stuck in. Removed rather than
+ * disabled so nothing here can be revived by accident, and so the page ships less of everything. */
 
 /* ============================================================================================
  * 4. RESPONSIVE + REDUCED MOTION
  * ============================================================================================ */
 
+/* MOBILE IS WHERE THE NAVIGATION MATTERS MOST. A phone shows the same coil at a third of the width, so the
+   rail has to be unmistakable on the busiest screen of the site — the owner's test is "één duidelijke tap".
+   It spans the width between the gutters instead of sitting in a corner, which makes each of the three
+   segments a full-height, comfortably wide target, and it keeps the labels on one line down to 320px. */
 @media (max-width: 40rem) {
-	.pf-wayfind__panel {
-		min-width: 14rem;
+	.pf-worlds {
+		left: 0.75rem;
+		/* Clear of the back-to-top disc, which is `position: fixed` in the opposite corner at
+		   `right: clamp(1rem, .5rem + 1.4vw, 2rem)` and 2.75rem across (BackToTop.astro). At full width the
+		   rail ran underneath it and the disc sat on top of the "Interieur" segment — a control covering a
+		   third of another control, and only once the visitor had scrolled far enough for the disc to appear.
+		   Measured on the render, not read off the source. */
+		right: calc(0.75rem + 2.75rem + clamp(1rem, 0.5rem + 1.4vw, 2rem));
+		width: auto;
+		/* The desktop cap is a fraction of the viewport, which on a phone is smaller than the gutters the
+		   rail is being asked to span — so it has to be released here or the control shrinks back into a
+		   corner on exactly the screen where it most needs to be obvious. */
+		max-width: none;
 	}
-	.tv[data-tv-active] .pf-beat {
-		top: clamp(4.25rem, 11vh, 6rem);
+	.pf-world {
+		padding-inline: 0.35rem;
+		align-items: center;
+		text-align: center;
 	}
-	.pf-beat__name {
-		font-size: var(--fs-h4);
+	.pf-worlds__note {
+		text-align: center;
+		padding-left: 0.18em;
 	}
 }
 
@@ -936,16 +678,13 @@
 	/* The coil never activates under reduced motion, so none of the enhanced chrome shows. These are the
 	   belt-and-braces guarantees that nothing here can move even if a future change surfaces it. */
 	.pf-intro,
-	.pf-beat,
-	.pf-veil {
+	.pf-worlds,
+	.pf-worlds__note {
 		transition: none !important;
 	}
-	/* The premium entrance is skipped entirely: the overture never shows and the coil never emerges, so the
-	   visitor lands directly on the accessible chaptered document. */
-	:root.js .pf-overture {
-		display: none !important;
-	}
-	.tv.is-emerging .tv-field {
+	/* The coil never activates under reduced motion, so the entrance emergence has nothing to run on. This
+	   is the belt-and-braces guarantee that it can never run even if a future change surfaces the field. */
+	.tv[data-tv-active] .tv-field {
 		animation: none !important;
 	}
 	/* The world never activates under reduced motion (the coil does not mount, so .tv-sky is display:none);
@@ -954,8 +693,5 @@
 	.tv-sky__breath,
 	.tv-sky__haze {
 		animation: none !important;
-	}
-	.pf-beat__seam {
-		transition: none !important;
 	}
 }

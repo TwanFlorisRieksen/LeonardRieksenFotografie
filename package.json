@@ -8,7 +8,7 @@
 	},
 	"scripts": {
 		"dev": "astro dev",
-		"build": "astro build && node scripts/postbuild-modulepreload.mjs && node scripts/postbuild-verify-assets.mjs",
+		"build": "astro build && node scripts/postbuild-modulepreload.mjs && node scripts/postbuild-strip-comments.mjs && node scripts/postbuild-verify-assets.mjs",
 		"build:astro": "astro build",
 		"preview": "astro preview",
 		"check": "astro check",

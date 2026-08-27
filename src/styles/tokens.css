@@ -296,6 +296,63 @@
 		var(--p-sapphire-900) 100%
 	);
 
+	/* ── THE SURFACE BOUNDARY (P14) ────────────────────────────────────────────────────────────────────
+	 * THE ONE RULE FOR WHERE TWO SURFACES MEET, and the answer to the recurring "zwarte balk tussen de
+	 * secties" that has been fixed page-by-page four times without going away.
+	 *
+	 * THE DIAGNOSIS. It was never one bad element. Every atmospheric surface on this site is anchored so
+	 * that its light is at FULL STRENGTH on its own top edge — `at 50% -14%` puts the peak off the box, so
+	 * row 0 of the section is the brightest row it will ever have. Stack two of those and the boundary is
+	 * a step by construction. Put a scrimmed photograph above one and the step is maximal: the hero ends at
+	 * its darkest (a 0.9 near-black scrim) exactly where the section begins at its brightest. MEASURED at
+	 * the foot of the service hero, one pixel row apart, at 390 / 768 / 1440 alike:
+	 *
+	 *     rgb(11, 13, 15)  →  rgb(29, 44, 79)          a jump of 20 / 31 / 64 in a single row
+	 *
+	 * That is the black bar. Not a gap, not a viewport-unit error, not a stale animation layer: two visual
+	 * systems each ending correctly on their own terms and meeting at a value neither of them shares.
+	 *
+	 * THE RULE. Every surface resolves into the FLOOR at the edge where it meets another surface. The floor
+	 * is what `body` paints (base.css) — so a boundary is floor meeting floor, and there is nothing to see
+	 * whatever either neighbour is doing inside its own box. The tuned art direction is untouched: the glow
+	 * still has its authored shape, alpha and hue; it simply arrives from, and returns to, the ground.
+	 *
+	 * HOW TO USE IT, and the pattern to follow for anything added later:
+	 *
+	 *     background:
+	 *         var(--seam-approach) top / 100% var(--seam-run) no-repeat,   ← arrive from the floor
+	 *         <the surface's own authored light>,
+	 *         var(--surface-floor);                                        ← and rest on it
+	 *
+	 * A full-bleed photographic hero uses the mask form instead, and deliberately: what is underneath a hero
+	 * is NOT always the floor. On the service pages the cinematic runtime replaces every section fill with
+	 * one continuous fixed `.stage` sky, so a hero that resolved to a fixed colour would be correct in the
+	 * baseline and wrong the moment the runtime armed. Dissolving the hero's own layers to TRANSPARENT is
+	 * right in both states and needs no colour to be matched:
+	 *
+	 *     .hero__media, .hero__scrim { mask-image: var(--seam-mask-bottom); }
+	 *
+	 * NOT a decorative overlay to hide the seam: it is the boundary condition itself, stated once, in the
+	 * same idiom as --grad-footer-approach (which is this rule applied to the single boundary D-77 already
+	 * solved). --seam-run is long enough that the ramp cannot be pointed at and short enough that it never
+	 * eats a section's own light.
+	 *
+	 * `--seam-from` is the value the boundary resolves TO, and it defaults to the floor. Two surfaces that
+	 * both sit on the floor need nothing else. Where a page stacks two of its own fields (contact: a page
+	 * descent inside the intro, then a second page descent inside the body — each starting light and ending
+	 * dark, so stacked they saw-tooth), the lower one sets `--seam-from` to the colour the one above it
+	 * actually ends on, and the two become one continuous descent.
+	 *
+	 * `--seam-mask-top` is the same rule for a surface that paints ADDITIVE light with no base colour of its
+	 * own (the closing CTA). There is nothing to fade an opaque layer to there, so the light itself is masked
+	 * in from zero on an element that exists only to carry it. */
+	--surface-floor: var(--p-sapphire-950);
+	--seam-run: clamp(4.5rem, 11vh, 8.5rem);
+	--seam-from: var(--surface-floor);
+	--seam-approach: linear-gradient(180deg, var(--seam-from) 0%, transparent 100%);
+	--seam-mask-top: linear-gradient(180deg, transparent 0%, #000 var(--seam-run), #000 100%);
+	--seam-mask-bottom: linear-gradient(0deg, transparent 0%, #000 var(--seam-run), #000 100%);
+
 	/* P4.6-CORRECTION (D-26). The first P4.6 (D-25) atmosphere was technically correct but sub-threshold —
 	   product-owner review saw "almost no change": one low-alpha radial pair over a flat abyss, peaking in
 	   dead corners, left the chapter reading as standard matte dark-blue. This rebuild keeps the SAME grounded

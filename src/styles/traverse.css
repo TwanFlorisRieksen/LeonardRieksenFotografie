@@ -98,8 +98,16 @@
    animation is unobstructed; the intro controller removes the class once it has played. Depth-of-field is
    the coil's own language, so a blur→sharp settle reads as the world coming into being, not as a CSS trick.
    Reduced motion never mounts the coil, so this can never run there. */
-.tv.is-emerging .tv-field {
-	animation: tv-emerge 1500ms cubic-bezier(0.22, 0.61, 0.16, 1) both;
+/* P14: THE EMERGENCE IS THE ENTRANCE NOW, and it belongs to the engine's own "I am running" flag rather
+   than to a controller that had to remember to take it off again. It plays once, the instant the coil
+   mounts, over a world the visitor can already scroll and touch — there is nothing to wait for and nothing
+   to dismiss. Shortened 1500ms → 900ms because it no longer follows a curtain: it IS the arrival.
+   `backwards`, NOT `both`: `both` retains the 100% keyframe (`transform: none; filter: none`) for the life
+   of the page, and a retained animation value beats an inline style — which would silently disable the
+   engine's own transform/opacity writes on this element during the ending outro. `backwards` applies only
+   the start state and releases the element completely when it finishes. */
+.tv[data-tv-active] .tv-field {
+	animation: tv-emerge 900ms cubic-bezier(0.22, 0.61, 0.16, 1) backwards;
 }
 
 @keyframes tv-emerge {

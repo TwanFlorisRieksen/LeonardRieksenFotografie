@@ -2,15 +2,17 @@
  * PORTFOLIO CHROME — the integration layer over DE DOORTOCHT (Phase 3, D-73).
  *
  * WHAT THIS IS, AND WHAT IT IS NOT. This is the 2D layer that gives the coil the structure, identity and
- * wayfinding of a finished portfolio: the persistent wayfinding marker, the ambient per-world tint, the
- * world-title beats, and the scroll hint. It NEVER touches the Interaction Engine's geometry, camera or
+ * wayfinding of a finished portfolio: the world rail, the corner orientation mark and the ambient per-world
+ * light (P14 replaced the collapsed marker + dropdown and the full-viewport world-title beat with the rail;
+ * the entrance curtain and its veil are deleted outright). It NEVER touches the Interaction Engine's geometry, camera or
  * physics (traverse.js is the frozen foundation). It reads the world from the SAME journey the coil is drawn
  * from — via the engine's `onFrame` seam — so the two can never disagree, and it drives the coil's camera
  * only through the engine's own public `focusWork()`.
  *
  * PROGRESSIVE ENHANCEMENT. Under reduced motion / no JS the engine never mounts, `onFrame` never fires, and
  * the chrome elements are hidden by CSS (they show only under `[data-tv-active]`). The three headed <section>
- * chapters in the document then carry the wayfinding, and the jump items degrade to real #work-<id> anchors.
+ * chapters in the document then carry the wayfinding, and the rail's three worlds degrade to exactly what
+ * they are in the markup: real #work-<id> anchors into that document.
  *
  * THE WORLD'S ONE RULE IS RESPECTED. Nothing here is placed inside the coil. The tint is the near-black
  * BEHIND the ribbon (a background on the fixed viewport, shown only in the gaps between photographs); it can
@@ -32,26 +34,15 @@ export function mountChrome(root) {
 	}
 	if (!worlds.length) return { onFrame() {} };
 
-	const wayfind = root.querySelector('[data-pf-wayfind]');
-	// P8.7 (D-78): held back until the visitor actually travels — see `beginJourney` below.
-	wayfind?.classList.add('is-held');
-	// The opening is a STATE, not just two elements: while it lasts the coil's own captions stand down too,
-	// so the overture is the only thing being read. Removed on the first travel, with everything else.
-	root.classList.add('is-overture');
-	const toggle = root.querySelector('[data-pf-toggle]');
-	const list = root.querySelector('[data-pf-list]');
-	const nowEl = root.querySelector('[data-pf-now]');
-	const posEl = root.querySelector('[data-pf-pos]');
+	/* P14: the collapsed marker + its dropdown panel + the journey map inside it are replaced by ONE rail
+	   carrying all three worlds at once (see the note in the page markup and in portfolio-chrome.css §3b).
+	   There is no open/closed state left to hold, no outside-click handler and no Escape handler, because
+	   there is nothing to close. */
 	const jumps = Array.from(root.querySelectorAll('[data-pf-jump]'));
-	const beat = root.querySelector('[data-pf-beat]');
-	const beatName = root.querySelector('[data-pf-beat-name]');
-	const beatSub = root.querySelector('[data-pf-beat-sub]');
-	// P8.7 (D-78): the scroll hint is deleted; the overture veil takes its slot in the opening.
-	const veil = root.querySelector('[data-pf-veil]');
+	const note = root.querySelector('[data-pf-note]');
 	const intro = root.querySelector('[data-pf-intro]');
 	const progressFill = root.querySelector('[data-pf-progress-fill]');
-	const map = root.querySelector('[data-pf-map]');
-	const mapNode = root.querySelector('[data-pf-node]');
+	const node = root.querySelector('[data-pf-node]');
 
 	/* The whole coil's length in works — the denominator for overall progress and for mapping a click on the
 	   journey map to a work index. Derived from the last world's boundary, so it holds at any collection. */
@@ -146,29 +137,12 @@ export function mountChrome(root) {
 		(varHost[name] || root).style.setProperty(name, String(q));
 	};
 
-	/* ---- wayfinding marker: expand / collapse (§7.4) ---------------------------------------------
-	 * Static text; the only thing that ever animates is the list opening on the visitor's own click. */
-	let open = false;
-	const setOpen = (v) => {
-		open = v;
-		if (toggle) toggle.setAttribute('aria-expanded', String(v));
-		if (list) list.hidden = !v;
-		if (wayfind) wayfind.classList.toggle('is-open', v);
-	};
-	if (toggle) toggle.addEventListener('click', () => setOpen(!open));
-	document.addEventListener('click', (e) => {
-		if (open && wayfind && !wayfind.contains(e.target)) setOpen(false);
-	});
-	document.addEventListener('keydown', (e) => {
-		if (open && e.key === 'Escape') {
-			setOpen(false);
-			toggle?.focus();
-		}
-	});
-
-	/* A jump is INSTANT and POSITIONAL (§5.2): drive the engine's own camera to the world's first work with
-	   no smooth glide. When the engine is not mounted (reduced motion), we do not preventDefault, so the real
-	   #work-<id> anchor navigates natively in the in-flow document. */
+	/* ---- travelling to a world (§5.2) -------------------------------------------------------------
+	 * A jump is INSTANT and POSITIONAL: drive the engine's own camera to the world's first work with no
+	 * smooth glide — gliding across many works is the documented nausea source §5.2 rules out. Unchanged
+	 * from D-73; only what the visitor clicks to get here is different.
+	 * When the engine is not mounted (reduced motion, or a runtime failure) we do NOT preventDefault, so the
+	 * real #work-<id> anchor navigates natively in the in-flow document and the control still works. */
 	jumps.forEach((j) => {
 		j.addEventListener('click', (e) => {
 			const inst = window.__tv && window.__tv.instance;
@@ -176,46 +150,26 @@ export function mountChrome(root) {
 			if (inst && typeof inst.focusWork === 'function' && Number.isFinite(idx)) {
 				e.preventDefault();
 				inst.focusWork(idx, false);
-				setOpen(false);
 			}
 		});
 	});
 
-	/* THE MAP — click anywhere on the journey to travel there instantly (§5.2, Phase 4). Pointer-only fine
-	   travel; the labelled list above is the keyboard/AT equivalent, so the map is aria-hidden. A click maps
-	   its x position to a work index and drives the engine's own camera via focusWork — instant and
-	   positional, never a glide across many works (the documented nausea source §5.2). The far-left is the way
-	   back to the beginning. When the engine is not mounted (reduced motion) the map is hidden, so this is
-	   inert there. */
-	if (map) {
-		map.addEventListener('click', (e) => {
-			const inst = window.__tv && window.__tv.instance;
-			if (!inst || typeof inst.focusWork !== 'function') return;
-			const r = map.getBoundingClientRect();
-			const f = Math.min(Math.max((e.clientX - r.left) / Math.max(r.width, 1), 0), 1);
-			inst.focusWork(Math.round(f * (totalWorks - 1)), false);
-			setOpen(false);
-		});
-	}
-
-	/* ---- the opening recedes on the first sign of travel ----------------------------------------- */
-	/* THE OPENING IS ONE BEAT, AND IT ENDS ON THE FIRST TRAVEL (P8.7 / D-78).
-	   The overture (brand + title + lede) and the veil that quiets the coil behind it belong to the crown;
-	   the wayfinding marker belongs to the journey. All three are governed from here so they can never
-	   disagree: the moment the visitor begins to descend — any input, or any real scroll — the overture and
-	   the veil ease away TOGETHER and the marker arrives. One signal, three consequences, in the order a
-	   reader experiences them.
-	   `pointerdown` is deliberately in the list even though it is not travel: on a phone the first contact
-	   with the screen is the intent to move, and waiting for the scroll to register leaves the veil sitting
-	   over a world the reader has already started dragging. */
+	/* ---- the orientation mark recedes on the first sign of travel --------------------------------
+	 * All that is left of the D-78 opening state is this: the corner orientation mark (brand + "Portfolio")
+	 * eases away the moment the visitor begins to descend. The veil it used to travel with is deleted, the
+	 * caption stand-down with it, and the world rail is no longer HELD BACK — a navigation control that only
+	 * appears once you have already started moving is one you can only find by accident, and with the brand
+	 * panel gone there is nothing left for it to compete with. It arrives with the world instead (a CSS
+	 * delay on the same beat the coil emerges on), so the first complete screen already contains the way
+	 * around. See portfolio-chrome.css §3b.
+	 * `pointerdown` is deliberately in the list even though it is not travel: on a phone the first contact
+	 * with the screen is the intent to move, and waiting for the scroll to register leaves the mark sitting
+	 * over a world the reader has already started dragging. */
 	let openingGone = false;
 	const beginJourney = () => {
 		if (openingGone) return;
 		openingGone = true;
-		veil?.classList.add('is-gone');
 		intro?.classList.add('is-gone');
-		wayfind?.classList.remove('is-held');
-		root.classList.remove('is-overture');
 		inputEvents.forEach((t) => window.removeEventListener(t, beginJourney));
 		window.removeEventListener('scroll', onScrollBegin);
 	};
@@ -228,20 +182,28 @@ export function mountChrome(root) {
 
 	/* The idle auto-drift can carry the coil onward without the reader touching anything (D-72), so the
 	   opening also ends on DISTANCE, not only on input — otherwise a visitor who simply watches is left
-	   reading the overture over a world that has already moved on. Checked in onFrame, which is where the
-	   journey value already lives. */
+	   reading the orientation mark over a world that has already moved on. Checked in onFrame, which is
+	   where the journey value already lives. (On a touch device the drift is off — see TOUCH_CFG in
+	   traverse.js — so there the input listeners above are the whole story.) */
 
-	/* ---- world-title beat ------------------------------------------------------------------------ */
-	let beatTimer = 0;
-	const fireBeat = (w) => {
-		if (!beat) return;
-		if (beatName) beatName.textContent = w.label;
-		if (beatSub) beatSub.textContent = w.sub;
-		beat.classList.remove('is-visible');
-		void beat.offsetWidth; // restart the transition even on a rapid re-entry
-		beat.classList.add('is-visible');
-		clearTimeout(beatTimer);
-		beatTimer = window.setTimeout(() => beat.classList.remove('is-visible'), 2200);
+	/* ---- crossing into a world ---------------------------------------------------------------------
+	 * P14: this used to be the world-title BEAT — a full-viewport fixed layer carrying a radial scrim and a
+	 * display-size heading, eased in for 2.2s on every boundary. It is the "same interruption again when
+	 * changing worlds" the owner reports, and the diagnosis is the same as for the entrance: a world change
+	 * is NAVIGATION, and navigation feedback belongs to the navigation, not to a layer over the photographs.
+	 * The rail already says which world you are in (the active segment lights and takes the gold rule); all
+	 * this adds is the world's own one-line descriptor, on the rail, for a beat. Nothing covers the coil,
+	 * nothing dims it, and travelling between worlds now reads as moving through one portfolio rather than
+	 * as arriving at a new page. */
+	let noteTimer = 0;
+	const fireNote = (w) => {
+		if (!note) return;
+		note.textContent = w.sub;
+		note.classList.remove('is-visible');
+		void note.offsetWidth; // restart the transition even on a rapid re-entry
+		note.classList.add('is-visible');
+		clearTimeout(noteTimer);
+		noteTimer = window.setTimeout(() => note.classList.remove('is-visible'), 1800);
 	};
 
 	/* Which world holds the reading work — the last world whose start index the journey has reached. */
@@ -261,7 +223,7 @@ export function mountChrome(root) {
 		if (!openingGone && journey > 0.9) beginJourney();
 
 		/* At the ending the coil dissolves into the contact invitation (§3.5); the chrome recedes with it so
-		   no wayfinding marker floats over the footer. Gated on change so a still frame writes nothing. */
+		   no world rail floats over the footer. Gated on change so a still frame writes nothing. */
 		const nowEnding = outro > 0.12;
 		if (nowEnding !== ending) {
 			ending = nowEnding;
@@ -281,27 +243,27 @@ export function mountChrome(root) {
 		writeVar('--descent', frac);
 		writeVar('--tv-sky-o', 1 - e);
 
-		/* OVERALL PROGRESS (Phase 4). The marker's hairline fills and the map's node slides as the visitor
-		   descends the whole coil. Quantised to 0.1%, so a still or barely-moving coil writes nothing. */
+		/* OVERALL PROGRESS (Phase 4). The rail's hairline fills and its node slides as the visitor descends
+		   the whole coil — the same two writes as before, now on the rail that also carries the worlds, which
+		   is what let the separate journey map inside the old dropdown be deleted rather than moved.
+		   Quantised to 0.1%, so a still or barely-moving coil writes nothing. */
 		const pct = Math.round(frac * 1000) / 10;
 		if (pct !== lastProgress) {
 			lastProgress = pct;
 			if (progressFill) progressFill.style.transform = `scaleX(${frac.toFixed(4)})`;
-			if (mapNode) mapNode.style.left = `${pct}%`;
+			if (node) node.style.left = `${pct}%`;
 		}
 
 		const k = worldIndexAt(journey);
 		if (k !== lastWorldIdx) {
 			const w = worlds[k];
-			if (nowEl) nowEl.textContent = w.label;
-			if (posEl) posEl.textContent = `${k + 1} / ${worlds.length}`;
 			jumps.forEach((j, i) => {
 				if (i === k) j.setAttribute('aria-current', 'true');
 				else j.removeAttribute('aria-current');
 			});
-			// The opening intro announces the first world; the beat fires only on genuine ENTRY into a
-			// subsequent world (including a jump back), never on the initial assignment at load.
-			if (lastWorldIdx !== -1) fireBeat(w);
+			// The rail's own state IS the announcement of the first world; the descriptor line fires only on
+			// genuine ENTRY into a subsequent world (including a jump back), never at load.
+			if (lastWorldIdx !== -1) fireNote(w);
 			lastWorldIdx = k;
 		}
 

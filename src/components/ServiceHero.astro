@@ -72,6 +72,21 @@ const { image, alt, eyebrow, title, sub, position = 'center', parentHref, parent
 		overflow: clip;
 		isolation: isolate;
 	}
+	/* THE PHOTOGRAPH HAS NO BOTTOM EDGE (P14 — see --seam-mask-bottom in tokens.css).
+	   The hero used to end on an opaque row: the corner scrim reaches 0.9 of near-black at the box's own foot,
+	   and the intro section below opens on its afterglow at full strength. Measured one pixel row apart, at
+	   390, 768 and 1440 alike: rgb(11,13,15) → rgb(29,44,79). That step IS the "zwarte balk onder de hero" —
+	   two visual systems each ending correctly on their own terms and meeting at a value neither of them has.
+	   The photograph and its scrim now dissolve to transparent over --seam-run, so the hero has no boundary
+	   left to read as one: whatever is behind it simply continues. Transparent rather than a colour on
+	   purpose — in the baseline that is the page floor, and under `html.motion-scene` it is the continuous
+	   fixed `.stage` sky, and this is correct in both without knowing which. The mask is on the two
+	   full-bleed layers only; the eyebrow, title and lede are separate elements and are untouched. */
+	.svc-hero__media,
+	.svc-hero__scrim {
+		-webkit-mask-image: var(--seam-mask-bottom);
+		mask-image: var(--seam-mask-bottom);
+	}
 	.svc-hero__media {
 		position: absolute;
 		inset: 0;
