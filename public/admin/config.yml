@@ -3,8 +3,8 @@
 # Netlify Identity and Git Gateway are both officially deprecated — deliberately NOT used here.
 
 backend:
-  name: TwanFlorisRieksen
-  repo: LeonardRieksenFotografie
+  name: github
+  repo: TwanFlorisRieksen/LeonardRieksenFotografie
   branch: main
 
 # Decap's config schema requires a root-level media_folder/public_folder even though the only
