@@ -1,9 +1,9 @@
 ---
 /*
- * Bedankt — the contact form's success target (P5 — D-31). Netlify redirects a successful submission to
+ * Bedankt, the contact form's success target (P5, D-31). Netlify redirects a successful submission to
  * this route (the form's `action="/bedankt/"`), preserving the old site's proven no-JS success flow
- * (blueprint 3.11 — keep this confirmation behaviour) and satisfying 2.23's "bevestiging na verzending".
- * Deliberately calm and restrained — a reassuring confirmation and clear onward navigation, not a page
+ * (blueprint 3.11, keep this confirmation behaviour) and satisfying 2.23's "bevestiging na verzending".
+ * Deliberately calm and restrained, a reassuring confirmation and clear onward navigation, not a page
  * that competes with the site's content. noindex: a per-submission result page has no standalone search
  * value and should not be indexed. Content is a factual confirmation; nothing invented.
  */
@@ -24,7 +24,7 @@ import sculptuurImg from '../assets/static/bedankt.jpg';
 			<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 1">Bericht verzonden</p>
 			<h1 class="t-display thanks__title" style="--reveal-index: 2">Bedankt voor uw bericht.</h1>
 			<p class="t-lead thanks__lead" style="--reveal-index: 3">
-				Uw bericht is verzonden. Ik neem zo snel mogelijk persoonlijk contact met u op — meestal binnen
+				Uw bericht is verzonden. Ik neem zo snel mogelijk persoonlijk contact met u op, meestal binnen
 				een paar werkdagen.
 			</p>
 			<div class="thanks__actions" style="--reveal-index: 4">
@@ -38,9 +38,9 @@ import sculptuurImg from '../assets/static/bedankt.jpg';
 				</a>
 			</div>
 		</div>
-		<!-- P5.1 (D-32) — the success page gains a deliberate premium image composition (owner-specified photograph):
+		<!-- P5.1 (D-32), the success page gains a deliberate premium image composition (owner-specified photograph):
 		     an abstract architectural light-sculpture (gold armillary sphere on pure black, with green/red catch-lights).
-		     Its pure-black field IS the escape mechanism — a radial mask dissolves the frame entirely so the sphere
+		     Its pure-black field IS the escape mechanism, a radial mask dissolves the frame entirely so the sphere
 		     FLOATS in the page's dark field (controlled image-escape, careful edge treatment), never a rectangle under
 		     the text. An asymmetric editorial split (confirmation copy left, sculpture right) with strong negative
 		     space; the image is already visually strong, so no extra decoration is added beyond the existing calm
@@ -72,9 +72,11 @@ import sculptuurImg from '../assets/static/bedankt.jpg';
 				rgba(var(--p-atmos-cool), 0.05) 42%,
 				rgba(var(--p-atmos-cool), 0) 72%
 			),
-			var(--color-bg);
+			/* P8.6 (D-77): was a flat `--color-bg` under the afterglow, the radial dies at 72% and the rest
+			   of a 720px-tall screen was one unlit colour. */
+				var(--grad-sapphire-quiet);
 	}
-	/* P5.1 (D-32) — asymmetric editorial split: confirmation copy (left) + the light-sculpture (right). The section
+	/* P5.1 (D-32), asymmetric editorial split: confirmation copy (left) + the light-sculpture (right). The section
 	   still vertically centres its content within the min-height; the grid places the two beats side by side. */
 	.thanks :global(.u-container) {
 		width: 100%;
@@ -87,7 +89,7 @@ import sculptuurImg from '../assets/static/bedankt.jpg';
 		max-width: 42ch;
 	}
 	/* The sculpture floats in the page's dark field: a radial mask dissolves the pure-black frame entirely, so the
-	   gold armillary reads as a light source suspended in the nocturne — a controlled escape, not a boxed picture.
+	   gold armillary reads as a light source suspended in the nocturne, a controlled escape, not a boxed picture.
 	   Decorative (aria-hidden + alt=""), so no focus/alt burden; it sets tone only. */
 	.thanks__figure {
 		position: relative;
@@ -95,8 +97,8 @@ import sculptuurImg from '../assets/static/bedankt.jpg';
 	}
 	/* A dark tonal POOL behind the sculpture (owner's suggested depth device): the photograph's field is pure black,
 	   so against the slightly-navy page its masked edges would otherwise hint at a rectangle. This near-black radial,
-	   fading to the page, gives the masked edges darkness to dissolve INTO — the sphere sits in a pool of shadow and
-	   truly floats. Restrained (no colour, no glow of its own — the vivid image stays the only light source). */
+	   fading to the page, gives the masked edges darkness to dissolve INTO, the sphere sits in a pool of shadow and
+	   truly floats. Restrained (no colour, no glow of its own, the vivid image stays the only light source). */
 	.thanks__figure::before {
 		content: '';
 		position: absolute;
@@ -109,7 +111,7 @@ import sculptuurImg from '../assets/static/bedankt.jpg';
 		-webkit-mask-image: radial-gradient(76% 76% at 52% 47%, #000 54%, transparent 100%);
 		mask-image: radial-gradient(76% 76% at 52% 47%, #000 54%, transparent 100%);
 	}
-	/* A single champagne datum rule — the confirmation mark, in the site's selective gold hairline language. */
+	/* A single champagne datum rule, the confirmation mark, in the site's selective gold hairline language. */
 	.thanks__rule {
 		display: block;
 		width: clamp(2.5rem, 1.6rem + 3vw, 4rem);
@@ -117,9 +119,9 @@ import sculptuurImg from '../assets/static/bedankt.jpg';
 		margin-bottom: var(--space-lg);
 		background: linear-gradient(
 			90deg,
-			rgba(224, 197, 140, 0.92) 0%,
-			rgba(199, 165, 106, 0.5) 55%,
-			rgba(199, 165, 106, 0) 100%
+			rgba(var(--p-champagne-rgb), 0.92) 0%,
+			rgba(var(--p-gold-rgb), 0.5) 55%,
+			rgba(var(--p-gold-rgb), 0) 100%
 		);
 	}
 	.thanks__title {

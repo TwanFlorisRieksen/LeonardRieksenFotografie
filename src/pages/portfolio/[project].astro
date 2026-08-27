@@ -1,12 +1,12 @@
 ---
 /*
- * Project detail (P6 recovery #2 — D-35). One maintainable template with a bounded set of OPENING
+ * Project detail (P6 recovery #2, D-35). One maintainable template with a bounded set of OPENING
  * treatments, now with a body that reads as a composed page instead of a PDF-like plate stack.
  *
  * What changed vs D-34:
  *   · the beeldreeks is composed as JUSTIFIED ROWS + pano anchors (composeGallery), the same vocabulary as
  *     the overview, so a larger project forms varied rows rather than a vertical column of full plates;
- *   · the intro/meta zone gains the site's brand grammar — an atmosphere field + the gold structural seam —
+ *   · the intro/meta zone gains the site's brand grammar, an atmosphere field + the gold structural seam
  *     so a project page reads as the same premium system as the homepage and overview;
  *   · every project closes on a "Meer projecten" rail (RelatedProjects), so a two-image project ends on a
  *     full, considered beat instead of a large empty tail, and navigation into the rest of the work is easy.
@@ -15,6 +15,8 @@
  */
 import { getCollection, render } from 'astro:content';
 import { getImage } from 'astro:assets';
+import { imageNode } from '../../lib/schema';
+import { canonicalURL } from '../../lib/seo';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import PhotoFrame from '../../components/PhotoFrame.astro';
@@ -51,16 +53,67 @@ const duoPartner = layout === 'duo-lead' ? data.gallery[0] : undefined;
 const gallerySource = duoPartner ? data.gallery.slice(1) : data.gallery;
 const galleryNodes = composeGallery(gallerySource);
 
-// "Meer projecten" close — real projects, same category first, then the rest; never the current one.
+// "Meer projecten" close, real projects, same category first, then the rest; never the current one.
 const allProjects = await getCollection('projects', ({ data: d }) => !d.draft);
 const others = allProjects.filter((p) => p.id !== project.id);
 const related = [
 	...others.filter((p) => p.data.category === data.category),
 	...others.filter((p) => p.data.category !== data.category),
 ].slice(0, 4);
+
+/*
+ * SEO-09 / image SEO (P9 / D-80). A project page IS a series of photographs, so it is described as one: a
+ * CollectionPage whose parts are the photographs it actually shows, each an ImageObject carrying the image's
+ * OWN alt text as its caption and Leo as creator and copyright holder. Every value is read from the content
+ * model that renders the page, so the description cannot drift from what a visitor sees, and no photograph
+ * is claimed that is not on the page. The breadcrumb mirrors the "Terug naar portfolio" link the page really
+ * shows, a structured trail that matches the visible one.
+ *
+ * The derivative URLs are the same optimised ones the page serves; source masters are never named (PH-08).
+ */
+const schemaSite = Astro.site ?? new URL(Astro.url.origin);
+const schemaCanonical = canonicalURL(Astro.site, Astro.url);
+const schemaShots = [
+	{ image: data.coverImage, alt: data.coverImageAlt },
+	...data.gallery.map((g) => ({ image: g.image, alt: g.alt })),
+];
+const schemaImages = await Promise.all(
+	schemaShots.map(async (shot) => {
+		const derivative = await getImage({
+			src: shot.image,
+			width: Math.min(shot.image.width, 1200),
+			format: 'avif',
+		});
+		return imageNode(
+			schemaSite,
+			new URL(derivative.src, schemaSite).toString(),
+			shot.alt,
+			derivative.attributes?.width ?? undefined,
+			derivative.attributes?.height ?? undefined,
+		);
+	}),
+);
+const projectSchema = [
+	{
+		'@type': 'CollectionPage',
+		'@id': `${schemaCanonical.toString()}#project`,
+		name: data.title,
+		description: data.summary,
+		inLanguage: 'nl-NL',
+		about: categoryLabel[data.category],
+		hasPart: schemaImages.map((n) => ({ '@id': n['@id'] })),
+	},
+	...schemaImages,
+];
 ---
 
-<BaseLayout title={seoTitle} description={seoDescription} socialImage={ogImage.src}>
+<BaseLayout
+	title={seoTitle}
+	description={seoDescription}
+	socialImage={ogImage.src}
+	breadcrumb={[{ name: 'Portfolio', path: '/portfolio/' }]}
+	schemaNodes={projectSchema}
+>
 	<article class={`proj proj--${layout}`}>
 		<!-- ===================== OPENING ===================== -->
 		{
@@ -167,7 +220,10 @@ const related = [
 
 		<!-- ===================== OUTRO NAV ===================== -->
 		<div class="proj-outro u-container">
-			<a class="proj-back" href="/portfolio/">
+			{/* Return lands on the Projects chapter AT THE PROJECT JUST LEFT, never at the top of the
+			    portfolio, returning to the top would discard the visitor's position (Experience
+			    Architecture §11, §7.1). Browser back does the same thing by restoring scroll naturally. */}
+			<a class="proj-back" href={`/portfolio/#work-${project.id}`}>
 				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 12H5M11 6l-6 6 6 6" /></svg>
 				Terug naar portfolio
 			</a>
@@ -233,12 +289,12 @@ const related = [
 	/* ===================== INTRO ===================== */
 	/* Brand atmosphere: a quiet cool wash descending into the intro zone (the homepage "afterglow"
 	   mechanism), so the reading beat sits in the same nocturne light as the rest of the site.
-	   The vertical radius is a PERCENTAGE of this section's own (content-driven, variable) height — a longer
+	   The vertical radius is a PERCENTAGE of this section's own (content-driven, variable) height, a longer
 	   project description wraps to more lines and grows the box, and the old 56%/34% radii always faded to
 	   zero at the same *fraction* of it, so the fixed alpha stops never actually reached the section's tail:
 	   a flat, atmosphere-less band appeared before the gallery's gold seam on longer copy / narrower
 	   viewports (P6.1 correction). Sized generously past 100% so the zero-stop always lands at/after the
-	   box's own bottom edge regardless of content length — same anchor, alpha and colour, corrected reach. */
+	   box's own bottom edge regardless of content length, same anchor, alpha and colour, corrected reach. */
 	.proj-intro-sec {
 		position: relative;
 		isolation: isolate;
@@ -280,7 +336,7 @@ const related = [
 		top: 0;
 		width: clamp(2rem, 1.4rem + 2vw, 3rem);
 		height: 1px;
-		background: linear-gradient(90deg, rgba(224, 197, 140, 0.92) 0%, rgba(199, 165, 106, 0.5) 66%, rgba(199, 165, 106, 0) 100%);
+		background: linear-gradient(90deg, rgba(var(--p-champagne-rgb), 0.92) 0%, rgba(var(--p-gold-rgb), 0.5) 66%, rgba(var(--p-gold-rgb), 0) 100%);
 	}
 	.proj-meta__row {
 		padding-block: var(--space-md);
@@ -309,7 +365,7 @@ const related = [
 		position: relative;
 		isolation: isolate;
 	}
-	/* Gold structural seam marking the start of the beeldreeks — the one recurring elevated gold material. */
+	/* Gold structural seam marking the start of the beeldreeks, the one recurring elevated gold material. */
 	.proj-seam {
 		position: relative;
 		height: 1px;

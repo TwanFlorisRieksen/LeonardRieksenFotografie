@@ -1,11 +1,474 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+/*
+ * /privacy/, the Privacyverklaring (P11 / D-82, PRIV-01..05).
+ *
+ * REPLACES the P1 scaffold, which correctly refused to invent legal text and said so. Every processing
+ * activity described below was established by AUDITING THIS IMPLEMENTATION, not by adapting a template:
+ *
+ *   · the contact form's exact fields come from contact.astro;
+ *   · Netlify Forms' storage behaviour and its default Akismet spam filtering come from Netlify's own
+ *     documentation (docs.netlify.com/manage/forms/submissions, .../spam-filters);
+ *   · the analytics description comes from the implementation in src/scripts/consent.js and from Google's
+ *     own documentation on GA4 cookies, IP handling and consent mode;
+ *   · the storage inventory was taken by reading what the site actually writes (two sessionStorage keys in
+ *     the portfolio runtime, one localStorage key for the consent choice), the public site makes no
+ *     external request of any kind before consent, which is why the "geen externe diensten" statements
+ *     below are safe to make.
+ *
+ * NOTHING IS INVENTED (CLAUDE §4.6 / §9.2). No postal address, no rechtsvorm, no btw-nummer, no DPO, no
+ * retention period that could not be established, no processor that is not actually used. Where a fact is
+ * genuinely missing the statement is worded so that it remains accurate without it, and where a claim
+ * depends on a setting only the owner can make (the GA retention period), that dependency is recorded in
+ * lib/legal.ts and in PROGRESS.md rather than glossed over.
+ *
+ * SOURCE AUTHORITY for the topics: blueprint 3.12.1 lists the eight subjects the old privacy statement
+ * covered and 3.12.2 requires them to be KEPT AS SOURCE MATERIAL and checked against how the new site
+ * actually works, never copied across. All eight survive here (contactgegevens · verwerkte gegevens ·
+ * doeleinden · bewaartermijn · delen van gegevens · beveiliging · rechten · wijzigingen), each rewritten
+ * against the real implementation and joined by the subjects the old statement had no need for.
+ */
+import LegalPage from '../components/LegalPage.astro';
+import {
+	SITE_NAME,
+	PERSON_NAME,
+	CONTACT_EMAIL,
+	KVK,
+	SERVICE_AREA,
+	GA_MEASUREMENT_ID,
+	GA_RETENTION_MONTHS,
+	DPA_NAME,
+	DPA_URL,
+	RECIPIENTS,
+} from '../lib/legal';
+
+const sections = [
+	{ id: 'verantwoordelijke', title: 'Wie verantwoordelijk is' },
+	{ id: 'wanneer', title: 'Wanneer er gegevens worden verwerkt' },
+	{ id: 'contactformulier', title: 'Het contactformulier' },
+	{ id: 'technisch', title: 'Technische gegevens bij ieder bezoek' },
+	{ id: 'analytics', title: 'Google Analytics' },
+	{ id: 'cookies', title: 'Cookies en opslag op uw apparaat' },
+	{ id: 'ontvangers', title: 'Wie uw gegevens ontvangen' },
+	{ id: 'doorgifte', title: 'Doorgifte buiten de EER' },
+	{ id: 'bewaartermijnen', title: 'Bewaartermijnen' },
+	{ id: 'beveiliging', title: 'Beveiliging' },
+	{ id: 'profilering', title: 'Geautomatiseerde besluitvorming' },
+	{ id: 'rechten', title: 'Uw rechten' },
+	{ id: 'klacht', title: 'Klacht indienen' },
+	{ id: 'wijzigingen', title: 'Wijzigingen' },
+];
 ---
 
-<BaseLayout title="Privacyverklaring" description="Privacyverklaring van Leonard Rieksen Fotografie.">
-	<h1>Privacyverklaring</h1>
+<LegalPage
+	title="Privacyverklaring"
+	description="Hoe Leonard Rieksen Fotografie omgaat met uw persoonsgegevens: welke gegevens via het contactformulier en de website worden verwerkt, waarom, hoe lang, wie ze ontvangen en welke rechten u heeft."
+	eyebrow="Privacy"
+	lead="Deze verklaring beschrijft welke persoonsgegevens Leonard Rieksen Fotografie via deze website verwerkt, waarom dat gebeurt, hoe lang de gegevens worden bewaard en welke rechten u daarbij heeft. Ze beschrijft de website zoals die werkelijk werkt, niet meer en niet minder."
+	sections={sections}
+>
+	<h2 id="verantwoordelijke">Wie verantwoordelijk is</h2>
 	<p>
-		Technische P1-scaffold. De definitieve, feitelijk correcte privacyverklaring wordt geschreven in
-		P5 (blueprint 13.52–13.53) — geen juridische tekst wordt hier verzonnen.
+		{SITE_NAME} is verwerkingsverantwoordelijke voor de gegevens die via deze website worden verwerkt. De
+		onderneming wordt gedreven door fotograaf {PERSON_NAME} en werkt aan architectuur- en
+		interieurfotografie in {SERVICE_AREA}.
 	</p>
-</BaseLayout>
+	<ul>
+		<li>{SITE_NAME}</li>
+		<li>E-mail: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>
+		<li>KvK-nummer: {KVK}</li>
+	</ul>
+	<p>
+		Er werkt geen personeel met uw gegevens: uw bericht wordt door {PERSON_NAME} zelf gelezen en
+		beantwoord. {SITE_NAME} heeft geen functionaris voor gegevensbescherming. Dat is voor een onderneming
+		van deze aard en omvang ook niet verplicht (artikel 37 AVG). Vragen over privacy kunt u stellen via
+		het e-mailadres hierboven.
+	</p>
+
+	<h2 id="wanneer">Wanneer er gegevens worden verwerkt</h2>
+	<p>Op deze website gebeurt dat op drie momenten, en verder niet:</p>
+	<ul>
+		<li>
+			<strong>Als u het contactformulier invult.</strong> Dan verstrekt u zelf gegevens; zie hieronder.
+		</li>
+		<li>
+			<strong>Bij ieder bezoek aan een pagina.</strong> Uw browser doet daarvoor technisch noodzakelijk
+			een verzoek aan de server, waarbij onder meer uw IP-adres wordt verwerkt.
+		</li>
+		<li>
+			<strong>Als u toestemming geeft voor statistieken.</strong> Alleen dan wordt Google Analytics
+			geladen. Geeft u die toestemming niet, dan gebeurt er niets extra’s.
+		</li>
+	</ul>
+	<p>
+		Er staan op deze website geen advertenties, geen social-mediaknoppen of -pixels, geen ingesloten
+		video’s of kaarten, en geen lettertypen of scripts van externe servers. Zonder uw toestemming voor
+		statistieken doet deze website dus geen enkel verzoek aan een andere partij dan de eigen host.
+	</p>
+
+	<h2 id="contactformulier">Het contactformulier</h2>
+	<p>Het formulier op de <a href="/contact/">contactpagina</a> vraagt om zo min mogelijk gegevens:</p>
+	<div class="legal-scroll">
+		<table class="legal-table">
+			<thead>
+				<tr><th scope="col">Gegeven</th><th scope="col">Verplicht</th><th scope="col">Waarom</th></tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th scope="row">Naam</th>
+					<td>Ja</td>
+					<td>Om u persoonlijk aan te kunnen spreken in het antwoord.</td>
+				</tr>
+				<tr>
+					<th scope="row">E-mailadres</th>
+					<td>Ja</td>
+					<td>Om te kunnen antwoorden.</td>
+				</tr>
+				<tr>
+					<th scope="row">Telefoonnummer</th>
+					<td>Nee</td>
+					<td>Alleen als u liever wordt teruggebeld. U mag dit veld leeg laten.</td>
+				</tr>
+				<tr>
+					<th scope="row">Bericht</th>
+					<td>Ja</td>
+					<td>De inhoud van uw vraag of aanvraag.</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<p>
+		Er worden geen bestanden geüpload en er wordt niets gevraagd wat voor een eerste contact niet nodig
+		is. Bij het versturen verwerkt de hostingpartij daarnaast technische gegevens van de verzending, zoals
+		het IP-adres en het tijdstip, en wordt de inzending automatisch beoordeeld door een spamfilter (zie{' '}
+		<a href="#ontvangers">Wie uw gegevens ontvangen</a>).
+	</p>
+
+	<h3>Doel en grondslag</h3>
+	<ul>
+		<li>
+			<strong>Gaat uw bericht over een mogelijke opdracht</strong>, dan worden uw gegevens gebruikt om uw
+			aanvraag te beantwoorden, een afspraak te maken of een offerte op te stellen. Grondslag: het nemen
+			van maatregelen op uw verzoek vóór het sluiten van een overeenkomst (artikel 6 lid 1 sub b AVG).
+		</li>
+		<li>
+			<strong>Gaat uw bericht over iets anders</strong>, een vraag, een opmerking, een verzoek om
+			informatie, dan worden uw gegevens gebruikt om daarop te reageren. Grondslag: gerechtvaardigd
+			belang (artikel 6 lid 1 sub f AVG), namelijk het belang om bereikbaar te zijn en op berichten te
+			kunnen antwoorden. U kunt daartegen bezwaar maken; zie <a href="#rechten">Uw rechten</a>.
+		</li>
+		<li>
+			<strong>Het spamfilter en de beveiliging van het formulier</strong> verwerken de inzending om
+			misbruik en geautomatiseerde inzendingen tegen te gaan. Grondslag: gerechtvaardigd belang (artikel
+			6 lid 1 sub f AVG), namelijk het beschermen van de website tegen misbruik.
+		</li>
+	</ul>
+	<p>
+		Wat u in het berichtveld schrijft bepaalt u zelf. Vermeld daar geen bijzondere persoonsgegevens
+		(bijvoorbeeld over gezondheid), dat is voor een fotografieaanvraag niet nodig.
+	</p>
+
+	<h2 id="technisch">Technische gegevens bij ieder bezoek</h2>
+	<p>
+		Een webpagina kan alleen worden getoond als uw browser een verzoek aan de server stuurt. Bij dat
+		verzoek verwerkt de hostingpartij technische gegevens die daarvoor nodig zijn: uw IP-adres, het
+		opgevraagde adres, het tijdstip, en gegevens die uw browser zelf meestuurt zoals het browsertype en de
+		taalinstelling. Die gegevens worden gebruikt om de pagina te kunnen leveren en om de dienst te
+		beveiligen en beschikbaar te houden, niet om u te volgen of om profielen op te bouwen.
+	</p>
+	<p>
+		Grondslag: gerechtvaardigd belang (artikel 6 lid 1 sub f AVG), namelijk het technisch kunnen leveren
+		en beveiligen van de website. Deze verwerking is onvermijdelijk: zonder verzoek geen pagina. De
+		bewaartermijn van deze serverlogs wordt bepaald door de hostingpartij; zie{' '}
+		<a href="#bewaartermijnen">Bewaartermijnen</a>.
+	</p>
+
+	<h2 id="analytics">Google Analytics</h2>
+	<p>
+		Deze website kan bezoekstatistieken meten met Google Analytics 4, meet-ID <code>{GA_MEASUREMENT_ID}</code>.
+		Het doel is beperkt en concreet: zien welke pagina’s worden gelezen, via welk soort apparaat, en of
+		bezoekers vinden wat zij zoeken. Die informatie wordt gebruikt om de website te verbeteren.
+	</p>
+	<div class="legal-note">
+		<p>
+			<strong>Analytics staat standaard uit.</strong> Google Analytics wordt pas geladen nadat u daar in
+			de cookiemelding actief toestemming voor heeft gegeven. Geeft u die niet, dan wordt het script niet
+			opgehaald, worden er geen cookies geplaatst en wordt er geen enkel gegeven naar Google verzonden.
+			U kunt uw keuze op elk moment wijzigen via <a href="/cookies/#voorkeuren">Cookie-instellingen</a>.
+		</p>
+	</div>
+
+	<h3>Wat er wordt verwerkt als u toestemming geeft</h3>
+	<ul>
+		<li>
+			een willekeurig gegenereerd identificatienummer dat in de cookies <code>_ga</code> en{' '}
+			<code>_ga_{GA_MEASUREMENT_ID.replace('G-', '')}</code> op uw apparaat wordt bewaard, waarmee
+			herhaalbezoeken van hetzelfde apparaat als één bezoeker worden geteld;
+		</li>
+		<li>welke pagina’s u bekijkt, in welke volgorde en hoe lang;</li>
+		<li>technische gegevens over uw apparaat, browser en schermformaat;</li>
+		<li>een globale locatie (land, regio, stad) die Google afleidt uit uw IP-adres;</li>
+		<li>de verwijzende bron, bijvoorbeeld een zoekmachine of een link op een andere website.</li>
+	</ul>
+
+	<h3>Hoe deze meting is ingesteld</h3>
+	<ul>
+		<li>
+			Er worden geen extra gebeurtenissen, gebruikers-ID’s, gebruikerskenmerken of aangepaste dimensies
+			meegestuurd. Alleen de standaard paginaweergave wordt gemeten.
+		</li>
+		<li>
+			De advertentiefuncties zijn uitgeschakeld: <code>allow_google_signals</code> en{' '}
+			<code>allow_ad_personalization_signals</code> staan op <code>false</code>. Er vindt dus geen
+			meting over meerdere apparaten via ingelogde Google-accounts plaats, geen demografische
+			rapportage, geen advertentiepersonalisatie en geen remarketing.
+		</li>
+		<li>
+			In Google’s toestemmingsmodel staan <code>ad_storage</code>, <code>ad_user_data</code> en{' '}
+			<code>ad_personalization</code> altijd op <em>denied</em>; alleen <code>analytics_storage</code>{' '}
+			wordt op <em>granted</em> gezet nadat u daarvoor kiest.
+		</li>
+		<li>
+			Er worden geen gegevens uit het contactformulier, geen naam, e-mailadres, telefoonnummer of
+			berichttekst, naar Google Analytics gestuurd, en de webadressen van deze website bevatten geen
+			persoonsgegevens.
+		</li>
+	</ul>
+
+	<h3>IP-adres, Google en doorgifte</h3>
+	<p>
+		Google is voor deze meting verwerker van {SITE_NAME}, op grond van de Google Ads Data Processing
+		Terms die in Google Analytics zijn aanvaard. Google verzamelt gegevens van bezoekers uit de EU via
+		domeinen en servers in de EU. Google geeft aan dat het IP-adres van Europese bezoekers uitsluitend
+		wordt gebruikt om de globale locatie af te leiden en daarna wordt weggegooid vóórdat de gegevens
+		worden gelogd. Dat neemt niet weg dat Google onderdeel is van een Amerikaans concern; zie{' '}
+		<a href="#doorgifte">Doorgifte buiten de EER</a>.
+	</p>
+	<p>
+		Deze verklaring noemt de analytics-gegevens daarom bewust <em>niet</em> anoniem. Zolang er een
+		identificatienummer op uw apparaat staat waarmee bezoeken aan elkaar gekoppeld kunnen worden, zijn het
+		persoonsgegevens, en juist daarom wordt er vooraf om uw toestemming gevraagd in plaats van achteraf
+		over anonimiteit te spreken.
+	</p>
+	<p>
+		Grondslag: uw toestemming (artikel 6 lid 1 sub a AVG en artikel 11.7a Telecommunicatiewet). U kunt die
+		toestemming op elk moment intrekken, net zo eenvoudig als u haar heeft gegeven.
+	</p>
+
+	<h2 id="cookies">Cookies en opslag op uw apparaat</h2>
+	<p>
+		Deze website plaatst zonder uw toestemming geen enkele cookie. Wat er wél op uw apparaat wordt
+		bewaard, is beperkt tot opslag die nodig is om de website te laten werken en om uw eigen keuze te
+		onthouden. In het <a href="/cookies/">cookiebeleid</a> staat per item wat het is, waarvoor het dient
+		en hoe lang het blijft staan; daar kunt u ook uw voorkeur wijzigen.
+	</p>
+
+	<h2 id="ontvangers">Wie uw gegevens ontvangen</h2>
+	<p>
+		Uw gegevens worden niet verkocht en niet gebruikt voor commerciële doeleinden van anderen. Ze worden
+		alleen gedeeld met partijen die nodig zijn om de website en het contact te laten werken, en met
+		partijen aan wie {SITE_NAME} wettelijk verplicht is gegevens te verstrekken. Werkt {PERSON_NAME} voor
+		een opdracht samen met bijvoorbeeld een vormgever, bureau of opdrachtgever, dan kunnen uw
+		contactgegevens in dat kader worden gedeeld voor zover dat voor de uitvoering van die opdracht nodig
+		is.
+	</p>
+	<div class="legal-scroll">
+		<table class="legal-table">
+			<thead>
+				<tr>
+					<th scope="col">Partij</th>
+					<th scope="col">Waarvoor</th>
+					<th scope="col">Waar</th>
+					<th scope="col">Rol</th>
+				</tr>
+			</thead>
+			<tbody>
+				{
+					RECIPIENTS.map((r) => (
+						<tr>
+							<th scope="row">{r.name}</th>
+							<td>{r.role}</td>
+							<td>{r.country}</td>
+							<td>{r.basis}</td>
+						</tr>
+					))
+				}
+			</tbody>
+		</table>
+	</div>
+	<p>
+		Formulierinzendingen worden opgeslagen in het beheerpaneel van Netlify en daar door {PERSON_NAME}
+		gelezen. Netlify legt iedere inzending standaard voor aan het spamfilter Akismet van Automattic om te
+		bepalen of het om spam gaat; die beoordeling maakt onlosmakelijk deel uit van Netlify Forms. Antwoordt
+		{PERSON_NAME} per e-mail, dan verloopt die correspondentie via de mailbox bij Google.
+	</p>
+
+	<h2 id="doorgifte">Doorgifte buiten de EER</h2>
+	<p>
+		Netlify, Automattic en Google zijn Amerikaanse ondernemingen. Bij het gebruik van hun diensten kunnen
+		persoonsgegevens worden doorgegeven naar de Verenigde Staten. Voor die doorgifte gelden de volgende
+		waarborgen:
+	</p>
+	<ul>
+		<li>
+			<strong>Google.</strong> Google LLC is gecertificeerd onder het EU-U.S. Data Privacy Framework,
+			waarvoor de Europese Commissie op 10 juli 2023 een adequaatheidsbesluit heeft genomen. Daarnaast
+			hanteert Google de standaardcontractbepalingen van de Europese Commissie. Gegevens van Europese
+			bezoekers worden bovendien verzameld via servers in de EU.
+		</li>
+		<li>
+			<strong>Netlify en Automattic.</strong> Voor deze diensten gelden de verwerkersovereenkomsten van
+			de betrokken partijen, waarin de standaardcontractbepalingen van de Europese Commissie zijn
+			opgenomen.
+		</li>
+	</ul>
+	<p>
+		Volledigheidshalve: het adequaatheidsbesluit voor het Data Privacy Framework is geldig, maar wordt
+		juridisch aangevochten. Wordt het ingetrokken of ongeldig verklaard, dan blijven de
+		standaardcontractbepalingen de basis voor de doorgifte en wordt deze verklaring aangepast.
+	</p>
+
+	<h2 id="bewaartermijnen">Bewaartermijnen</h2>
+	<p>Gegevens worden niet langer bewaard dan nodig is voor het doel waarvoor ze zijn verzameld.</p>
+	<div class="legal-scroll">
+		<table class="legal-table">
+			<thead>
+				<tr><th scope="col">Gegevens</th><th scope="col">Bewaartermijn</th></tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th scope="row">Berichten via het contactformulier die niet tot een opdracht leiden</th>
+					<td>
+						Zolang dat nodig is om uw vraag te behandelen en er eventueel op terug te komen. Is het
+						contact afgerond en volgt er geen opdracht, dan worden de inzending en de bijbehorende
+						correspondentie verwijderd.
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">Correspondentie rond een opdracht</th>
+					<td>
+						Zolang dat voor de uitvoering en afwikkeling van de opdracht nodig is. Gegevens die deel
+						uitmaken van de administratie worden bewaard zolang de wettelijke bewaarplicht voor de
+						administratie geldt (zeven jaar, artikel 52 Algemene wet inzake rijksbelastingen).
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">Technische serverlogs bij het bezoeken van de website</th>
+					<td>
+						Deze worden door de hostingpartij bepaald en beheerd; {SITE_NAME} heeft daar geen eigen
+						instelling voor. Ze worden gebruikt voor levering en beveiliging, niet voor analyse.
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">Google Analytics</th>
+					<td>
+						De bewaartermijn voor gebruikers- en gebeurtenisgegevens in Google Analytics is ingesteld
+						op {GA_RETENTION_MONTHS} maanden, de kortste termijn die Google aanbiedt. De cookies op uw
+						eigen apparaat verlopen na maximaal twee jaar, en verdwijnen eerder wanneer u ze
+						verwijdert of uw toestemming intrekt.
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">Uw cookiekeuze</th>
+					<td>
+						Blijft in uw eigen browser staan tot u haar wijzigt of de opslag van deze website wist. Ze
+						wordt nergens naartoe gestuurd.
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h2 id="beveiliging">Beveiliging</h2>
+	<p>
+		De maatregelen hieronder zijn de maatregelen die daadwerkelijk zijn getroffen. Ze zijn afgestemd op de
+		aard van de gegevens: een naam, een e-mailadres en een bericht over een fotografieopdracht.
+	</p>
+	<ul>
+		<li>de website wordt uitsluitend via een versleutelde verbinding (HTTPS) aangeboden;</li>
+		<li>
+			de server stuurt beveiligingsheaders mee die onder meer voorkomen dat de website in een frame van
+			een andere site wordt getoond en dat bestandstypen verkeerd worden geïnterpreteerd;
+		</li>
+		<li>
+			het contactformulier vraagt alleen wat nodig is, staat geen bestandsuploads toe en kent
+			lengtelimieten per veld;
+		</li>
+		<li>
+			het formulier gebruikt een verborgen veld tegen geautomatiseerde inzendingen en het spamfilter van
+			de hostingpartij; er wordt geen CAPTCHA gebruikt, die extra gegevens van bezoekers zou verwerken;
+		</li>
+		<li>
+			de website laadt geen scripts, lettertypen of andere bestanden van externe servers, behalve Google
+			Analytics ná uw toestemming, er is dus vrijwel geen aanvalsoppervlak van derden;
+		</li>
+		<li>
+			de toegang tot het beheer van de website en tot de formulierinzendingen is persoonlijk en
+			beveiligd.
+		</li>
+	</ul>
+	<p>
+		Geen enkele maatregel biedt absolute zekerheid. Ontstaat er ondanks alles een datalek met een risico
+		voor u, dan wordt dat gemeld zoals de AVG voorschrijft.
+	</p>
+
+	<h2 id="profilering">Geautomatiseerde besluitvorming en profilering</h2>
+	<p>
+		Er worden geen besluiten over u genomen op basis van geautomatiseerde verwerking die rechtsgevolgen
+		voor u hebben of u in aanmerkelijke mate treffen (artikel 22 AVG). Google Analytics maakt wel
+		geautomatiseerde, geaggregeerde analyses van bezoekgedrag; die worden alleen gebruikt om de website te
+		verbeteren en leiden niet tot beslissingen over individuele bezoekers.
+	</p>
+
+	<h2 id="rechten">Uw rechten</h2>
+	<p>U heeft ten aanzien van uw persoonsgegevens de volgende rechten:</p>
+	<ul>
+		<li><strong>Inzage</strong>, u mag opvragen welke gegevens van u worden verwerkt.</li>
+		<li><strong>Rectificatie</strong>, onjuiste gegevens laten corrigeren of aanvullen.</li>
+		<li>
+			<strong>Verwijdering</strong>, uw gegevens laten wissen, tenzij ze nog nodig zijn of er een
+			wettelijke bewaarplicht geldt.
+		</li>
+		<li><strong>Beperking</strong>, de verwerking tijdelijk laten stilleggen, bijvoorbeeld terwijl een correctieverzoek loopt.</li>
+		<li>
+			<strong>Bezwaar</strong>, bezwaar maken tegen verwerkingen die op een gerechtvaardigd belang
+			berusten, om redenen die met uw specifieke situatie te maken hebben.
+		</li>
+		<li>
+			<strong>Overdraagbaarheid</strong>, de gegevens die u zelf heeft verstrekt in een gangbaar
+			bestandsformaat ontvangen. Dit recht geldt voor verwerkingen op basis van toestemming of een
+			overeenkomst die geautomatiseerd plaatsvinden.
+		</li>
+		<li>
+			<strong>Intrekken van toestemming</strong>, uw toestemming voor statistieken intrekken via{' '}
+			<a href="/cookies/#voorkeuren">Cookie-instellingen</a>. Dat werkt vanaf dat moment; wat eerder met
+			uw toestemming is verwerkt, blijft rechtmatig verwerkt.
+		</li>
+	</ul>
+	<p>
+		Een verzoek stuurt u naar <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. U ontvangt binnen
+		een maand antwoord. Om te voorkomen dat gegevens aan de verkeerde persoon worden verstrekt, kan bij
+		twijfel om aanvullende informatie worden gevraagd waarmee u kunt aantonen dat het verzoek van u komt;
+		er wordt daarbij nooit om een kopie van uw identiteitsbewijs gevraagd. Aan een verzoek zijn geen
+		kosten verbonden.
+	</p>
+
+	<h2 id="klacht">Klacht indienen</h2>
+	<p>
+		Bent u het niet eens met hoe uw gegevens worden verwerkt, laat het dan eerst weten via{' '}
+		<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>, dan wordt er samen naar gekeken. U heeft
+		daarnaast altijd het recht een klacht in te dienen bij de toezichthouder, de{' '}
+		<a href={DPA_URL} rel="noopener">{DPA_NAME}</a>.
+	</p>
+
+	<h2 id="wijzigingen">Wijzigingen</h2>
+	<p>
+		Verandert er iets aan de website of aan de manier waarop gegevens worden verwerkt, dan wordt deze
+		verklaring aangepast. Bovenaan deze pagina staan het versienummer en de datum van de laatste
+		wijziging. Op de website staat altijd de geldende versie; er wordt geen archief van eerdere versies
+		bijgehouden.
+	</p>
+	<p>
+		Zie ook het <a href="/cookies/">cookiebeleid</a> en de{' '}
+		<a href="/voorwaarden/">algemene voorwaarden</a>.
+	</p>
+</LegalPage>

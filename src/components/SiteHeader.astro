@@ -95,11 +95,50 @@ const contact = { label: 'Contact', href: '/contact/' };
 </header>
 
 <style>
+	/* ============================================================================================= *
+	 * THE CHROME (P8.5 / D-76) — a deeper blue base, a subtle gold accent, a higher level of finish.
+	 *
+	 * WHAT WAS WRONG. The header was one flat fill of `--color-bg` (#0f131a) with a generic white-alpha
+	 * hairline under it. On a page whose whole identity is modelled blue-hour light, the one element that
+	 * appears on EVERY page was the only surface with no light in it at all — and on the homepage, where it
+	 * resolves to solid over a lit sky, that flatness is precisely the "black separator" the D-45 forensics
+	 * traced to this element. Flat is not calm; flat is unfinished.
+	 *
+	 * THE THREE MOVES, in the order the brief asks for them:
+	 *   1. A DEEPER BLUE BASE — `--grad-chrome-header`, the new sapphire chrome. Not a colour but a short
+	 *      vertical descent (lit top edge → deep foot), so the bar reads as a lit surface with a light
+	 *      source above it. It is DARKER than the page background it sits on, which is what makes it read
+	 *      as chrome framing the content rather than as a band interrupting it.
+	 *   2. SUBTLE GOLD — the bottom edge becomes the site's own DATUM-RULE hairline (the ContactCta idiom,
+	 *      D-29): champagne caught at the left, dissolving to a neutral hairline across the width. Gold
+	 *      gains presence through spatial EXTENT while staying exactly 1px — never a fill, never a glow,
+	 *      never on text (6.11/6.12, VIS-05). One gold mark, on the one line the header already had.
+	 *   3. FINISH — a hairline specular highlight along the very top edge (the polished top arris of a real
+	 *      machined surface). 1px, 6% white, and it is the single detail that separates "dark bar" from
+	 *      "made object". Everything here is painted once: no animation, no JS, no repaint.
+	 * ============================================================================================= */
 	.site-header {
-		border-bottom: 1px solid var(--color-border-subtle);
-		background: var(--color-bg);
+		background: var(--grad-chrome-header);
+		/* The top arris. `inset` so it hugs the edge exactly and costs no layout. */
+		box-shadow: inset 0 1px 0 rgba(236, 238, 242, 0.06);
 		position: relative;
 		z-index: var(--z-header);
+	}
+	/* The gold datum, replacing the old `border-bottom`. As a pseudo-element it can carry the gradient a
+	   border cannot, and it sits ON the boundary rather than adding to the header's height — so the
+	   header's metrics, and every layout measured against them, are unchanged. */
+	.site-header::after {
+		content: '';
+		position: absolute;
+		inset: auto 0 0 0;
+		height: 1px;
+		pointer-events: none;
+		/* P8.6 (D-77): drawn from the shared `--grad-datum`, not from its own stop set. Four components were
+		   painting "the same" hairline from four hand-typed gradients that differed in both stops and alpha;
+		   one token is what makes "gebruik deze consequent op … lijnen" a property of the system rather than
+		   of four files staying in sync by hand. Opacity is the only thing a component varies. */
+		background: var(--grad-datum);
+		opacity: 0.88;
 	}
 	.site-header__inner {
 		display: flex;
@@ -118,10 +157,16 @@ const contact = { label: 'Contact', href: '/contact/' };
 	.site-header--overlay {
 		position: fixed;
 		inset: 0 0 auto 0;
-		background: transparent;
-		border-bottom-color: transparent;
+		background: none;
+		box-shadow: none;
 		transition: background-color var(--dur-component) var(--ease-standard),
-			border-color var(--dur-component) var(--ease-standard);
+			box-shadow var(--dur-component) var(--ease-standard);
+	}
+	/* Over the hero the gold datum and the arris would be two bright lines drawn across a photograph —
+	   chrome announcing itself over the work. They resolve WITH the surface, on the same curve. */
+	.site-header--overlay::after {
+		opacity: 0;
+		transition: opacity var(--dur-component) var(--ease-standard);
 	}
 	.site-header--overlay::before {
 		content: '';
@@ -134,20 +179,25 @@ const contact = { label: 'Contact', href: '/contact/' };
 		transition: opacity var(--dur-component) var(--ease-standard);
 	}
 	.site-header--overlay.is-solid {
-		background: var(--color-bg);
-		border-bottom-color: var(--color-border-subtle);
+		background: var(--grad-chrome-header);
+		box-shadow: inset 0 1px 0 rgba(236, 238, 242, 0.06);
 	}
 	.site-header--overlay.is-solid::before {
 		opacity: 0;
 	}
+	.site-header--overlay.is-solid::after {
+		opacity: 1;
+	}
 	/* When the mobile menu is open the whole overlay must read as one dark surface — otherwise the hero
 	   peeks through the transparent header strip above the dark panel. Solidify it while open. */
 	.site-header--overlay:has(#mobile-nav[open]) {
-		background: var(--color-bg-deep);
-		border-bottom-color: var(--color-border-subtle);
+		background: var(--grad-chrome-header);
 	}
 	.site-header--overlay:has(#mobile-nav[open])::before {
 		opacity: 0;
+	}
+	.site-header--overlay:has(#mobile-nav[open])::after {
+		opacity: 1;
 	}
 
 	/* --- desktop nav --- */
@@ -196,6 +246,10 @@ const contact = { label: 'Contact', href: '/contact/' };
 		transform: scaleX(1);
 	}
 
+	/* The one emphasised action in the chrome. Its finish is where the header's quality is most legible, so
+	   it gets the same construction as the bar itself: a sapphire body with a lit top arris and a gold
+	   hairline that deepens on hover. Gold is the border, never the fill — the label stays neutral, which
+	   keeps it AA on every state and keeps gold a detail (VIS-05). */
 	.nav-contact {
 		display: inline-flex;
 		align-items: center;
@@ -204,17 +258,26 @@ const contact = { label: 'Contact', href: '/contact/' };
 		font-size: var(--fs-body-sm);
 		font-weight: var(--fw-semibold);
 		color: var(--color-text);
-		border: 1px solid var(--color-border-strong);
+		border: 1px solid var(--color-accent-hairline);
 		border-radius: var(--radius-xs);
+		background: linear-gradient(180deg, rgba(20, 33, 61, 0.55) 0%, rgba(12, 19, 33, 0.4) 100%);
+		box-shadow: inset 0 1px 0 rgba(236, 238, 242, 0.07);
 		transition: border-color var(--dur-interaction) var(--ease-standard),
 			background-color var(--dur-interaction) var(--ease-standard);
 	}
 	.nav-contact:hover {
 		border-color: var(--color-accent);
-		background: var(--color-surface-interactive);
+		background: var(--color-chrome-raised);
 	}
 	.nav-contact[aria-current='page'] {
 		border-color: var(--color-accent);
+	}
+	/* Over the hero the button must not carry a sapphire body — that would be an opaque chip floating on
+	   the photograph. It resolves to its chrome material with the rest of the bar. */
+	.site-header--overlay:not(.is-solid) .nav-contact {
+		background: transparent;
+		border-color: var(--color-border-strong);
+		box-shadow: none;
 	}
 
 	/* --- mobile nav (hidden on desktop) --- */
@@ -246,12 +309,13 @@ const contact = { label: 'Contact', href: '/contact/' };
 	.mnav[open] :global(.mnav__icon--close) {
 		display: inline-block;
 	}
+	/* The mobile panel is the chrome at full height, so it uses the chrome's own descent rather than a flat
+	   deep fill — the menu reads as the header opening downward, not as a separate black sheet. */
 	.mnav__panel {
 		position: fixed;
 		inset: 4.75rem 0 0 0;
 		z-index: var(--z-overlay);
-		background: var(--color-bg-deep);
-		border-top: 1px solid var(--color-border-subtle);
+		background: var(--grad-chrome-footer);
 		padding: var(--space-xl) var(--gutter);
 		overflow-y: auto;
 	}

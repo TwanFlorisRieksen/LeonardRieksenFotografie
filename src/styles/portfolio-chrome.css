@@ -1,0 +1,961 @@
+/*
+ * PORTFOLIO CHROME — the Phase-3 integration layer over DE DOORTOCHT (D-73).
+ *
+ * Two jobs, kept strictly apart from the coil:
+ *   1. THE ACCESSIBLE DOCUMENT (baseline / no-JS / reduced motion): the three worlds are real, headed
+ *      <section> chapters — the categories, fully present, as wall text (§4.2). This is the wayfinding when
+ *      the coil is not running.
+ *   2. THE ENHANCED CHROME (only under [data-tv-active]): the persistent wayfinding marker, the world-title
+ *      beats, the scroll hint and the ambient per-world tint — a 2D layer OVER the coil. None of it is ever
+ *      an object inside the world (the coil's one rule), and none of it is present until the coil is live.
+ *
+ * The coil itself is styled entirely in traverse.css and is not touched here.
+ */
+
+/* ============================================================================================
+ * 1. THE WORLDS AS CHAPTERS — baseline document (no JS / reduced motion)
+ * ============================================================================================ */
+
+.tv-world {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: clamp(3rem, 7vw, 7rem);
+	width: 100%;
+}
+
+/* A quiet, typographic chapter opening — wall text, not a room (§4.2). Centred over the reading column. */
+.tv-world__intro {
+	text-align: center;
+	max-width: 62rem;
+	width: 100%;
+	padding-inline: 1.5rem;
+}
+
+.tv-world__title {
+	font-family: var(--font-display);
+	font-weight: var(--fw-display);
+	font-size: var(--fs-h2);
+	line-height: var(--lh-heading);
+	color: var(--color-text);
+	margin: 0 0 0.5rem;
+}
+
+.tv-world__meta {
+	display: flex;
+	justify-content: center;
+	align-items: baseline;
+	gap: 0.6rem;
+	margin: 0;
+	font-size: var(--fs-body-sm);
+	color: var(--color-text-muted);
+}
+
+.tv-world__count {
+	font-family: var(--font-display);
+	font-weight: var(--fw-display-soft);
+	color: var(--color-accent);
+	font-variant-numeric: tabular-nums;
+}
+
+.tv-world__sub {
+	letter-spacing: 0.01em;
+}
+
+/* UNDER THE ACTIVE COIL, the chapter boxes and their headings step out of the way entirely: `display:
+   contents` dissolves the section box so its works place against `.tv-field` exactly as the runtime expects
+   (the coil reads one flat ribbon of works regardless of this grouping), and the intro is removed — the
+   chrome names the world instead. */
+.tv[data-tv-active] .tv-world {
+	display: contents;
+}
+
+.tv[data-tv-active] .tv-world__intro {
+	display: none;
+}
+
+/* ============================================================================================
+ * 2. THE WORLD BEHIND THE COIL — a modelled blue-hour space (Fase 5, D-75)
+ * ============================================================================================
+ * Before Fase 5 this was a single FLAT near-black tint written as the viewport's `background-color` —
+ * deliberately sub-threshold, and exactly the atmosphere the owner found missing. It is now a genuinely
+ * MODELLED, clearly-visible blue-hour WORLD, built in the SAME grammar as the homepage sky (Cinematic Motion
+ * Language §5.1–5.3): a stack of pre-painted gradient layers whose OPACITY the chrome controller cross-fades
+ * along the journey (blue hour → deep nocturne → warm interior), plus a slow, autonomous, light-only breath
+ * (§5.7). Every value here is tuned so the world is genuinely SEEN yet stays a nocturne, always below the
+ * luminance and saturation of any photograph (6.16) — the peaks sit in the NEGATIVE SPACE, never where the
+ * reading print is, and a front-facing work is opaque and painted on top, so the world can never fall on the
+ * photography (priority 1). It rides with the coil: display:none in the baseline document, shown only under
+ * the active coil, and dissolved with the coil at the ending (`--tv-sky-o`), so the landing is the site's own
+ * ground again for the contact invitation. Absent under reduced motion, where the coil never activates.
+ *
+ * PERFORMANCE. Only opacity and transform are ever written per frame — no gradient is repainted while the
+ * coil runs — so a continuously evolving, genuinely visible world is pure compositor work (CLS-safe, no long
+ * frames). `isolation:isolate` contains the screen blends to the sky's own sub-layers, so the additive light
+ * lifts the DARK GROUND between photographs and can never touch a photograph (a different stacking context,
+ * painted on top). */
+
+/* The floor beneath the modelled world — the true abyss, so there is never a flash of nothing behind it. */
+.tv[data-tv-active] .tv-viewport {
+	background-color: var(--color-bg-abyss);
+}
+
+/* The world layer. Absent from the accessible document; shown only under the active coil, behind the field. */
+.tv-sky {
+	display: none;
+}
+
+.tv[data-tv-active] .tv-sky {
+	display: block;
+	position: absolute;
+	inset: 0;
+	z-index: 0; /* behind .tv-field (the works), which follows it in the viewport and paints on top */
+	pointer-events: none;
+	isolation: isolate; /* contain the screen blends to the sky's own layers, never onto a photograph */
+	opacity: var(--tv-sky-o, 1); /* the whole world dissolves with the coil at the ending */
+	will-change: opacity;
+}
+
+.tv-sky > * {
+	position: absolute;
+	inset: 0;
+}
+
+/* 1. THE BASE — a modelled vertical blue-hour space (never a flat colour anywhere). Deep blue-navy at the
+   crown, through the abyss the coil sits against, to a faint cool lift at the foot. Always on. */
+.tv-sky__base {
+	background: linear-gradient(
+		180deg,
+		#0d1a30 0%,
+		#0a1424 26%,
+		#070d18 54%,
+		#080e19 78%,
+		#0b1122 100%
+	);
+}
+
+/* 2. THE BLUE HOUR — cool radials blooming in the negative space (top corners + a low ambient). Its OPACITY
+   is driven high through Projecten/Architectuur and fades toward the warm Interieur foot. Screen-blended, so
+   it only ADDS light to the dark ground and never darkens text; peaks sit off-centre, clear of the print. */
+.tv-sky__cool {
+	background:
+		radial-gradient(66% 52% at 15% 3%, rgba(var(--p-atmos-cool), 0.4) 0%, rgba(var(--p-atmos-cool), 0) 62%),
+		radial-gradient(58% 56% at 90% 20%, rgba(var(--p-atmos-cool), 0.28) 0%, rgba(var(--p-atmos-cool), 0) 60%),
+		radial-gradient(96% 66% at 8% 96%, rgba(var(--p-atmos-cool), 0.24) 0%, rgba(var(--p-atmos-cool), 0) 62%);
+	mix-blend-mode: screen;
+	opacity: var(--tv-cool, 0.9);
+}
+
+/* 3. THE WARM INTERIOR — amber radials (the gold-family atmosphere primitive) rising from the foot, blooming
+   in only as the journey reaches the Interieur world. The warm counterpart to the blue hour. Screen-blended. */
+.tv-sky__warm {
+	background:
+		radial-gradient(90% 66% at 54% 97%, rgba(var(--p-atmos-warm), 0.42) 0%, rgba(var(--p-atmos-warm), 0) 62%),
+		radial-gradient(58% 54% at 92% 80%, rgba(var(--p-atmos-warm), 0.3) 0%, rgba(var(--p-atmos-warm), 0) 58%),
+		radial-gradient(52% 48% at 12% 88%, rgba(var(--p-atmos-warm), 0.2) 0%, rgba(var(--p-atmos-warm), 0) 60%);
+	mix-blend-mode: screen;
+	opacity: var(--tv-warm, 0);
+}
+
+/* 4. THE BREATH — the world lives at rest (§5.7): a soft central glow low in the frame that breathes on a
+   long, low-amplitude cycle (light only, never geometry or layout). A cool blue-hour tint, so it reads as the
+   dominant hour's slow atmospheric pulse; the warm layer above carries the landing. Screen-blended. */
+.tv-sky__breath {
+	background: radial-gradient(
+		70% 46% at 50% 64%,
+		rgba(var(--p-atmos-cool), 0.22) 0%,
+		rgba(var(--p-atmos-cool), 0) 66%
+	);
+	mix-blend-mode: screen;
+	will-change: opacity, transform;
+	animation: tv-breath 16s ease-in-out infinite;
+}
+
+/* 5. THE HAZE — air and depth: two very soft planes that drift slowly and laterally (parallax, no busy
+   motion), giving the world dimension without any readable movement. Low alpha, screen-blended. */
+.tv-sky__haze {
+	inset: -24% -12%;
+	background:
+		radial-gradient(56% 44% at 26% 30%, rgba(var(--p-atmos-cool), 0.1) 0%, transparent 60%),
+		radial-gradient(50% 40% at 82% 54%, rgba(var(--p-atmos-cool), 0.08) 0%, transparent 56%);
+	mix-blend-mode: screen;
+	opacity: 0.85;
+	will-change: transform;
+	animation: tv-haze 26s ease-in-out infinite alternate;
+}
+
+/* 6. THE VIGNETTE — an edgeless deepening at the frame's edge (depth, and quiet legibility insurance for the
+   chrome that lives in the corners — §5.6). It deepens as the landing nears (`--descent`), so the descent
+   ends grounded, an abyss the contact invitation rises out of. A DARK layer (normal blend), the one place the
+   world subtracts light. */
+.tv-sky__vignette {
+	background: radial-gradient(146% 104% at 50% 42%, transparent 48%, rgba(4, 6, 10, 0.55) 100%);
+	opacity: calc(0.42 + var(--descent, 0) * 0.3);
+}
+
+@keyframes tv-breath {
+	0%,
+	100% {
+		opacity: 0.55;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.85;
+		transform: scale(1.05);
+	}
+}
+
+@keyframes tv-haze {
+	0% {
+		transform: translate3d(-2.5%, 0.5%, 0);
+	}
+	100% {
+		transform: translate3d(2.5%, -1.5%, 0);
+	}
+}
+
+/* ============================================================================================
+ * 3. CHROME — shown ONLY under the active coil
+ * ============================================================================================ */
+
+.pf-intro,
+.pf-wayfind,
+.pf-beat {
+	/* Hidden by default: under no-JS the chapters do the work, and .pf-intro reverts to the page header
+	   below. Each is switched on under [data-tv-active]. */
+}
+
+/* ---- 3a. The opening: page heading + quiet brand lead ---------------------------------------- */
+
+/* BASELINE = the document's header (a real, normally-sized page heading for SEO/AT). */
+.pf-intro {
+	text-align: center;
+	max-width: 44rem;
+	margin: clamp(2rem, 6vw, 4rem) auto clamp(1.5rem, 4vw, 3rem);
+	padding-inline: 1.5rem;
+}
+
+.pf-intro__eyebrow {
+	font-size: var(--fs-eyebrow);
+	text-transform: uppercase;
+	letter-spacing: 0.16em;
+	color: var(--color-text-muted);
+	margin: 0 0 0.7rem;
+}
+
+.pf-intro__title {
+	font-family: var(--font-display);
+	font-weight: var(--fw-display);
+	/* P10 (D-81): the weight is STATED, not inherited. Every other component on the site pairs
+	   `--font-display` with a weight token; these did not, so the UA default decided it — `bold` (700)
+	   on the headings and `normal` (400) on the spans. Archivo ships only 500 and 600, so CSS font
+	   matching resolved 700 → the 600 face and 400 → the 500 face: MEASURED identical rendering, no
+	   synthetic bold (Archivo at 700 and at 600 render the same string at exactly 413.8px, and
+	   `font-synthesis-weight: none` changes nothing). So this is a zero-pixel change today — and that
+	   is the point: it removes a trap, because the day an Archivo 400 or 700 face is added, these six
+	   rules would silently change weight while the rest of the site held. */
+	font-size: var(--fs-h1);
+	line-height: var(--lh-heading);
+	color: var(--color-text);
+	margin: 0 0 0.8rem;
+}
+
+.pf-intro__lead {
+	font-size: var(--fs-lead);
+	line-height: var(--lh-lead);
+	color: var(--color-text-secondary);
+	margin: 0 auto;
+	max-width: 38rem;
+}
+
+/* ENHANCED = a quiet opening overlay at the crown. The h1 is shrunk to a calm identification line (§3.1: the
+   portfolio must not open as a display banner), the brand + lead carry the identity, and the whole thing
+   eases away the moment the visitor starts to descend. */
+.tv[data-tv-active] .pf-intro {
+	position: fixed;
+	top: clamp(5rem, 15vh, 9.5rem);
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	z-index: var(--z-sticky);
+	width: min(90vw, 40rem);
+	pointer-events: none;
+	/* A soft, edgeless pocket of deeper dark behind the opening identification (§5.6) — the same cinematic
+	   scrim the world-title beat uses, never a boxed card. It guarantees the crown text stays legible over the
+	   blue-hour world at any viewport (notably on a narrow phone, where the two top blooms converge toward
+	   centre), and it fades away with the overlay the moment the visitor descends. */
+	padding-block: clamp(1rem, 3vh, 2rem);
+	background: radial-gradient(118% 128% at 50% 44%, rgb(5 7 11 / 0.62) 0%, rgb(5 7 11 / 0.3) 44%, transparent 72%);
+	transition:
+		opacity 700ms var(--ease-standard),
+		transform 700ms var(--ease-standard);
+}
+
+.tv[data-tv-active] .pf-intro__eyebrow {
+	margin-bottom: 0.5rem;
+}
+
+.tv[data-tv-active] .pf-intro__title {
+	font-family: var(--font-display);
+	font-size: var(--fs-body);
+	font-weight: var(--fw-display-soft);
+	text-transform: uppercase;
+	letter-spacing: 0.22em;
+	color: var(--color-text-secondary);
+	margin: 0 0 0.7rem;
+	text-shadow: 0 1px 12px rgb(0 0 0 / 0.7);
+}
+
+.tv[data-tv-active] .pf-intro__lead {
+	font-size: var(--fs-body);
+	color: var(--color-text-secondary);
+	text-shadow: 0 1px 10px rgb(0 0 0 / 0.6);
+}
+
+.tv[data-tv-active] .pf-intro.is-gone {
+	opacity: 0;
+	transform: translateX(-50%) translateY(-10px);
+}
+
+/* ---- 3b. The persistent wayfinding marker (§7.2/§7.4) ---------------------------------------- */
+
+.pf-wayfind {
+	display: none;
+	position: fixed;
+	left: clamp(1rem, 3vw, 2.25rem);
+	/* `--consent-h` is 0 unless the cookie bar is up. While it is, it is a fixed strip at the bottom edge on
+	   a HIGHER layer, so the marker — the portfolio's whole wayfinding affordance — sat underneath it,
+	   invisible and unclickable, for every first-time visitor (P12 / D-84; see scripts/consent.js). */
+	bottom: calc(clamp(1rem, 3vw, 2.25rem) + var(--consent-h, 0px));
+	z-index: var(--z-sticky);
+}
+
+.tv[data-tv-active] .pf-wayfind {
+	display: block;
+}
+
+/* HELD BACK UNTIL THE READER TRAVELS (P8.7 / D-78). Wayfinding answers "where am I in this?", and on the
+   first screen that question does not exist yet — the marker was simply a fourth thing competing for the
+   opening. It now arrives once the visitor has actually begun to descend (the chrome controller drops
+   `is-held` on the first real travel), which is the moment it starts being useful. `visibility` rather than
+   opacity alone, so while held it is also out of the tab order — a control nobody can see must not be
+   reachable by keyboard either (WCAG 2.4.7/2.4.11). */
+.tv[data-tv-active] .pf-wayfind.is-held {
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(6px);
+	pointer-events: none;
+}
+.tv[data-tv-active] .pf-wayfind {
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+	transition:
+		opacity 700ms var(--ease-standard),
+		transform 700ms var(--ease-standard),
+		visibility 700ms;
+}
+
+/* At the ending the coil dissolves into the contact invitation; the chrome recedes with it (§3.5). */
+.tv.is-tv-ending .pf-wayfind,
+.tv.is-tv-ending .pf-beat {
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 450ms var(--ease-standard);
+}
+
+.pf-wayfind__toggle {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	align-items: flex-start;
+	padding: 0.5rem 0.85rem;
+	/* Near-opaque, not merely tinted: the marker can sit over a bright photograph (notably on mobile, where
+	   the coil fills the width), and blur is not a contrast guarantee. This keeps the wayfinding text legible
+	   (AA) over ANY backdrop, while the blur still softens what shows through the last sliver. */
+	background: rgb(8 11 16 / 0.86);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	color: var(--color-text);
+	cursor: pointer;
+	text-align: left;
+	transition:
+		background var(--dur-interaction) var(--ease-standard),
+		border-color var(--dur-interaction) var(--ease-standard);
+}
+
+.pf-wayfind__toggle:hover {
+	background: rgb(18 23 32 / 0.92);
+	border-color: var(--color-border-strong);
+}
+
+.pf-wayfind__toggle:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 2px;
+}
+
+.pf-wayfind__eyebrow {
+	font-size: var(--fs-eyebrow);
+	text-transform: uppercase;
+	letter-spacing: 0.16em;
+	color: var(--color-text-muted);
+}
+
+.pf-wayfind__now {
+	display: flex;
+	align-items: baseline;
+	gap: 0.55rem;
+}
+
+.pf-wayfind__name {
+	font-family: var(--font-display);
+	font-weight: var(--fw-display-soft);
+	font-size: var(--fs-body);
+	color: var(--color-text);
+}
+
+/* A small gold tick before the current world's name — the one selective accent (§ premium detail). */
+.pf-wayfind__name::before {
+	content: '';
+	display: inline-block;
+	width: 0.4rem;
+	height: 0.4rem;
+	margin-right: 0.5rem;
+	border-radius: var(--radius-pill);
+	background: var(--color-accent);
+	vertical-align: middle;
+}
+
+.pf-wayfind__pos {
+	font-size: var(--fs-caption);
+	color: var(--color-text-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+/* Overall progress hairline in the collapsed marker — fills as the visitor descends the whole coil. */
+.pf-wayfind__track {
+	display: block;
+	height: 1px;
+	width: 100%;
+	margin-top: 0.55rem;
+	background: var(--color-border);
+	overflow: hidden;
+}
+
+.pf-wayfind__track-fill {
+	display: block;
+	height: 100%;
+	width: 100%;
+	transform: scaleX(0);
+	transform-origin: left center;
+	background: linear-gradient(90deg, rgb(199 165 106 / 0.5), var(--color-accent-strong));
+	transition: transform 220ms var(--ease-standard);
+}
+
+/* The expanded panel — the dropdown container holding the journey map + the labelled jumps. */
+.pf-wayfind__panel {
+	position: absolute;
+	bottom: 100%;
+	left: 0;
+	margin: 0 0 0.5rem;
+	padding: 0.85rem;
+	min-width: 16.5rem;
+	background: rgb(8 11 16 / 0.85);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+}
+
+.pf-wayfind__panel[hidden] {
+	display: none;
+}
+
+.pf-wayfind__heading {
+	font-size: var(--fs-eyebrow);
+	text-transform: uppercase;
+	letter-spacing: 0.16em;
+	color: var(--color-text-muted);
+	margin: 0 0 0.7rem;
+	padding-inline: 0.1rem;
+}
+
+/* THE JOURNEY MAP — three proportional world segments + a live position node; click to travel (§5.2). */
+.pf-map {
+	position: relative;
+	margin-bottom: 0.85rem;
+	padding: 0.45rem 0 0.3rem;
+	cursor: pointer;
+}
+
+.pf-map__track {
+	display: flex;
+	gap: 2px;
+	height: 4px;
+}
+
+.pf-map__seg {
+	display: block;
+	height: 100%;
+	border-radius: var(--radius-pill);
+	background: var(--p-white-a14);
+	transition: background var(--dur-interaction) var(--ease-standard);
+}
+
+.pf-map:hover .pf-map__seg,
+.pf-map:focus-within .pf-map__seg {
+	background: var(--p-white-a24);
+}
+
+.pf-map__node {
+	position: absolute;
+	top: 0.45rem;
+	left: 0;
+	width: 2px;
+	height: 4px;
+	margin-left: -1px;
+	border-radius: var(--radius-pill);
+	background: var(--color-accent-strong);
+	box-shadow: 0 0 7px rgb(216 189 132 / 0.65);
+	transition: left 220ms var(--ease-standard);
+}
+
+.pf-wayfind__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.pf-jump {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: baseline;
+	column-gap: 0.75rem;
+	padding: 0.5rem 0.65rem;
+	border-radius: var(--radius-sm);
+	text-decoration: none;
+	color: var(--color-text-secondary);
+	transition: background var(--dur-feedback) var(--ease-standard);
+}
+
+.pf-jump:hover,
+.pf-jump:focus-visible {
+	background: var(--p-white-a08);
+	color: var(--color-text);
+}
+
+.pf-jump:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: -2px;
+}
+
+.pf-jump__label {
+	font-family: var(--font-display);
+	font-weight: var(--fw-display-soft);
+	font-size: var(--fs-body-sm);
+}
+
+.pf-jump__count {
+	font-size: var(--fs-caption);
+	color: var(--color-text-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+.pf-jump__sub {
+	grid-column: 1 / -1;
+	font-size: var(--fs-caption);
+	color: var(--color-text-muted);
+	margin-top: 0.1rem;
+}
+
+.pf-jump[aria-current='true'] {
+	color: var(--color-text);
+}
+
+.pf-jump[aria-current='true'] .pf-jump__label::before {
+	content: '';
+	display: inline-block;
+	width: 0.35rem;
+	height: 0.35rem;
+	margin-right: 0.45rem;
+	border-radius: var(--radius-pill);
+	background: var(--color-accent);
+	vertical-align: middle;
+}
+
+/* ---- 3c. The world-title beat — "je komt een nieuwe wereld binnen" --------------------------- */
+
+.pf-beat {
+	display: none;
+	position: fixed;
+	top: clamp(3.5rem, 9vh, 7rem);
+	left: 0;
+	right: 0;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.55rem;
+	padding: clamp(1.5rem, 4vh, 3rem) 1rem clamp(2rem, 6vh, 4rem);
+	z-index: var(--z-sticky);
+	pointer-events: none;
+	opacity: 0;
+	transform: translateY(-10px);
+	transition:
+		opacity 800ms var(--ease-standard),
+		transform 1100ms var(--ease-out);
+	/* A soft radial scrim — chrome, not a card: it darkens the world a touch BEHIND the title so the name
+	   reads over any photograph, then fades to nothing at its edges. This is the world's light dimming for
+	   the title, a cinematic beat, never a boxed banner. */
+	background: radial-gradient(120% 150% at 50% 30%, rgb(4 6 10 / 0.62), rgb(4 6 10 / 0.28) 42%, transparent 72%);
+}
+
+.tv[data-tv-active] .pf-beat {
+	display: flex;
+}
+
+.pf-beat.is-visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.pf-beat__name {
+	font-family: var(--font-display);
+	font-weight: var(--fw-display-soft);
+	font-size: var(--fs-h2);
+	line-height: var(--lh-heading);
+	letter-spacing: 0.01em;
+	color: var(--color-text);
+	text-shadow: 0 2px 18px rgb(0 0 0 / 0.85);
+}
+
+.pf-beat__sub {
+	font-size: var(--fs-eyebrow);
+	text-transform: uppercase;
+	letter-spacing: 0.2em;
+	color: var(--color-accent);
+	text-shadow: 0 1px 10px rgb(0 0 0 / 0.85);
+}
+
+/* A gold hairline that DRAWS between the world's name and its descriptor as you cross a boundary (Fase 5,
+   D-75). This is the seam-gold language of the rest of the site (6.11/6.12) marking each world transition —
+   a controlled catch-light along a hairline, never a fill, heading or text-gradient. It draws with the beat's
+   own reveal and retreats with it, so gold appears only for the ~2s of the transition, never as decoration. */
+.pf-beat__seam {
+	width: clamp(3rem, 8vw, 5rem);
+	height: 1px;
+	background: var(--seam-gold);
+	transform: scaleX(0);
+	transform-origin: center;
+	opacity: 0;
+	transition:
+		transform 900ms var(--ease-out) 140ms,
+		opacity 600ms var(--ease-standard) 140ms;
+}
+
+.pf-beat.is-visible .pf-beat__seam {
+	transform: scaleX(1);
+	opacity: 1;
+}
+
+/* ---- 3d. THE OVERTURE VEIL (P8.7 / D-78) — replaces the scroll hint ---------------------------
+ *
+ * The scroll hint that lived here is deleted outright (see the page markup for why: the coil descends by
+ * itself when idle, so a label telling you to scroll duplicates what the world is already doing).
+ *
+ * What takes its place is not another mark but the ABSENCE of several. The opening was busy because
+ * everything arrived at once and at full strength; this is a calm field held over the coil while the
+ * overture is read, so the first screen has one subject instead of four. It is deliberately NOT opaque —
+ * the world stays visible through it, which is what makes the first scroll feel like stepping into
+ * something that was already there rather than like a curtain going up.
+ *
+ * Three layers, all cheap: a vertical deepening (strongest where the coil is densest), a soft centre pocket
+ * behind the overture text, and a whisper of the site's own blue so the veil is made of the world's
+ * material rather than of grey. It is `position: fixed` over the viewport, `pointer-events: none` so it
+ * never intercepts a click or a scroll, and it exists only while the coil is mounted. */
+
+.pf-veil {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: calc(var(--z-sticky) - 1);
+	pointer-events: none;
+	background:
+		radial-gradient(72% 52% at 50% 42%, rgb(6 9 16 / 0.5) 0%, rgb(6 9 16 / 0.22) 52%, transparent 78%),
+		linear-gradient(180deg, rgb(6 9 16 / 0.42) 0%, rgb(6 9 16 / 0.5) 46%, rgb(6 9 16 / 0.62) 100%);
+	opacity: 1;
+	transition: opacity 900ms var(--ease-standard);
+}
+
+.tv[data-tv-active] .pf-veil {
+	display: block;
+}
+
+/* It lifts on the first real travel, on the same signal the overture leaves on — and then it STOPS EXISTING
+   as far as the compositor is concerned. `visibility` is transitioned alongside the opacity, so it flips at
+   the end of the fade rather than during it: the veil is a full-viewport fixed layer over a 62-element 3D
+   scene, and leaving an invisible one of those stacked over the coil for the rest of the journey is exactly
+   the kind of thing that costs frames for no benefit. It is only ever needed for the opening. */
+.pf-veil {
+	transition:
+		opacity 900ms var(--ease-standard),
+		visibility 900ms;
+}
+.pf-veil.is-gone {
+	opacity: 0;
+	visibility: hidden;
+}
+
+/* THE COIL'S OWN CAPTIONS STAND DOWN FOR THE OVERTURE. Measured on the render: even behind the veil, the
+   reading work's caption ("Architectuur in Arnhem · REEKS · 4 BEELDEN →") sat directly under the overture's
+   lede and read as a second, competing headline — the opening still had two subjects. The engine keeps
+   writing `--tv-cap-o` exactly as before; this is a presentation override on the chrome layer that ends with
+   the overture, so nothing about the reading moment itself changes. */
+/* SCOPED TO THE MOUNTED COIL, and that qualification is load-bearing. Written as `.tv.is-overture` it also
+   matched the REDUCED-MOTION baseline, where the coil never mounts and `.tv-cap` is the static document's
+   own visible work title — measured: every caption at opacity 0 on the accessible fallback, i.e. the titles
+   of 62 photographs hidden from exactly the visitors who depend on that fallback. `[data-tv-active]` is the
+   engine's own "I am running" flag, so this can now only ever apply where there is a coil to quiet. */
+.tv[data-tv-active].is-overture .tv-cap {
+	opacity: 0;
+	transition: opacity 600ms var(--ease-standard);
+}
+
+/* MOBILE IS WHERE THIS MATTERS MOST ("op mobiel is het al helemaal een drama"). A phone shows the same coil
+   at a third of the width, so the same number of photographs arrives at three times the density and the
+   overture has to hold its own against all of them. The veil is correspondingly deeper there — and it is the
+   only difference: same beat, same signal, same lift. */
+@media (max-width: 40rem) {
+	.pf-veil {
+		background:
+			radial-gradient(96% 44% at 50% 34%, rgb(6 9 16 / 0.62) 0%, rgb(6 9 16 / 0.34) 54%, transparent 82%),
+			linear-gradient(180deg, rgb(6 9 16 / 0.6) 0%, rgb(6 9 16 / 0.66) 44%, rgb(6 9 16 / 0.76) 100%);
+	}
+}
+
+/* ---- 3e. Project recognition — the enterable series caption (Phase 4, D-74) ------------------
+ * A series' caption is richer than a loose work's: its title, a gold hairline that DRAWS in with the
+ * caption's own reading-moment fade, then a "reeks" affordance with an arrow. This is visual hierarchy in
+ * the photograph's OWN caption — never a card, button, plate or label bolted on — so a project arriving at
+ * its reading moment reads as "here a body of work begins", where a loose work reads as one quiet line.
+ * The gold rule reuses the engine's existing `--tv-cap-o` (0 away from the reading moment, 1 at square-on),
+ * so it appears to draw as the project turns square, at zero extra per-frame cost. */
+.tv[data-tv-active] .tv-cap--series {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	white-space: normal;
+	max-width: min(88%, 26rem);
+}
+
+.tv-cap__title {
+	font-family: var(--font-display);
+	font-weight: var(--fw-display-soft);
+	font-size: var(--fs-h4);
+	line-height: var(--lh-heading);
+	letter-spacing: var(--ls-heading);
+	color: var(--color-text);
+}
+
+.tv-cap__rule {
+	display: block;
+	height: 1px;
+	width: 3.5rem;
+	background: linear-gradient(90deg, var(--color-accent-strong), rgb(199 165 106 / 0));
+	transform: scaleX(var(--tv-cap-o, 1));
+	transform-origin: left center;
+}
+
+.tv-cap__more {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	font-size: var(--fs-caption);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--color-accent);
+}
+
+.tv-cap__arrow {
+	display: inline-block;
+	transition: transform var(--dur-interaction) var(--ease-standard);
+}
+
+/* Premium hover on a real pointer: the arrow steps forward, echoing the coil's own "step toward the print"
+   hover lift. The caption is only visible near the reading moment, so this reads only where it should. */
+@media (hover: hover) and (pointer: fine) {
+	.tv-work__link:hover .tv-cap__arrow {
+		transform: translateX(5px);
+	}
+}
+
+/* ============================================================================================
+ * 5. THE OVERTURE — the premium entrance curtain (Phase 4, D-74)
+ * ============================================================================================
+ * Server-rendered, shown ONLY with JS present (html.js, set before first paint) and NEVER under reduced
+ * motion — so no-JS never sees a stuck curtain and reduced motion goes straight to the accessible document.
+ * It holds the brand while the crown imagery decodes, its hairline of light drawing to full as the world
+ * becomes ready, then dissolves as the coil emerges (portfolio-intro.js + the tv-emerge animation). It is
+ * decorative: aria-hidden, unfocusable, retired from the layout once dismissed. */
+.pf-overture {
+	display: none;
+}
+
+:root.js .pf-overture {
+	display: flex;
+	position: fixed;
+	inset: 0;
+	z-index: var(--z-modal);
+	align-items: center;
+	justify-content: center;
+	/* A blue-hour field — the nocturne the coil is seen against, modelled with a faint vertical light so the
+	   curtain is never a flat black fill. This is the world a moment before its light comes up. */
+	background:
+		radial-gradient(120% 82% at 50% 30%, rgb(18 27 46 / 0.6) 0%, rgb(9 12 18 / 0) 60%),
+		linear-gradient(180deg, #0c1120 0%, #090c12 46%, #06080c 100%);
+	opacity: 1;
+	transition: opacity 900ms var(--ease-standard);
+	will-change: opacity;
+}
+
+:root.js .pf-overture.is-dismissed {
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* Once retired by the controller, the overture is fully removed from the layout/compositor — the `:root.js`
+   display rule above out-specifies the UA `[hidden]{display:none}`, so this restores it. */
+:root.js .pf-overture[hidden] {
+	display: none;
+}
+
+.pf-overture__inner {
+	text-align: center;
+	padding-inline: 1.5rem;
+	transform: translateY(-3vh);
+}
+
+.pf-overture__brand {
+	font-family: var(--font-display);
+	font-weight: var(--fw-display);
+	font-size: clamp(2rem, 1.2rem + 3.4vw, 3.4rem);
+	letter-spacing: var(--ls-heading);
+	color: var(--color-text);
+	margin: 0;
+	transition:
+		transform 900ms var(--ease-standard),
+		opacity 700ms var(--ease-standard);
+}
+
+.pf-overture__eyebrow {
+	font-size: var(--fs-eyebrow);
+	text-transform: uppercase;
+	letter-spacing: 0.34em;
+	color: var(--color-text-muted);
+	margin: 0.6rem 0 0;
+	padding-left: 0.34em; /* optical: balance the wide tracking */
+}
+
+.pf-overture__work {
+	font-size: var(--fs-body-sm);
+	text-transform: uppercase;
+	letter-spacing: 0.42em;
+	color: var(--color-text-secondary);
+	margin: 2rem 0 0;
+	padding-left: 0.42em;
+}
+
+/* THE LINE OF LIGHT — loading, felt as a hairline drawing to full. `--pf-load` is written by the intro
+   controller from real decode progress; the fill is a champagne-gold seam, the site's one elevated accent.
+   There is no spinner, bar or percentage — the light IS the progress. */
+.pf-overture__line {
+	display: block;
+	width: min(46vw, 15rem);
+	height: 1px;
+	margin: 1.5rem auto 0;
+	background: var(--color-border);
+	overflow: hidden;
+}
+
+.pf-overture__line-fill {
+	display: block;
+	height: 100%;
+	width: 100%;
+	transform: scaleX(var(--pf-load, 0.06));
+	transform-origin: left center;
+	background: linear-gradient(90deg, rgb(199 165 106 / 0.3), var(--color-accent-strong));
+	transition: transform 500ms var(--ease-standard);
+}
+
+/* The brand recedes a touch as the curtain lifts, so the dissolve has direction. */
+:root.js .pf-overture.is-dismissed .pf-overture__brand {
+	transform: translateY(-8px);
+	opacity: 0.85;
+}
+
+/* ============================================================================================
+ * 6. CHROME REVEAL — held until the world has emerged (Phase 4, D-74)
+ * ============================================================================================
+ * Until the intro controller adds `is-revealed`, the opening lead, wayfinding marker, world-title beat and
+ * scroll hint are held at 0 so they never pop in DURING the coil's emergence. Scoped to the pre-reveal
+ * window with `:not(.is-revealed)`, so once revealed the normal rules (and their own transitions, and the
+ * `.is-gone` recede-on-scroll) govern untouched. Under reduced motion the coil never activates, so this
+ * never applies and nothing is hidden. */
+.tv[data-tv-active]:not(.is-revealed) .pf-intro,
+.tv[data-tv-active]:not(.is-revealed) .pf-wayfind,
+.tv[data-tv-active]:not(.is-revealed) .pf-veil,
+.tv[data-tv-active]:not(.is-revealed) .pf-beat {
+	opacity: 0 !important;
+	transition: none !important;
+}
+
+/* The veil eases in gently once the world has arrived, so the overture is not read against a hard field.
+   (The opening lead has its own transition; the beat is driven by its own controller; the marker is held
+   back entirely until the visitor travels — see 3b.) */
+.tv[data-tv-active].is-revealed .pf-veil {
+	transition: opacity 800ms var(--ease-standard) 160ms;
+}
+
+/* ============================================================================================
+ * 4. RESPONSIVE + REDUCED MOTION
+ * ============================================================================================ */
+
+@media (max-width: 40rem) {
+	.pf-wayfind__panel {
+		min-width: 14rem;
+	}
+	.tv[data-tv-active] .pf-beat {
+		top: clamp(4.25rem, 11vh, 6rem);
+	}
+	.pf-beat__name {
+		font-size: var(--fs-h4);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	/* The coil never activates under reduced motion, so none of the enhanced chrome shows. These are the
+	   belt-and-braces guarantees that nothing here can move even if a future change surfaces it. */
+	.pf-intro,
+	.pf-beat,
+	.pf-veil {
+		transition: none !important;
+	}
+	/* The premium entrance is skipped entirely: the overture never shows and the coil never emerges, so the
+	   visitor lands directly on the accessible chaptered document. */
+	:root.js .pf-overture {
+		display: none !important;
+	}
+	.tv.is-emerging .tv-field {
+		animation: none !important;
+	}
+	/* The world never activates under reduced motion (the coil does not mount, so .tv-sky is display:none);
+	   this is the belt-and-braces guarantee that its autonomous light-breath can never run even if a future
+	   change surfaces the layer. */
+	.tv-sky__breath,
+	.tv-sky__haze {
+		animation: none !important;
+	}
+	.pf-beat__seam {
+		transition: none !important;
+	}
+}

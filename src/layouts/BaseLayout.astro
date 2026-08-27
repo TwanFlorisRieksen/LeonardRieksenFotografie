@@ -1,7 +1,12 @@
 ---
+import { getImage } from 'astro:assets';
 import { pageTitle, canonicalURL, SITE_NAME } from '../lib/seo';
+import { pageSchema } from '../lib/schema';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import BackToTop from '../components/BackToTop.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
+import shareFallback from '../assets/static/hero.jpeg';
 import '../styles/global.css';
 
 interface Props {
@@ -21,15 +26,56 @@ interface Props {
 	 * without a hero-behind-header layout leave this false and keep the solid in-flow header.
 	 */
 	heroHeader?: boolean;
+	/** Visible ancestor trail for BreadcrumbList — pass it only when the page actually shows that trail. */
+	breadcrumb?: { name: string; path: string }[];
+	/** Extra truthful JSON-LD nodes for this page type (a Service, an ImageObject…). See lib/schema.ts. */
+	schemaNodes?: Record<string, unknown>[];
 }
 
-const { title, description, socialImage, noindex = false, bodyClass, heroHeader = false } = Astro.props;
+const {
+	title,
+	description,
+	socialImage,
+	noindex = false,
+	bodyClass,
+	heroHeader = false,
+	breadcrumb,
+	schemaNodes,
+} = Astro.props;
 const canonical = canonicalURL(Astro.site, Astro.url);
+
+/*
+ * SHARE IMAGE (SEO-06). Eight routes previously emitted no og:image at all — a link to /contact/,
+ * /over-mij/, /diensten/ or the portfolio shared into a message rendered as a bare grey card, on a site
+ * whose entire product is photography. Pages with a genuinely representative photograph still pass their
+ * own; the rest now fall back to the homepage hero, which is a real Leo Rieksen photograph and the image
+ * the brand is already introduced by. Always an optimised derivative, never the source master (PH-08).
+ */
+const shareDerivative = await getImage({ src: shareFallback, width: 1200, format: 'jpeg' });
 // OG spec requires an absolute image URL; page authors may pass either a relative build path or
 // an already-absolute URL, so resolve defensively rather than assuming.
-const absoluteSocialImage = socialImage
-	? new URL(socialImage, Astro.site ?? Astro.url).toString()
-	: undefined;
+const absoluteSocialImage = new URL(
+	socialImage ?? shareDerivative.src,
+	Astro.site ?? Astro.url,
+).toString();
+
+/*
+ * STRUCTURED DATA (SEO-09). One graph per page, built from facts the page already publishes — see
+ * lib/schema.ts for what is deliberately NOT claimed. Emitted server-side as a single inert
+ * <script type="application/ld+json">: no library, no runtime cost, nothing for the browser to execute.
+ * Suppressed on noindex pages, which by definition are not being described to anyone.
+ */
+const jsonLd = noindex
+	? null
+	: pageSchema({
+			site: Astro.site ?? new URL(Astro.url.origin),
+			canonical,
+			title,
+			description,
+			image: absoluteSocialImage,
+			breadcrumb,
+			extra: schemaNodes,
+		});
 ---
 
 <!doctype html>
@@ -45,12 +91,36 @@ const absoluteSocialImage = socialImage
 		<script is:inline>
 			document.documentElement.classList.add('js');
 		</script>
+		{/*
+		  FAVICON (P12 / D-84). This document declared NO icon at all: the Astro starter's `favicon.svg` and a
+		  655-byte PNG mis-named `favicon.ico` were still in public/, and every browser fell back to that .ico
+		  by path convention — the site shipped a starter icon in every tab. Both starter files are deleted.
+		  `/favicon.ico` is now a real multi-size ICO (16/32/48, PNG payloads) carrying the LRF monogram on the
+		  site's own chrome sapphire: the mark is a near-white hairline lockup on transparency and needs a
+		  ground, or it is invisible against a light tab strip. The 16px entry drops the gold rule and draws the
+		  monogram larger — the difference between three legible letters and a smudge. Declared explicitly
+		  rather than left to the path convention. See scripts/make-brand-assets.mjs.
+		*/}
+		<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<title>{pageTitle(title)}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
 		{noindex && <meta name="robots" content="noindex, nofollow" />}
 
-		<!-- Preload the two critical font faces (Archivo display-600 + Instrument Sans 400) to cut first-paint swap (PERF-07). -->
+		<!--
+			Preload the THREE faces that are actually used above the fold, and no more (PERF-07; the blueprint's
+			warning that excessive preload lengthens the critical path is why this is a measured list, not the
+			whole family). Measured on the homepage's first screen: Archivo 600 (the headline), Instrument Sans
+			400 (the lede) and Instrument Sans 600 (the nav, the eyebrow, the call to action). Archivo 500 and
+			Instrument Sans 500 appear only further down and stay in the second wave.
+
+			P9 (D-80) added Instrument Sans 600. Before it, the interface type on every page — nav, buttons,
+			eyebrows — was discovered only after BaseLayout.css had parsed and landed ~740 ms AFTER first paint,
+			so the chrome visibly reset from the fallback grotesque a beat late on every first visit. 17 KB in
+			the first round-trip buys that back, and with the immutable font caching in netlify.toml it is paid
+			exactly once.
+		-->
 		<link
 			rel="preload"
 			href="/fonts/archivo-latin-600-normal.woff2"
@@ -65,23 +135,48 @@ const absoluteSocialImage = socialImage
 			type="font/woff2"
 			crossorigin
 		/>
+		<link
+			rel="preload"
+			href="/fonts/instrument-sans-latin-600-normal.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
 
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content={SITE_NAME} />
+		<meta property="og:locale" content="nl_NL" />
 		<meta property="og:title" content={pageTitle(title)} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonical} />
-		{absoluteSocialImage && <meta property="og:image" content={absoluteSocialImage} />}
+		<meta property="og:image" content={absoluteSocialImage} />
+		<meta property="og:image:alt" content={description} />
+		{/* Twitter/X reads og:* for title, description and image, but it needs the card TYPE stated or a
+		    shared link renders with no preview at all — the one tag that decides whether a shared page shows
+		    a photograph. `summary_large_image` because the payload here is always a photograph. */}
+		<meta name="twitter:card" content="summary_large_image" />
+
+		{jsonLd && <script type="application/ld+json" is:inline set:html={jsonLd} />}
 
 		<meta name="generator" content={Astro.generator} />
 	</head>
 	<body class:list={[bodyClass, { 'has-hero-header': heroHeader }]}>
 		<a class="skip-link" href="#main-content">Direct naar inhoud</a>
+		<!-- Consent layer (P11 / D-82). Placed here, directly after the skip link and BEFORE the header, so a
+		     screen-reader or keyboard visitor meets the cookie choice near the start of the page instead of
+		     after every link on it. It renders as a fixed bar at the bottom edge and is `hidden` until the
+		     runtime establishes that no decision has been stored — so it never flashes for a returning
+		     visitor and never appears at all without JavaScript (where no analytics can run anyway). It is
+		     not a modal: nothing is trapped, nothing is locked, the page stays fully usable behind it. -->
+		<ConsentBanner />
 		<SiteHeader transparent={heroHeader} />
 		<main id="main-content">
 			<slot />
 		</main>
 		<SiteFooter />
+		<!-- "Terug naar boven" (P8.5 / D-76). Placed last in the body so it is the final element in the tab
+		     order and can never be reached before the page's own content. See BackToTop.astro. -->
+		<BackToTop />
 
 		<!-- Scroll-reveal observer (P4 signature motion, D-19). Progressive enhancement: reveals `.u-inview`
 		     beats as they enter the viewport. Content is already visible without this (no-JS) and for
@@ -110,6 +205,26 @@ const absoluteSocialImage = socialImage
 				);
 				els.forEach(function (el) {
 					io.observe(el);
+				});
+			})();
+		</script>
+
+		<!-- Photo protection is intentionally scoped to photo surfaces. It blocks common context-menu,
+		     drag and text-selection save gestures while leaving page selection, native scrolling, links and
+		     the no-JS/lightbox fallbacks intact. It is a deterrent only; screenshots and determined extraction
+		     cannot be prevented by a website. -->
+		<script is:inline>
+			(function () {
+				var selector = '[data-photo-protected]';
+				['contextmenu', 'dragstart', 'selectstart'].forEach(function (type) {
+					document.addEventListener(
+						type,
+						function (event) {
+							var target = event.target;
+							if (target instanceof Element && target.closest(selector)) event.preventDefault();
+						},
+						true,
+					);
 				});
 			})();
 		</script>

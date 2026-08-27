@@ -1,0 +1,61 @@
+---
+import Icon from './Icon.astro';
+import { SOCIAL_LINKS } from '../lib/social';
+
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<nav class:list={['social-links', className]} aria-label="Sociale media">
+	<p class="t-eyebrow social-links__label">Sociale media</p>
+	<ul class="social-links__list">
+		{SOCIAL_LINKS.map((social) => (
+			<li>
+				<a
+					class="social-links__link"
+					href={social.href}
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label={social.label}
+				>
+					<Icon name={social.icon} size={19} />
+				</a>
+			</li>
+		))}
+	</ul>
+</nav>
+
+<style>
+	.social-links__label {
+		margin-bottom: var(--space-sm);
+	}
+	.social-links {
+		margin-top: var(--space-lg);
+	}
+	.social-links__list {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+	.social-links__link {
+		display: inline-grid;
+		place-items: center;
+		width: 2.75rem;
+		height: 2.75rem;
+		color: var(--color-text-secondary);
+		border: 1px solid var(--color-border);
+		border-radius: 50%;
+		transition: color var(--dur-interaction) var(--ease-standard),
+			border-color var(--dur-interaction) var(--ease-standard),
+			background-color var(--dur-interaction) var(--ease-standard);
+	}
+	.social-links__link:hover,
+	.social-links__link:focus-visible {
+		color: var(--color-text);
+		border-color: var(--color-accent-hairline);
+		background: rgba(var(--p-atmos-cool), 0.12);
+	}
+</style>

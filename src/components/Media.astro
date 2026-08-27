@@ -51,7 +51,8 @@ const styleVars = ratio ? `--media-ratio:${ratio};--media-fit:${fit};--media-pos
 ---
 
 <div
-	class:list={['media', { 'media--framed': !!ratio }, className]}
+	class:list={['media', 'media--protected', { 'media--framed': !!ratio }, className]}
+	data-photo-protected
 	style={styleVars}
 	{...rest}
 >
@@ -77,6 +78,17 @@ const styleVars = ratio ? `--media-ratio:${ratio};--media-fit:${fit};--media-pos
 		min-width: 0;
 		min-height: 0;
 		background: var(--color-surface); /* calm holding colour before decode (no flashing skeleton, PH-07) */
+	}
+	/* Discourage the common save gestures without changing native scrolling, keyboard access, or the
+	   lightbox. This is a deterrent for the rendered photograph surface, not a claim that screenshots or
+	   determined extraction are impossible. */
+	.media--protected,
+	.media--protected :global(picture),
+	.media--protected :global(img) {
+		user-select: none;
+		-webkit-user-select: none;
+		-webkit-user-drag: none;
+		-webkit-touch-callout: none;
 	}
 	.media :global(img) {
 		width: 100%;

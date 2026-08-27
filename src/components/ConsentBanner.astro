@@ -1,0 +1,225 @@
+---
+/*
+ * ConsentBanner — the site's cookie/analytics consent layer (P11 / D-82, CONS-01..07).
+ *
+ * ─── WHAT THE LAW ACTUALLY REQUIRES HERE ─────────────────────────────────────────────────────────────
+ * Art. 11.7a Telecommunicatiewet (the Dutch implementation of art. 5(3) ePrivacy) requires prior consent
+ * for storing or reading information on a visitor's device, except where that is strictly necessary to
+ * deliver the service the visitor asked for. Google Analytics is not in that exception, so nothing of it
+ * may run — no script, no request, no cookie — until the visitor has actively said yes. Consent itself is
+ * governed by the AVG: freely given, specific, informed, unambiguous, by an affirmative act (art. 4(11)),
+ * and as easy to withdraw as to give (art. 7(3)). The AP's 2025 enforcement round adds the practical test
+ * this design is built against: REFUSING MUST BE AS EASY AS ACCEPTING, on the same layer, in the same
+ * visual weight.
+ *
+ * ─── HOW THAT SHAPED THE COMPONENT ────────────────────────────────────────────────────────────────────
+ *   · TWO IDENTICAL BUTTONS. "Alleen noodzakelijk" and "Analytics toestaan" are the same element, the same
+ *     size, the same colour, the same border, one tab stop apart. There is no primary variant here on
+ *     purpose: on this site `btn--primary` is a light-filled pill that would out-shout anything beside it,
+ *     and using it for "accept" would be exactly the nudge the AP calls misleading.
+ *   · NO "X". A close control that dismisses without a choice either records nothing (so the banner
+ *     returns, which is worse) or is read as consent (which is unlawful). Both refusal and acceptance are
+ *     one click; there is nothing to escape from.
+ *   · NOT A MODAL. No scrim, no focus trap, no scroll lock — the site stays fully readable and operable
+ *     behind it, which is what "no cookie wall" means in practice. Because it is not a dialog it is not
+ *     announced as one: it is a labelled region, and `role="dialog"` is deliberately NOT used (that would
+ *     promise modal semantics and focus management that do not exist and must not exist here).
+ *   · EARLY IN THE DOM, LOW ON THE SCREEN. It sits directly after the skip link, so a screen-reader or
+ *     keyboard visitor meets the choice near the start of the page rather than after every link on it.
+ *     Visually it is a slim bar at the bottom edge, over the photography rather than across it.
+ *   · RENDERED, NOT BUILT. The markup ships in the HTML with `hidden`; the script only removes the
+ *     attribute. Nothing is constructed at runtime, so there is no layout shift, no flash for a visitor
+ *     who already decided, and the banner cannot appear before its own styles.
+ *
+ * ─── NO-JS ───────────────────────────────────────────────────────────────────────────────────────────
+ * Without JavaScript the banner stays hidden and the analytics tag is never loaded, so there is nothing to
+ * consent to and nothing to ask. That is the honest baseline, not a degraded one.
+ *
+ * The element is always present (even when a decision exists) because it also carries `data-ga-id`, which
+ * is how the runtime learns the measurement ID without hard-coding it in a second place.
+ */
+import { GA_MEASUREMENT_ID, CONSENT_STORAGE_KEY } from '../lib/legal';
+---
+
+<div id="lrf-consent" data-ga-id={GA_MEASUREMENT_ID} data-store-key={CONSENT_STORAGE_KEY}>
+	<section class="consent" aria-labelledby="consent-title" data-consent-banner hidden>
+		<div class="consent__inner">
+			<div class="consent__copy">
+				<h2 class="t-eyebrow t-eyebrow--accent consent__title" id="consent-title">Cookies</h2>
+				<!-- THE FIRST LAYER IS SHORT ON PURPOSE — and it was measured, not guessed. The first draft ran
+				     four sentences and took 327px, 51% of a 320×640 screen: informative, and much too close to
+				     a wall. It must still carry everything an informed choice needs (what is optional, who
+				     processes it, that it is reversible, where the detail is), so it was compressed rather than
+				     trimmed of substance, and the detail moved one click away to /cookies/. -->
+				<p class="consent__text">
+					Deze website plaatst alleen wat nodig is om te werken. Met uw toestemming meet ik daarnaast
+					bezoekstatistieken met Google Analytics. U kunt uw keuze altijd wijzigen.{' '}
+					<a href="/cookies/">Wat wordt er opgeslagen?</a>
+				</p>
+			</div>
+			<div class="consent__actions">
+				<button type="button" class="consent__btn" data-consent-decline>Alleen noodzakelijk</button>
+				<button type="button" class="consent__btn" data-consent-accept>Analytics toestaan</button>
+			</div>
+		</div>
+	</section>
+</div>
+
+<script>
+	/*
+	 * The consent runtime. One bundled module, shared by every route, ~2 KB — deliberately not a consent
+	 * management platform: the site has exactly one optional technology, and a CMP would be more code,
+	 * more third-party requests and more data processing than the thing it governs (§15, blueprint 2.34.3).
+	 *
+	 * It owns three things and nothing else:
+	 *   1. the stored decision (localStorage, the visitor's own choice — strictly necessary, so it needs no
+	 *      consent of its own);
+	 *   2. loading and configuring gtag.js, but only after an affirmative choice (Google's BASIC consent
+	 *      mode: "Google tags blocked until consent is granted", no cookieless pings, no modelling — the
+	 *      privacy-conservative option, chosen over Advanced deliberately);
+	 *   3. telling the rest of the page what the current state is, via a `lrf:consent` event, so the
+	 *      preference panel on /cookies/ never has to duplicate any of this.
+	 */
+	import { initConsent } from '../scripts/consent.js';
+	initConsent();
+</script>
+
+<style>
+	/* ============================================================= *
+	 * The bar. Built from the site's own chrome material (the header/footer family), so it reads as part
+	 * of the interface rather than as a third-party overlay. No gold fill — gold appears only as the
+	 * hairline datum along the top edge and in the eyebrow, exactly as everywhere else (VIS-05).
+	 * ============================================================= */
+	.consent {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: var(--z-overlay);
+		background: var(--grad-chrome-footer);
+		border-top: 1px solid transparent;
+		/* The site's recurring champagne hairline as the bar's own top edge, painted over the border box so
+		   it is one continuous line rather than a border colour approximating one. */
+		background-image: var(--grad-datum), var(--grad-chrome-footer);
+		background-size: 100% 1px, 100% 100%;
+		background-position: 0 0, 0 0;
+		background-repeat: no-repeat, no-repeat;
+		box-shadow: var(--shadow-overlay);
+	}
+	.consent[hidden] {
+		display: none;
+	}
+	.consent__inner {
+		width: 100%;
+		max-width: var(--container-max);
+		margin-inline: auto;
+		padding: var(--space-lg) var(--gutter);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-md) var(--space-xl);
+	}
+	.consent__copy {
+		flex: 1 1 26rem;
+	}
+	.consent__title {
+		display: block;
+		margin-bottom: var(--space-2xs);
+	}
+	.consent__text {
+		font-size: var(--fs-body-sm);
+		line-height: var(--lh-snug);
+		color: var(--color-text-secondary);
+		max-width: 62ch;
+	}
+	.consent__text a {
+		color: var(--color-interactive);
+		text-decoration: underline;
+		text-decoration-color: color-mix(in srgb, var(--color-interactive) 45%, transparent);
+		text-underline-offset: 0.18em;
+		transition: color var(--dur-interaction) var(--ease-standard),
+			text-decoration-color var(--dur-interaction) var(--ease-standard);
+	}
+	.consent__text a:hover {
+		color: var(--color-interactive-hover);
+		text-decoration-color: currentColor;
+	}
+
+	/* THE TWO BUTTONS ARE ONE STYLE. Any difference between them — fill, size, order emphasis, colour — is
+	   the thing the AP calls a misleading banner, so there is only one rule and both use it. */
+	.consent__actions {
+		flex: 0 1 auto;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+	}
+	.consent__btn {
+		flex: 1 1 auto;
+		/* 44px minimum target on touch (A11Y: pointer target size). */
+		min-height: 2.875rem;
+		padding: 0.6rem 1.4rem;
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--color-text);
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-semibold);
+		white-space: nowrap;
+		transition: border-color var(--dur-interaction) var(--ease-standard),
+			background-color var(--dur-interaction) var(--ease-standard);
+	}
+	.consent__btn:hover {
+		border-color: var(--color-accent);
+		background: rgba(var(--p-atmos-cool), 0.1);
+	}
+
+	/* Entrance: a short rise, and only where motion is welcome. Reduced-motion visitors get the bar in its
+	   final position with no movement at all — a consent choice is not a place to spend a motion budget. */
+	@media (prefers-reduced-motion: no-preference) {
+		.consent {
+			animation: consent-rise var(--dur-component) var(--ease-standard) both;
+		}
+		@keyframes consent-rise {
+			from {
+				opacity: 0;
+				transform: translateY(0.75rem);
+			}
+			to {
+				opacity: 1;
+				transform: none;
+			}
+		}
+	}
+
+	@media (max-width: 48rem) {
+		.consent__inner {
+			padding-block: var(--space-md);
+			gap: var(--space-md);
+		}
+		.consent__actions {
+			width: 100%;
+		}
+		/* THE TWO BUTTONS SHARE ONE ROW DOWN TO 320px. Stacked, they cost a whole extra button of height on
+		   the smallest screens — and on a fixed bottom bar that is the difference between a strip and a wall.
+		   `white-space: nowrap` was what forced the stack: it makes each button's min-content width its full
+		   label, so the row could not fit two. Letting the label wrap instead costs one extra line of text
+		   and saves ~50px of bar. `flex: 1 1 0` + `min-width: 0` keeps them exactly equal in width — which is
+		   also the AP's equal-prominence requirement, now enforced by the layout rather than by the copy
+		   happening to be the same length. */
+		.consent__btn {
+			flex: 1 1 0;
+			min-width: 0;
+			white-space: normal;
+			line-height: var(--lh-snug);
+			padding-inline: var(--space-sm);
+		}
+	}
+	/* Small phones: the copy is the remaining height. One step down in size with the same leading keeps it
+	   fully legible (14px is above the "tiny luxury" floor this system rejects) and buys back two lines. */
+	@media (max-width: 26rem) {
+		.consent__text {
+			font-size: 0.875rem;
+		}
+	}
+</style>

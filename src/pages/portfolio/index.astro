@@ -1,560 +1,436 @@
 ---
 /*
- * Portfolio overview — the chaptered index (P6 recovery #2 — D-35).
+ * PORTFOLIO, DE DOORTOCHT (the spatial traverse), travelled as THREE WORLDS (Phase 3, D-73).
  *
- * Not a 35-screen photo stack (the rejected D-34 exhibition) and not an equal grid. A scannable INDEX
- * organised into truthful chapters — Projecten, then the two disciplines Architectuur & Interieur — each on
- * its own tonal surface with a gold-seam header and a restrained atmosphere field, so the site's established
- * nocturne identity (D-10/D-25/D-29) finally carries into the portfolio. Projects are a distinct project
- * index (cover cards with metadata); loose works are laid out as justified rows (whole images, no crop, many
- * per screen) punctuated by occasional full-width feature anchors. The lightbox remains the enlarged-view
- * mode; the overview stays an overview. Every one of the 74 authorised photographs remains discoverable
- * (all works fall into their category chapter; all projects appear in the index — see lib/portfolio.ts).
+ * The Interaction Engine (the coil, camera, physics, reading moment, D-65→D-72) is the FROZEN foundation
+ * and is untouched here. Phase 3 is INTEGRATION: it gives the traverse the structure, categories, brand
+ * identity and wayfinding of a finished portfolio, entirely in a chrome layer OVER the coil and in the
+ * accessible document BENEATH it, never as objects inside the world (the coil's one rule: photographs and
+ * nothing else). See documenten/DECISIONS.md D-73.
+ *
+ * THREE WORLDS. getContinuum() now returns the works in THREE CONTIGUOUS worlds, Projecten, Architectuur,
+ * Interieur, plus their boundaries. Each world is one unbroken stretch of the coil, so the visitor enters
+ * it; the boundary is a gradient (the wayfinding text changes and the ambient tint eases cool→warm), never
+ * a cut (Experience Architecture §4.1/§4.2). Categories are STRUCTURAL, not a filter widget (§5.1, 13.27/28).
+ *
+ * THE PROGRESSIVE-ENHANCEMENT TRUTH is the document below, deliberately complete on its own: three real
+ * <section> chapters, each with a heading + count, every work server-rendered in curatorial order with real
+ * alt text and a real optimised derivative. Series carry a real href to their project page; loose works
+ * carry a real lightbox anchor that, without JavaScript, simply opens the optimised derivative (blueprint
+ * 8.22 / §16.3). Without JS or under reduced motion the three headed chapters ARE the wayfinding; the chrome
+ * overlay (marker, world-title beats, scroll hint, ambient tint) only appears once the coil is active.
+ *
+ * THE LIGHTBOX is supplementary (§4.4): the scrollable coil is the primary portfolio. It intercepts the
+ * loose-work anchors; series works navigate to their richer project pages.
  */
-import { getOverview } from '../../lib/portfolio';
+import { getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Section from '../../components/Section.astro';
 import Media from '../../components/Media.astro';
-import PhotoFrame from '../../components/PhotoFrame.astro';
 import Lightbox from '../../components/Lightbox.astro';
 import ContactCta from '../../components/ContactCta.astro';
+import { getContinuum } from '../../lib/portfolio';
+import '../../styles/traverse.css';
+import '../../styles/portfolio-chrome.css';
 
-const { projects, chapters, total, workCount, seriesCount } = await getOverview();
-const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
-const LB = 'portfolio';
-const arch = chapters.find((c) => c.id === 'architectuur')!;
-const inter = chapters.find((c) => c.id === 'interieur')!;
+const { items, worlds } = await getContinuum();
 
-// Only the very first photograph (the first project cover) is the LCP candidate.
-let prioritySpent = false;
-const takePriority = () => {
-	if (prioritySpent) return false;
-	prioritySpent = true;
-	return true;
-};
+/* Per-world slices for the baseline chapters. The flat `items` order is unchanged (series → architectuur →
+   interieur), so the runtime's work indices line up exactly with each world's `start` boundary. */
+const worldSlices = worlds.map((w) => ({ world: w, works: items.slice(w.start, w.start + w.count) }));
+
+/*
+ * LIGHTBOX DERIVATIVES for the loose works. One large AVIF derivative per loose work (WebP until P9/D-80
+ * see PhotoFrame.astro for the measurement; ~56 KB against ~125 KB for the same 1700px photograph), the same optimised
+ * derivative PhotoFrame uses (capped to the source width by astro:assets, so no upscaling, PH-08). Series
+ * works navigate to their project page instead and get no lightbox anchor. Anchors do not preload, so these
+ * add nothing to initial page weight; they are fetched only when a visitor opens the near plane.
+ */
+const fulls = new Map<(typeof items)[number], string>();
+for (const it of items) {
+	if (!it.href) {
+		const f = await getImage({ src: it.image, width: Math.min(it.image.width, 1700), format: 'avif' });
+		fulls.set(it, f.src);
+	}
+}
+
+/* LEAD-INS, a handful of works sampled from LATER in the sequence, cloned ABOVE the crown so the coil
+   reads as an object that already exists rather than one that begins from nothing (owner, Phase 2.3).
+   They are decorative: aria-hidden, unfocusable, no caption, no link, and hidden entirely without JS
+   (see .tv-lead in traverse.css). The runtime places them at negative ribbon angle; they never touch the
+   journey, keyboard order, the geometry report or any world boundary. */
+const N = items.length;
+const leadItems = [0.44, 0.52, 0.6, 0.68, 0.76, 0.84, 0.9]
+	.map((f) => items[Math.round((N - 1) * f)])
+	.filter(Boolean);
+
+/* THIS `sizes` DESCRIBES THE NO-JS DOCUMENT, NOT THE COIL. The server-rendered page is a single column of
+   whole photographs at `min(100%, 62rem)` (see traverse.css). The runtime rewrites `sizes` from the actual
+   coil geometry the moment it measures (see traverse.js), so both layouts get a truthful hint. */
+const SIZES = '(max-width: 68rem) 92vw, 62rem';
 ---
 
 <BaseLayout
 	title="Portfolio"
-	description="Het portfolio van Leonard Rieksen Fotografie — architectuur- en interieurfotografie, geordend in projecten en losse werken, van complete reeksen tot losse beelden."
+	description="Het portfolio van Leonard Rieksen Fotografie, architectuur- en interieurfotografie, van complete reeksen tot losse beelden, als één doorlopende doortocht door het werk in drie werelden: Projecten, Architectuur en Interieur."
+	bodyClass="is-portfolio"
 >
-	<!-- ===================== MASTHEAD ===================== -->
-	<header class="pf-intro u-container">
-		<p class="t-eyebrow t-eyebrow--accent">Architectuur- &amp; interieurfotografie</p>
-		<h1 class="t-display pf-intro__title">Portfolio</h1>
-		<p class="t-lead pf-intro__lead">
-			Het werk in drie hoofdstukken: complete <strong>projecten</strong>, en losse werken in{' '}
-			<strong>architectuur</strong> en <strong>interieur</strong>. Klik op een beeld om het schermvullend
-			te bekijken; open een project voor het hele verhaal.
-		</p>
-		<nav class="pf-jump" aria-label="Naar hoofdstuk">
-			<a href="#projecten">Projecten <span aria-hidden="true">{seriesCount}</span></a>
-			<a href="#architectuur">Architectuur <span aria-hidden="true">{arch.count}</span></a>
-			<a href="#interieur">Interieur <span aria-hidden="true">{inter.count}</span></a>
-		</nav>
-	</header>
-
-	<!-- ===================== CHAPTER 1 · PROJECTEN ===================== -->
-	<Section as="section" surface="deep" width="wide" id="projecten" class="pf-chapter pf-chapter--projects">
-		<div class="ch-head">
-			<div class="ch-head__text">
-				<p class="t-eyebrow t-eyebrow--accent">Hoofdstuk 01</p>
-				<h2 class="t-h2 ch-head__title">Projecten</h2>
-				<p class="ch-head__note t-secondary">
-					Complete reeksen — elk gebouw of interieur als geheel gefotografeerd.
-				</p>
+	<div class="tv" data-tv-root>
+		<!-- THE OVERTURE (Phase 4, D-74). The premium entrance: a full-bleed brand curtain that holds while
+		     the crown imagery decodes, then dissolves as the coil resolves into focus beneath it. Shown ONLY
+		     with JS enabled (html.js) and NOT under reduced motion, so no-JS never sees a stuck curtain and
+		     reduced motion goes straight to the accessible document. Decorative (aria-hidden, unfocusable):
+		     the real H1 + three chapters live beneath it. Loading is felt, not bureaucratic, the hairline of
+		     light draws to full as the world becomes ready; there is no spinner, bar or percentage. -->
+		<div class="pf-overture" data-pf-overture aria-hidden="true">
+			<div class="pf-overture__inner">
+				<p class="pf-overture__brand">Leonard&nbsp;Rieksen</p>
+				<p class="pf-overture__eyebrow">Fotografie</p>
+				<p class="pf-overture__work">Portfolio</p>
+				<span class="pf-overture__line">
+					<span class="pf-overture__line-fill" data-pf-load-fill></span>
+				</span>
 			</div>
-			<p class="ch-head__count t-caption">{seriesCount} projecten</p>
 		</div>
 
-		<ul class="pf-projects">
-			{
-				projects.map((p) => (
-					<li class="pf-project u-inview">
-						<a class="pf-project__link" href={`/portfolio/${p.id}/`}>
-							<Media
-								src={p.data.coverImage}
-								alt={p.data.coverImageAlt}
-								widths={[400, 640, 900]}
-								sizes="(min-width: 60rem) 30vw, (min-width: 40rem) 46vw, 92vw"
-								ratio="3/2"
-								priority={takePriority()}
-								class="pf-project__media"
-							/>
-							<div class="pf-project__body">
-								<p class="t-eyebrow pf-project__meta">
-									{categoryLabel[p.data.category]}
-									{p.data.location && <> &middot; {p.data.location}</>}
-									{p.data.year && <> &middot; {p.data.year}</>}
+		<!-- The scroll spacer: real page height, real scrollbar, real native paging. The runtime sets its
+		     height from the number of works, so the scrollbar is honest about how much work remains. -->
+		<div class="tv-scroll" data-tv-scroll aria-hidden="true"></div>
+
+		<!-- THE OVERTURE VEIL (P8.7 / D-78). The owner on the opening: "het is heel druk, heel veel
+		     verschillende dingen, je raakt er bijna van in paniek, op mobiel is het al helemaal een drama."
+		     The cause is arrival order: the D-74 entrance resolves the coil FULLY and then puts the brand
+		     overture on top of it, so the first thing the visitor meets is a finished 3D world of ~14
+		     photographs AND a title AND a lede AND a wayfinding marker, all at once and all at full strength.
+		     Nothing there is wrong on its own; there is simply no first beat.
+		     This is that beat: a calm field over the coil while the overture is being read, so the world is
+		     PRESENT but not yet the subject, you can see there is something there, and you are not asked to
+		     look at it yet. It lifts on the same signal the overture leaves on (the first real travel), which
+		     means it costs the reader nothing: one scroll and the world is theirs. Purely presentational and
+		     `aria-hidden`; it never gates content, and under reduced motion / no-JS the coil is not mounted at
+		     all, so it never appears. -->
+		<div class="pf-veil" data-pf-veil aria-hidden="true"></div>
+
+		<!-- THE OPENING (§3.1). In the baseline document this is the page heading + a quiet lead. Under the
+		     active coil it becomes the opening overlay at the crown and fades as the visitor descends, the
+		     "shape of the collection", stated once, quietly. The h1 stays for SEO/screen readers either way. -->
+		<header class="pf-intro" data-pf-intro>
+			<p class="pf-intro__eyebrow">Leonard Rieksen Fotografie</p>
+			<h1 class="pf-intro__title">Portfolio</h1>
+			<p class="pf-intro__lead">
+				Een doorlopende reis door het werk van Leo Rieksen, architectuur en interieur, van complete
+				reeksen tot losse beelden.
+			</p>
+		</header>
+
+		<div class="tv-viewport">
+			<!-- THE WORLD BEHIND THE COIL (Fase 5, D-75). A modelled blue-hour space, a stack of pre-painted
+			     gradient layers whose OPACITY the chrome controller cross-fades along the journey (blue hour →
+			     deep nocturne → warm interior), plus a slow, light-only breath. It lives BEHIND the ribbon (the
+			     works are opaque and painted on top) and shows only in the negative space, so it can never fall
+			     on a photograph (§6.16, the coil's one rule). Decorative and absent from the accessible document:
+			     aria-hidden, and display:none until [data-tv-active] (see portfolio-chrome.css §2). -->
+			<div class="tv-sky" aria-hidden="true">
+				<div class="tv-sky__base"></div>
+				<div class="tv-sky__cool"></div>
+				<div class="tv-sky__warm"></div>
+				<div class="tv-sky__breath"></div>
+				<div class="tv-sky__haze"></div>
+				<div class="tv-sky__vignette"></div>
+			</div>
+			<div class="tv-field" data-tv-stage>
+				{
+					worldSlices.map(({ world, works }) => (
+						<section class="tv-world" data-tv-world={world.id} aria-labelledby={`world-${world.id}`}>
+							{/* Wall text, not a room (§4.2): a quiet typographic chapter opening in the baseline;
+							    hidden under the active coil, where the chrome names the world instead. */}
+							<header class="tv-world__intro">
+								<h2 class="tv-world__title" id={`world-${world.id}`}>
+									{world.label}
+								</h2>
+								<p class="tv-world__meta">
+									<span class="tv-world__count">{world.count}</span>
+									<span class="tv-world__sub">{world.sub}</span>
 								</p>
-								<h3 class="t-h3 pf-project__name">{p.data.title}</h3>
-								<span class="pf-project__cue">
-									{p.data.gallery.length + 1} beelden
-									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
-								</span>
-							</div>
-						</a>
-					</li>
-				))
-			}
-		</ul>
-	</Section>
-
-	<!-- ===================== CHAPTER 2 · ARCHITECTUUR ===================== -->
-	<Section as="section" width="wide" id="architectuur" class="pf-chapter pf-chapter--arch">
-		<div class="ch-head">
-			<div class="ch-head__text">
-				<p class="t-eyebrow t-eyebrow--accent">Hoofdstuk 02</p>
-				<h2 class="t-h2 ch-head__title">Architectuur</h2>
-				<p class="ch-head__note t-secondary">
-					Gebouwen en exterieurs — structuur, proportie, licht en lijn.
-				</p>
-			</div>
-			<p class="ch-head__count t-caption">{arch.count} werken</p>
-		</div>
-
-		<div class="pf-flow">
-			{
-				arch.nodes.map((node) =>
-					node.type === 'anchor' ? (
-						<figure class="pf-anchor u-inview" style={`--ar:${node.item.ar.toFixed(4)}`}>
-							<PhotoFrame
-								image={node.item.image}
-								alt={node.item.alt}
-								caption={node.item.caption}
-								group={LB}
-								widths={[900, 1300, 1700]}
-								sizes="(min-width: 105rem) 1680px, 100vw"
-								mediaClass="pf-anchor__media"
-							/>
-							<figcaption class="pf-anchor__cap">
-								<span class="pf-anchor__label">{categoryLabel[node.item.category]}</span>
-								{node.item.caption && <span class="pf-anchor__text">{node.item.caption}</span>}
-							</figcaption>
-						</figure>
-					) : (
-						<div class="pf-row u-inview">
-							{node.items.map((it) => (
-								<div class="pf-cell" style={`--ar:${it.ar.toFixed(4)}`} data-o={it.orientation}>
-									<PhotoFrame
-										image={it.image}
+							</header>
+							{works.map((it) => {
+								const gi = world.start + works.indexOf(it); // global index → LCP priority for the crown
+								const ar = it.ar || 1.5;
+								const full = fulls.get(it);
+								const isSeries = Boolean(it.href);
+								const media = (
+									<Media
+										src={it.image}
 										alt={it.alt}
-										caption={it.caption}
-										group={LB}
-										widths={[360, 560, 800]}
-										sizes="(min-width: 60rem) 40vw, (min-width: 40rem) 46vw, 92vw"
+										sizes={SIZES}
+										widths={[600, 900, 1300, 1700]}
+										priority={gi < 3}
 									/>
-								</div>
-							))}
-						</div>
-					),
-				)
-			}
-		</div>
-	</Section>
-
-	<!-- ===================== CHAPTER 3 · INTERIEUR ===================== -->
-	<Section as="section" surface="surface" width="wide" id="interieur" class="pf-chapter pf-chapter--int">
-		<div class="ch-head">
-			<div class="ch-head__text">
-				<p class="t-eyebrow t-eyebrow--accent">Hoofdstuk 03</p>
-				<h2 class="t-h2 ch-head__title">Interieur</h2>
-				<p class="ch-head__note t-secondary">Ruimtes waarin sfeer, materiaal en licht samenkomen.</p>
+								);
+								/* PROJECT RECOGNITION (Phase 4, D-74). A SERIES announces itself as enterable, its
+								   title, then a gold hairline that draws in with the caption, then a "reeks"
+								   affordance with an arrow. This is visual hierarchy in the photograph's OWN caption
+								   (title + count), never a button, card or label bolted on: a project arriving at its
+								   reading moment simply reads as "here a body of work begins", where a loose work reads
+								   as one quiet line. A LOOSE work carries a real lightbox anchor (openable without JS);
+								   a SERIES carries a real <a> to its richer project page. */
+								const caption = isSeries ? (
+									<figcaption class="tv-cap tv-cap--series">
+										<span class="tv-cap__title">{it.caption ?? it.label}</span>
+										<span class="tv-cap__rule" aria-hidden="true"></span>
+										<span class="tv-cap__more">
+											{it.label}
+											<span class="tv-cap__arrow" aria-hidden="true">&#8594;</span>
+										</span>
+									</figcaption>
+								) : (
+									<figcaption class="tv-cap">{it.caption ?? it.label}</figcaption>
+								);
+								const inner = (
+									<>
+										{media}
+										{caption}
+									</>
+								);
+								/* Every work is a tab stop. Focusing a work travels the camera to it, so keyboard and
+								   scroll traversal are one journey. */
+								return (
+									<figure
+										class="tv-work"
+										id={`work-${it.id}`}
+										data-tv-work
+										data-world={world.id}
+										data-kind={isSeries ? 'series' : 'work'}
+										data-ar={ar.toFixed(4)}
+									>
+										{isSeries ? (
+											<a href={it.href} class="tv-work__link">
+												{inner}
+											</a>
+										) : (
+											<a
+												href={full}
+												class="tv-work__link"
+												data-lightbox={`pf-${world.id}`}
+												data-lb-full={full}
+												data-lb-w={it.image.width}
+												data-lb-h={it.image.height}
+												data-lb-alt={it.alt}
+												data-lb-caption={it.caption ?? it.label}
+												aria-label={`Bekijk vergroot: ${it.alt}`}
+											>
+												{inner}
+											</a>
+										)}
+									</figure>
+								);
+							})}
+						</section>
+					))
+				}
+				{
+					/* Decorative top-fill; positioned by the runtime at negative ribbon angle, never present
+					   without JavaScript, never part of any world. */
+					leadItems.map((it, li) => {
+						const ar = it.ar || 1.5;
+						/* P12 (D-84): the first three lead-ins are CROWN imagery — they are what fills the top of
+						   the frame at journey 0 — so they carry the same fetch priority as the first works. They
+						   were `priority={false}`, i.e. the last things the browser asked for, which is why the
+						   entrance curtain (which now waits on them) lifted on a coil whose upper half was blank.
+						   The rest stay lazy: they are only reached once the visitor is already travelling. */
+						return (
+							<figure class="tv-work tv-lead" data-tv-lead data-ar={ar.toFixed(4)} aria-hidden="true">
+								<Media src={it.image} alt="" sizes={SIZES} widths={[600, 900]} priority={li < 3} />
+							</figure>
+						);
+					})
+				}
 			</div>
-			<p class="ch-head__count t-caption">{inter.count} werken</p>
 		</div>
 
-		<div class="pf-flow">
-			{
-				inter.nodes.map((node) =>
-					node.type === 'anchor' ? (
-						<figure class="pf-anchor u-inview" style={`--ar:${node.item.ar.toFixed(4)}`}>
-							<PhotoFrame
-								image={node.item.image}
-								alt={node.item.alt}
-								caption={node.item.caption}
-								group={LB}
-								widths={[900, 1300, 1700]}
-								sizes="(min-width: 105rem) 1680px, 100vw"
-								mediaClass="pf-anchor__media"
-							/>
-							<figcaption class="pf-anchor__cap">
-								<span class="pf-anchor__label">{categoryLabel[node.item.category]}</span>
-								{node.item.caption && <span class="pf-anchor__text">{node.item.caption}</span>}
-							</figcaption>
-						</figure>
-					) : (
-						<div class="pf-row u-inview">
-							{node.items.map((it) => (
-								<div class="pf-cell" style={`--ar:${it.ar.toFixed(4)}`} data-o={it.orientation}>
-									<PhotoFrame
-										image={it.image}
-										alt={it.alt}
-										caption={it.caption}
-										group={LB}
-										widths={[360, 560, 800]}
-										sizes="(min-width: 60rem) 40vw, (min-width: 40rem) 46vw, 92vw"
-									/>
-								</div>
-							))}
-						</div>
-					),
-				)
-			}
-		</div>
-	</Section>
+		<!-- ============================================================================================= *
+		     P9 (D-80), IMAGE-DELIVERY DISCIPLINE FOR THE COIL.
 
-	<!-- ===================== OUTRO ===================== -->
-	<div class="pf-outro u-container">
-		<p class="t-caption pf-outro__count">
-			{seriesCount} projecten &middot; {workCount} losse werken &middot; {total} foto's
-		</p>
+		     THE DEFECT. Every panel in the coil is absolutely positioned inside one fixed stage, so its LAYOUT
+		     box sits inside the viewport whatever the camera is doing. Native `loading="lazy"` therefore judged
+		     the entire archive to be in view and fetched it at once, measured on the built site: 47 of the 62
+		     photographs and 3.0 MB on a 1440×900 desktop, 56 and 3.2 MB on a 390pt phone, at scroll position 0,
+		     while the engine was drawing 12–14 of them. And it fetched them at the WRONG SIZE: <Media> renders a
+		     <Picture>, so the browser selects from the first matching <source>, and that <source> carried the
+		     server-rendered `sizes`, which describes the no-JS single column (92vw / 62rem), not the coil, where
+		     a photograph presents at roughly a third of that. A 339px panel was served the 1700w derivative.
+
+		     THE FIX, in one move. This script, deliberately `is:inline` and in parser position, because a module
+		     script is far too late, stashes every coil `srcset` in `data-tv-srcset`. Nothing in the coil is then
+		     fetched from the markup at all. traverse.js measures, writes each work's TRUE presented width to its
+		     <source> elements, and restores the srcset for the works near the camera (CFG.loadAhead), so every
+		     photograph is requested at the right size and only when it is genuinely approaching. The overture
+		     waits on that restored crown instead of on the markup (portfolio-intro.js), so the entrance is
+		     unchanged: the curtain still holds until the crown's photography is decoded.
+
+		     GUARDS. Runs only when JavaScript is live AND motion is welcome, exactly when the coil will mount.
+		     Without JS nothing here executes; under reduced motion it returns before stashing. In both of those
+		     the accessible chaptered column keeps every photograph at the size its own `sizes` describes, which
+		     is why that server-rendered hint stays exactly as it was. A load-time failsafe restores anything
+		     still stashed if the coil never activates, so no runtime failure can cost a photograph. -->
+		<script is:inline>
+			(function () {
+				var root = document.querySelector('[data-tv-root]');
+				if (!root || !document.documentElement.classList.contains('js')) return;
+				if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+				var els = root.querySelectorAll(
+					'[data-tv-work] source[srcset], [data-tv-work] img[srcset], [data-tv-lead] source[srcset], [data-tv-lead] img[srcset]'
+				);
+				for (var i = 0; i < els.length; i++) {
+					var el = els[i];
+					el.setAttribute('data-tv-srcset', el.getAttribute('srcset'));
+					el.removeAttribute('srcset');
+					if (el.tagName === 'IMG') {
+						var src = el.getAttribute('src');
+						if (src) {
+							el.setAttribute('data-tv-src', src);
+							el.removeAttribute('src');
+						}
+					}
+				}
+
+				/* FAILSAFE. If the coil never activates, a runtime error, an environment that refuses the 3D
+				   field, no photograph may stay stashed. One pass shortly after load restores everything the
+				   engine has not already claimed, so the worst case is the previous behaviour, never a gap. */
+				window.setTimeout(function () {
+					if (root.hasAttribute('data-tv-active')) return;
+					var stuck = root.querySelectorAll('[data-tv-srcset]');
+					for (var n = 0; n < stuck.length; n++) {
+						var e = stuck[n];
+						e.setAttribute('srcset', e.getAttribute('data-tv-srcset'));
+						if (e.hasAttribute('data-tv-src')) {
+							e.setAttribute('src', e.getAttribute('data-tv-src'));
+							e.removeAttribute('data-tv-src');
+						}
+						e.removeAttribute('data-tv-srcset');
+					}
+				}, 6000);
+			})();
+		</script>
+
+		<!-- ===================== INTEGRATION CHROME (active coil only) ===================== -->
+		<!-- All of this is hidden until [data-tv-active] (see portfolio-chrome.css): under no-JS and reduced
+		     motion the three headed chapters above are the wayfinding, and none of this exists. -->
+
+		<!-- PERSISTENT WAYFINDING MARKER (§7.2/§7.4): names the current world + position, expandable into a
+		     jump list that reaches any world from anywhere. Static text; only its wording changes. The jump
+		     items are real #work-<id> anchors, so they work natively when the chrome script is not driving. -->
+		<nav class="pf-wayfind" data-pf-wayfind aria-label="Waar je bent in het portfolio">
+			<button
+				type="button"
+				class="pf-wayfind__toggle"
+				data-pf-toggle
+				aria-expanded="false"
+				aria-controls="pf-worlds"
+			>
+				<span class="pf-wayfind__eyebrow">Portfolio</span>
+				<span class="pf-wayfind__now">
+					<span class="pf-wayfind__name" data-pf-now>{worlds[0]?.label}</span>
+					<span class="pf-wayfind__pos" data-pf-pos>1&#8202;/&#8202;{worlds.length}</span>
+				</span>
+				<!-- OVERALL PROGRESS (Phase 4, D-74): a hairline that fills as the visitor descends the whole
+				     coil, a constant, quiet sense of how far the journey has come, without a scrollbar. -->
+				<span class="pf-wayfind__track" aria-hidden="true">
+					<span class="pf-wayfind__track-fill" data-pf-progress-fill></span>
+				</span>
+			</button>
+			<div class="pf-wayfind__panel" id="pf-worlds" data-pf-list hidden>
+				<p class="pf-wayfind__heading">De reis</p>
+				<!-- THE MAP (Phase 4, D-74): the whole coil as three proportional world segments (sized by their
+				     work counts) with a live position node. Click anywhere to travel there instantly, the fast
+				     way across a long collection, and the far-left is the way back to the beginning. Decorative
+				     (aria-hidden): the labelled list below is the exact, keyboard-accessible equivalent. -->
+				<div class="pf-map" data-pf-map aria-hidden="true">
+					<div class="pf-map__track">
+						{
+							worlds.map((w) => (
+								<span class="pf-map__seg" data-pf-seg={w.id} style={`flex-grow:${w.count}`} />
+							))
+						}
+					</div>
+					<span class="pf-map__node" data-pf-node></span>
+				</div>
+				<ul class="pf-wayfind__list">
+					{
+						worlds.map((w, i) => (
+							<li>
+								<a
+									class="pf-jump"
+									href={`#${w.anchorId}`}
+									data-pf-jump={w.id}
+									data-pf-index={w.start}
+									aria-current={i === 0 ? 'true' : undefined}
+								>
+									<span class="pf-jump__label">{w.label}</span>
+									<span class="pf-jump__count">{w.count}</span>
+									<span class="pf-jump__sub">{w.sub}</span>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</nav>
+
+		<!-- WORLD-TITLE BEAT: eases in briefly when the visitor enters a world, then fades, "je komt een
+		     nieuwe wereld binnen", typographic. aria-hidden: the wayfinding nav and headings carry it for AT. -->
+		<div class="pf-beat" data-pf-beat aria-hidden="true">
+			<span class="pf-beat__name" data-pf-beat-name></span>
+			<!-- A gold hairline that draws as you cross into a new world (Fase 5, D-75), the site's seam-gold
+			     detail language marking each transition, never a fill or a heading. -->
+			<span class="pf-beat__seam"></span>
+			<span class="pf-beat__sub" data-pf-beat-sub></span>
+		</div>
+
+		<!-- THE SCROLL HINT IS GONE (P8.7 / D-78). It existed because "the coil fills upward, so which way is
+		     not obvious", but the coil now DESCENDS BY ITSELF when the reader is idle (the D-72 auto-drift),
+		     so the world states the direction by moving in it. A label telling you to do what the page is
+		     already visibly doing is one more thing on the busiest screen of the site, and the owner's note
+		     ("de aanwijzing om te scrollen kan in ieder geval weg, want hij begint nu automatisch met
+		     scrollen") is exactly right. Removed, not hidden: the markup, the CSS and its listeners are all
+		     deleted. -->
+
+		<!-- The world boundaries, for the chrome controller. Structural data only (a JSON data island). -->
+		<script type="application/json" data-tv-worlds is:inline set:html={JSON.stringify(worlds)}></script>
 	</div>
 
+	<!-- After the journey: the contact invitation, then the site footer flow in below the fixed coil once the
+	     outro has dissolved it (owner: "de footer hoort NA de reis"). Present without JavaScript too. -->
 	<ContactCta
-		heading="Een gebouw of interieur laten fotograferen?"
-		text="Neem vrijblijvend contact op voor een voorstel op maat — voor architecten, interieurontwerpers, makelaars en bedrijven."
+		heading="Een gebouw dat gefotografeerd wil worden?"
 		primaryLabel="Neem contact op"
 		primaryHref="/contact/"
-		secondaryLabel="Bekijk de diensten"
-		secondaryHref="/diensten/"
 	/>
 
 	<Lightbox />
 </BaseLayout>
 
-<style>
-	/* ============================================================= *
-	 * MASTHEAD — the quiet breath before the chapters. Reuses the homepage "afterglow" mechanism (D-27/D-29):
-	 * a single cool blue-hour wash descending from the top edge, faded to base long before the body copy, so
-	 * the page opens as lit by the same nocturne light as the rest of the site rather than a hard flat cut.
-	 * ============================================================= */
-	.pf-intro {
-		position: relative;
-		padding-top: clamp(2.5rem, 1.5rem + 6vw, 6rem);
-		padding-bottom: clamp(2rem, 1.5rem + 3vw, 3.5rem);
-		background:
-			radial-gradient(
-				128% 60% at 50% -16%,
-				rgba(var(--p-atmos-cool), 0.2) 0%,
-				rgba(var(--p-atmos-cool), 0.06) 42%,
-				rgba(var(--p-atmos-cool), 0) 72%
-			),
-			radial-gradient(
-				46% 32% at 86% -8%,
-				rgba(var(--p-atmos-warm), 0.06) 0%,
-				rgba(var(--p-atmos-warm), 0) 60%
-			);
-	}
-	.pf-intro__title {
-		margin-block: var(--space-sm) var(--space-lg);
-	}
-	.pf-intro__lead {
-		max-width: 56ch;
-	}
-	.pf-intro__lead strong {
-		color: var(--color-text);
-		font-weight: var(--fw-semibold);
-	}
-	/* Chapter jump-nav — plain in-page anchors (work without JS). Restrained chips with a gold hairline. */
-	.pf-jump {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-sm) var(--space-md);
-		margin-top: var(--space-xl);
-	}
-	.pf-jump a {
-		display: inline-flex;
-		align-items: baseline;
-		gap: 0.5em;
-		padding: var(--space-2xs) var(--space-md);
-		font-size: var(--fs-body-sm);
-		font-weight: var(--fw-medium);
-		color: var(--color-text-secondary);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-pill);
-		transition: color var(--dur-interaction) var(--ease-standard),
-			border-color var(--dur-interaction) var(--ease-standard);
-	}
-	.pf-jump a span {
-		font-size: var(--fs-caption);
-		color: var(--color-accent);
-	}
-	.pf-jump a:hover,
-	.pf-jump a:focus-visible {
-		color: var(--color-text);
-		border-color: var(--color-accent-hairline);
-	}
+<script>
+	import { mountTraverse } from '../../scripts/traverse.js';
+	import { mountChrome } from '../../scripts/portfolio-chrome.js';
+	import { mountIntro } from '../../scripts/portfolio-intro.js';
 
-	/* ============================================================= *
-	 * CHAPTERS — each a tonal step with a gold-seam header. The seam (hairline that catches a warm highlight
-	 * + a whisper-soft glow) is the site's one elevated recurring gold material (6.11/6.12, D-25/D-26),
-	 * reused here so the portfolio reads as the same premium system as the homepage.
-	 * ============================================================= */
-	.pf-chapter {
-		scroll-margin-top: var(--space-lg);
-		position: relative;
-		isolation: isolate;
-		overflow-x: clip;
+	const root = document.querySelector('[data-tv-root]');
+	if (root) {
+		// The chrome reads the world from the SAME journey the coil is drawn from, via the runtime's onFrame
+		// seam. Under reduced motion the runtime never mounts, so onFrame never fires and the chrome stays in
+		// its static state (the headed chapters do the wayfinding).
+		const chrome = mountChrome(root);
+		// THE OVERTURE (Phase 4, D-74) gates the engine mount: it holds the brand curtain while the crown
+		// imagery decodes, then reveals the coil emerging into focus. Under reduced motion / no-JS it mounts
+		// immediately (the curtain is CSS-hidden there), so the accessible document is never blocked.
+		mountIntro(root, {
+			mount() {
+				(window as unknown as Record<string, unknown>).__tv = mountTraverse(root, {
+					expose: true,
+					onFrame: chrome.onFrame,
+				});
+			},
+		});
 	}
-	/* Projecten sits on the deepest surface + a modelled atmosphere field (the same signature the homepage's
-	   "geselecteerd werk" chapter uses) so the curated stories read as a distinct dark gallery room. */
-	.pf-chapter--projects::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		background: var(--atmos-signature);
-		pointer-events: none;
-	}
-	/* Architectuur is the base-surface chapter and the tallest — so instead of flat black it gets three
-	   low, well-spaced light pools down its length (cool at the head, a warm echo mid-right, a cool lift at
-	   the foot). Every peak is low-alpha and sits in the row gaps / page margins, always below any adjacent
-	   photograph's luminance (6.16) — the same photography-led modelling the homepage's specialisaties use. */
-	.pf-chapter--arch::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		pointer-events: none;
-		background:
-			radial-gradient(
-				72% 30% at 10% 2%,
-				rgba(var(--p-atmos-cool), 0.14) 0%,
-				rgba(var(--p-atmos-cool), 0) 60%
-			),
-			radial-gradient(
-				70% 26% at 94% 52%,
-				rgba(var(--p-atmos-warm), 0.1) 0%,
-				rgba(var(--p-atmos-warm), 0) 62%
-			),
-			radial-gradient(
-				64% 24% at 16% 100%,
-				rgba(var(--p-atmos-cool), 0.11) 0%,
-				rgba(var(--p-atmos-cool), 0) 64%
-			);
-	}
-	/* Interieur (ink-850 step) gets a quieter two-pool wash so the smallest chapter still has spatial depth. */
-	.pf-chapter--int::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		pointer-events: none;
-		background:
-			radial-gradient(
-				62% 44% at 8% 12%,
-				rgba(var(--p-atmos-cool), 0.14) 0%,
-				rgba(var(--p-atmos-cool), 0) 62%
-			),
-			radial-gradient(
-				66% 48% at 94% 88%,
-				rgba(var(--p-atmos-warm), 0.12) 0%,
-				rgba(var(--p-atmos-warm), 0) 64%
-			);
-	}
-
-	.ch-head {
-		position: relative;
-		isolation: isolate;
-		display: flex;
-		flex-wrap: wrap;
-		align-items: end;
-		justify-content: space-between;
-		gap: var(--space-md) var(--space-xl);
-		padding-bottom: clamp(1.4rem, 1rem + 1.6vw, 2.4rem);
-		margin-bottom: clamp(2rem, 1.4rem + 3vw, 3.5rem);
-	}
-	.ch-head::after {
-		content: '';
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: 1px;
-		background: var(--seam-gold);
-	}
-	.ch-head::before {
-		content: '';
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: clamp(2rem, 1.4rem + 2vw, 3.4rem);
-		z-index: -1;
-		background: var(--seam-gold-glow);
-		pointer-events: none;
-	}
-	.ch-head__title {
-		margin-top: var(--space-xs);
-	}
-	.ch-head__note {
-		margin-top: var(--space-sm);
-		max-width: 40ch;
-		font-size: var(--fs-body-sm);
-	}
-	.ch-head__count {
-		white-space: nowrap;
-		letter-spacing: var(--ls-eyebrow);
-		text-transform: uppercase;
-	}
-
-	/* ============================================================= *
-	 * PROJECT INDEX — cover cards with metadata. Deliberately a DIFFERENT vocabulary from the works rows
-	 * (framed covers + text block) so a project reads as clearly distinct from a loose photograph.
-	 * ============================================================= */
-	.pf-projects {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: clamp(1.5rem, 1rem + 2vw, 2.75rem) clamp(1.25rem, 0.8rem + 1.6vw, 2rem);
-	}
-	.pf-project {
-		min-width: 0;
-	}
-	.pf-project__link {
-		display: block;
-	}
-	.pf-project__media {
-		border: 1px solid var(--color-border-subtle);
-		transition: filter var(--dur-interaction) var(--ease-standard),
-			border-color var(--dur-interaction) var(--ease-standard);
-	}
-	.pf-project__link:hover .pf-project__media,
-	.pf-project__link:focus-visible .pf-project__media {
-		filter: brightness(1.05);
-		border-color: var(--color-accent-hairline);
-	}
-	.pf-project__body {
-		margin-top: var(--space-md);
-	}
-	.pf-project__meta {
-		color: var(--color-text-muted);
-	}
-	.pf-project__name {
-		margin-top: var(--space-2xs);
-		transition: color var(--dur-interaction) var(--ease-standard);
-	}
-	.pf-project__link:hover .pf-project__name,
-	.pf-project__link:focus-visible .pf-project__name {
-		color: var(--color-accent);
-	}
-	.pf-project__cue {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-xs);
-		margin-top: var(--space-sm);
-		font-size: var(--fs-caption);
-		color: var(--color-text-secondary);
-	}
-	.pf-project__cue svg {
-		color: var(--color-accent);
-		transition: transform var(--dur-interaction) var(--ease-out);
-	}
-	.pf-project__link:hover .pf-project__cue svg,
-	.pf-project__link:focus-visible .pf-project__cue svg {
-		transform: translateX(3px);
-	}
-
-	/* ============================================================= *
-	 * WORKS FLOW — justified rows + full-width anchors.
-	 * ============================================================= */
-	.pf-flow {
-		display: flex;
-		flex-direction: column;
-		gap: clamp(1rem, 0.7rem + 1.4vw, 1.9rem);
-	}
-
-	/* A justified row: each cell grows in proportion to its image's aspect ratio, so all cells share one
-	   height and the row fills the width — whole images, no crop, controlled density. */
-	.pf-row {
-		display: flex;
-		gap: clamp(1rem, 0.7rem + 1.4vw, 1.9rem);
-		align-items: flex-start;
-	}
-	.pf-cell {
-		flex: var(--ar) 1 0;
-		min-width: 0;
-	}
-	/* A lone trailing frame stays a calm contained single instead of stretching full-width (tall). */
-	.pf-row:has(> .pf-cell:only-child) {
-		justify-content: center;
-	}
-	.pf-row > .pf-cell:only-child {
-		flex: 0 1 min(100%, 46rem);
-	}
-
-	/* Feature anchor — a deliberate big moment. Its WIDTH is capped so its intrinsic height lands at the
-	   target (≈62vh): a wide pano then fills the frame; a squarer feature centres with editorial air at its
-	   sides. The image is always shown WHOLE — no crop — so a feature can never damage its own content. */
-	.pf-anchor {
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		gap: var(--space-md);
-		width: min(100%, calc(min(62vh, 40rem) * var(--ar)));
-		margin-inline: auto;
-	}
-	.pf-anchor :global(.pf-anchor__media) {
-		width: 100%;
-	}
-	.pf-anchor__cap {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: var(--space-sm) var(--space-md);
-	}
-	.pf-anchor__label {
-		font-size: var(--fs-eyebrow);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-eyebrow);
-		text-transform: uppercase;
-		color: var(--color-accent);
-	}
-	.pf-anchor__text {
-		font-size: var(--fs-caption);
-		color: var(--color-text-muted);
-	}
-
-	/* ============================================================= *
-	 * OUTRO
-	 * ============================================================= */
-	.pf-outro {
-		padding-block: clamp(2.5rem, 1.8rem + 3vw, 4.5rem) clamp(1.5rem, 1rem + 2vw, 3rem);
-		text-align: center;
-	}
-	.pf-outro__count {
-		letter-spacing: var(--ls-eyebrow);
-		text-transform: uppercase;
-	}
-
-	/* ============================================================= *
-	 * RESPONSIVE
-	 * ============================================================= */
-	@media (max-width: 60rem) {
-		.pf-projects {
-			grid-template-columns: repeat(2, 1fr);
-		}
-	}
-	/* Mobile: justified rows would render too small, so switch to an orientation-aware wrap — portraits and
-	   squares pair 2-up, wider frames take the full width. Still whole images, still varied, never a stack. */
-	@media (max-width: 40rem) {
-		.pf-projects {
-			grid-template-columns: 1fr;
-			gap: var(--space-xl);
-		}
-		.pf-row {
-			flex-wrap: wrap;
-		}
-		.pf-cell {
-			flex: 1 1 100%;
-		}
-		.pf-cell[data-o='portrait'],
-		.pf-cell[data-o='square'] {
-			flex: 1 1 calc(50% - 0.5 * clamp(1rem, 0.7rem + 1.4vw, 1.9rem));
-		}
-		.pf-row > .pf-cell:only-child {
-			flex: 1 1 100%;
-		}
-	}
-</style>
+</script>

@@ -14,11 +14,11 @@ gallery:
       geperforeerde bakstenen wanden, in zwart-wit."
     caption: "Het paviljoen vanaf het bospad"
 featured: false
-order: 2
+order: 3
 leadLayout: "cinematic"
 draft: false
 ---
 
 Het glas van dit paviljoen maakt geen onderscheid tussen binnen en buiten: de stoelen aan de tafel staan
 in de schaduw van het dak, terwijl het bos erachter ononderbroken doorloopt. Zwart-wit versterkt die
-rust — geen kleur die de blik naar één punt trekt, alleen structuur, licht en herhaling.
+rust, geen kleur die de blik naar één punt trekt, alleen structuur, licht en herhaling.

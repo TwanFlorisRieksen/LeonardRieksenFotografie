@@ -1,10 +1,36 @@
 ---
 /*
- * Wordmark — TEMPORARY typographic identity (ID-07 / CLAUDE Temporary Logo Protocol; blueprint 2.10).
- * The definitive LRF logo does not exist yet. This is a restrained, on-brand type treatment of the
- * authorized business name — NOT a pretended final logo. It is deliberately isolated in this one
- * component and behind a stable API (a link to home), so replacing it with the real logo artwork later
- * is a single-file change with no architectural dependency elsewhere.
+ * WORDMARK — the definitive LRF lockup in the chrome (P12 / D-84).
+ *
+ * WHAT WAS WRONG, as arithmetic rather than as taste. The master `assets/logoLRF.png` is 1672×941 but its
+ * ink occupies only the middle 998×396 of that canvas — a 2.520:1 stacked lockup surrounded by transparent
+ * padding. The previous integration published the master as-is and recovered the lockup with a CSS crop:
+ * `width: 166.9%; left: -33.45%` inside an `overflow: hidden` box of 192×64. The horizontal half of that
+ * was right; the vertical half was never checked. A 192-wide box shows the ink at 78.6px tall, and the box
+ * was 64px — so the browser clipped 7px off the top of the monogram and 7px off the bottom of the word
+ * FOTOGRAFIE, on every page. MEASURED on the built site at 1440×900: box 192×64, image rendered
+ * 320.4×180.3 at top −58.2px. It is not a rendering quirk; the box ratio was 3.000 and the artwork's is
+ * 2.520.
+ *
+ * THE FIX IS AT THE ASSET AND THE LAYOUT, NOT AT THE ARTWORK. `scripts/make-brand-assets.mjs` trims the
+ * master to its own ink once, at build-authoring time, and writes `/brand/lrf-lockup.png` (440×175, 26 KB
+ * against the master's 136 KB). The component then needs no crop, no offset and no overflow at all: the
+ * element carries the artwork's own `aspect-ratio`, the image fills it, and clipping is structurally
+ * impossible — there is no box for the artwork to be larger than. `object-fit: contain` is the belt to
+ * that brace: if a future asset ever arrives at a different ratio it letterboxes instead of distorting.
+ * The mark is never stretched, never filtered, never given a background; it is the owner's file, whole.
+ *
+ * SIZE. The lockup is stacked, so its height is what the 4.75rem chrome bar has to accommodate — and the
+ * bar is deliberately NOT made taller for it (that would be a header redesign, and every page's rhythm is
+ * measured against this bar). At 9.75rem wide the whole lockup is 61.9px tall inside a 76px bar: ~7px of
+ * clearance top and bottom, which reads as intentional rather than as a mark jammed against two edges.
+ * Verified in the render at 320/360/390/430/768/1024/1280/1440/1920.
+ *
+ * FOCUS. `.wordmark` is a link and the first focusable element in the chrome, so BackToTop moves focus
+ * here after a jump (see BackToTop.astro). For a POINTER visitor that programmatic move used to paint the
+ * global 2px focus ring around the logo — a blue box appearing because a mouse user pressed an unrelated
+ * button. `data-focus-quiet` (scripts/quiet-focus.js) suppresses the ring for exactly that one focus and
+ * releases on the next key press, so keyboard visitors keep a full, visible indicator. See base.css.
  */
 interface Props {
 	class?: string;
@@ -12,68 +38,42 @@ interface Props {
 const { class: className } = Astro.props;
 ---
 
-<a class:list={['wordmark', className]} href="/">
-	<span class="wordmark__name">Leonard Rieksen</span>
-	<span class="wordmark__rule" aria-hidden="true"></span>
-	<span class="wordmark__suffix">Fotografie</span>
-	<span class="u-visually-hidden"> — naar de homepagina</span>
+<a class:list={['wordmark', className]} href="/" aria-label="Leonard Rieksen Fotografie, naar de homepagina">
+	<img
+		class="wordmark__image"
+		src="/brand/lrf-lockup.png"
+		alt=""
+		width="998"
+		height="396"
+		draggable="false"
+		decoding="async"
+	/>
 </a>
 
 <style>
 	.wordmark {
-		display: inline-flex;
-		align-items: baseline;
-		gap: 0.6rem;
+		display: block;
+		/* The artwork's own ratio, so the box can never be a shape the lockup does not have. */
+		aspect-ratio: 998 / 396;
+		width: clamp(8.75rem, 11.5vw, 9.75rem);
 		color: var(--color-text);
-		transition: color var(--dur-interaction) var(--ease-standard);
+		line-height: 0;
 	}
-	.wordmark__name {
-		font-family: var(--font-display);
-		font-weight: var(--fw-display);
-		font-size: 1.5rem;
-		line-height: 1;
-		letter-spacing: -0.02em;
-		/* The business name must never break mid-lockup (it wrapped at ≤26rem when name + tagline + menu
-		   trigger overflowed the row — P4/D-19 fix). Below 26rem the lockup stacks instead (see below). */
-		white-space: nowrap;
+	.wordmark__image {
+		display: block;
+		width: 100%;
+		height: 100%;
+		/* Never crop, never stretch — the two failure modes this component exists to make impossible. */
+		object-fit: contain;
+		user-select: none;
+		-webkit-user-select: none;
+		-webkit-user-drag: none;
+		-webkit-touch-callout: none;
 	}
-	/* The single gold detail in the identity — a hairline rule, echoing warm light in the photography. */
-	.wordmark__rule {
-		align-self: center;
-		width: 1px;
-		height: 1.1rem;
-		background: var(--color-accent);
-		opacity: 0.7;
-	}
-	.wordmark__suffix {
-		font-family: var(--font-sans);
-		font-size: var(--fs-eyebrow);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-eyebrow);
-		text-transform: uppercase;
-		color: var(--color-text-muted);
-		transition: color var(--dur-interaction) var(--ease-standard);
-	}
-	.wordmark:hover .wordmark__suffix {
-		color: var(--color-text-secondary);
-	}
-
-	/* Small screens: stack the name over the tagline as a compact lockup so the name stays on one line and
-	   the header row never overflows. The gold rule (a vertical divider) is dropped in the column layout. */
+	/* Very narrow phones: the lockup steps down rather than crowding the menu trigger. */
 	@media (max-width: 26rem) {
 		.wordmark {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 0.2rem;
-		}
-		.wordmark__name {
-			font-size: 1.28rem;
-		}
-		.wordmark__rule {
-			display: none;
-		}
-		.wordmark__suffix {
-			font-size: 0.6875rem;
+			width: 8.25rem;
 		}
 	}
 </style>

@@ -1,7 +1,7 @@
 ---
 title: "Ruimte, licht en lijn"
 category: "interieur"
-summary: "Een selectie interieuropnamen waarin ruimte, licht en lijn de hoofdrol spelen — van een
+summary: "Een selectie interieuropnamen waarin ruimte, licht en lijn de hoofdrol spelen, van een
   monumentale wenteltrap tot strakke, hedendaagse zalen."
 coverImage: "./cover.jpg"
 coverImageAlt: "Een monumentale wenteltrap van bovenaf gefotografeerd, met een spiraalvormig, geometrisch
@@ -20,9 +20,9 @@ gallery:
     caption: "Groninger Museum"
   - image: "./gallery-04-lichtarmaturen.jpg"
     alt: "Een cluster verguld ogende lichtarmaturen dat warm oplicht tegen een donkere achtergrond."
-    caption: "Detail — verlichting"
+    caption: "Detail, verlichting"
 featured: false
-order: 7
+order: 8
 leadLayout: "editorial"
 draft: false
 ---
@@ -30,6 +30,6 @@ draft: false
 Niet elk interieur hoort bij een project met een naam en een adres. Sommige beelden staan op zichzelf, om
 wat ze laten zien: een ruimte die door haar vorm, haar licht of haar lijnenspel om aandacht vraagt.
 
-Deze selectie brengt zulke opnamen samen — een wenteltrap van bovenaf, een klassieke hal, een hedendaagse
+Deze selectie brengt zulke opnamen samen, een wenteltrap van bovenaf, een klassieke hal, een hedendaagse
 ruimte, het kleurrijke Groninger Museum en een detail van warm oplichtende armaturen. Uiteenlopende ruimtes,
 verbonden door dezelfde aandacht voor ruimte, licht en lijn.

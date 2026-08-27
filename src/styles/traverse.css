@@ -1,0 +1,321 @@
+/*
+ * DE DOORTOCHT — spatial traverse.
+ *
+ * The stylesheet contains no environment. There is no floor, wall, panel, card, frame, vignette,
+ * gradient backdrop or ambient layer anywhere in this file, by rule: the world is the photographs.
+ * The only surface is the site's own ground, which is what a photograph is seen against — the same
+ * ground every other page uses, not a set built for this one.
+ *
+ * Baseline (no JS, reduced motion, print): a calm single-column reading order of whole photographs.
+ * The 3D world is applied only when the runtime sets [data-tv-active], so the enhanced state can never
+ * be the reason a photograph is unreachable.
+ */
+
+.tv {
+	position: relative;
+	/* `clip` not `hidden`: hidden re-anchors scroll containment and would silently make the runtime's
+	   scroll maths refer to the wrong scrollport. */
+	overflow-x: clip;
+}
+
+/* ---- baseline: the accessible document ------------------------------------------------------- */
+
+.tv-field {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: clamp(3rem, 7vw, 7rem);
+	padding-block: clamp(2rem, 5vw, 4rem);
+}
+
+.tv-work {
+	width: min(100%, 62rem);
+	margin: 0;
+}
+
+.tv-work img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.tv-cap {
+	margin-block-start: 0.75rem;
+	font-size: var(--step--1, 0.875rem);
+	color: var(--tone-soft, #9aa3ab);
+	letter-spacing: 0.01em;
+}
+
+/* ---- enhanced: the traverse ------------------------------------------------------------------ */
+
+.tv[data-tv-active] {
+	height: auto;
+}
+
+/* The scroll spacer gives the page real height, so the scrollbar tells the truth about how much work
+   is left and native paging keeps working. The runtime sets its height. */
+.tv-scroll {
+	display: none;
+}
+
+.tv[data-tv-active] .tv-scroll {
+	display: block;
+	pointer-events: none;
+}
+
+.tv[data-tv-active] .tv-viewport {
+	position: fixed;
+	inset: 0;
+	/* Fallback only. The runtime OWNS this value and writes it on measure(): the camera sits at D = 9R
+	   from the coil's axis, and R scales with the viewport, so a stylesheet constant would put the eye at
+	   the wrong distance on every screen but the one it was written for. */
+	perspective: 6000px;
+	perspective-origin: 50% 50%;
+	pointer-events: none;
+	z-index: 1;
+	/* The viewport is position:fixed, so `.tv`'s own overflow-x cannot clip it — a fixed box is clipped by
+	   the visual viewport, not by an overflow ancestor. Departing works swinging past the shoulder therefore
+	   leaked 26px of horizontal overflow at 834px. Clip here, on the element that actually contains them.
+	   `clip` rather than `hidden`: hidden would make this a scroll container and re-anchor the runtime's
+	   scroll maths to the wrong scrollport. */
+	overflow: clip;
+}
+
+.tv[data-tv-active] .tv-field {
+	position: absolute;
+	inset: 0;
+	display: block;
+	padding: 0;
+	gap: 0;
+	transform-style: preserve-3d;
+}
+
+/* ---- entrance emergence (Phase 4, D-74) --------------------------------------------------------
+   The world resolves out of a soft, dark, slightly-scaled blur into its resting focus — a designed
+   ARRIVAL, in place of the pre-Phase-4 pop where empty frames filled in one by one. It is a one-shot on
+   the field CONTAINER only, so the engine's per-work transforms are never touched (it owns those). At the
+   crown the outro is dormant, so the runtime writes no inline transform/opacity on the field and this
+   animation is unobstructed; the intro controller removes the class once it has played. Depth-of-field is
+   the coil's own language, so a blur→sharp settle reads as the world coming into being, not as a CSS trick.
+   Reduced motion never mounts the coil, so this can never run there. */
+.tv.is-emerging .tv-field {
+	animation: tv-emerge 1500ms cubic-bezier(0.22, 0.61, 0.16, 1) both;
+}
+
+@keyframes tv-emerge {
+	0% {
+		opacity: 0;
+		transform: scale(1.045);
+		filter: blur(18px) brightness(0.62) saturate(0.82);
+	}
+	55% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+		filter: none;
+	}
+}
+
+.tv[data-tv-active] .tv-work {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: auto;
+	/* Centring lives inside the runtime's single transform chain (translate(-50%,-50%) is its first term),
+	   so the runtime owns exactly one animated property and the compositor gets one clean layer per work. */
+	transform-origin: 50% 50%;
+	will-change: transform, opacity;
+	pointer-events: auto;
+	visibility: hidden;
+	/* THE FAR SIDE OF THE COIL IS DRAWN — the coil is a solid round object (owner correction, supersedes
+	   D-67's hidden-backface trade). Works are tangent to the cylinder, so past a quarter turn they present
+	   their BACKS to the eye, exactly as the reference recording does: front → side → back → side → front,
+	   one continuous ribbon that closes on itself instead of a front arc over a black void. A backface shows
+	   the photograph mirrored, which is what the reference shows too; it is not a misrepresentation because
+	   it is not offered as the work — it is the SHADOWED VERSO of a card that has turned away, read as depth,
+	   not as a picture. The runtime darkens it hard with the depth→opacity grade (farDim) and the verso tint
+	   below, so what the eye gets on the far side is "the back of the coil, in shadow", never a second
+	   readable copy. The reading moment still happens only on the near face, square-on, at full brightness. */
+	backface-visibility: visible;
+}
+
+.tv[data-tv-active] .tv-work img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain; /* never crop — the work is fitted, so contain and the box agree exactly */
+	display: block;
+}
+
+/* ---- lead-ins (decorative top-fill) --------------------------------------------------------- */
+
+/* Hidden entirely without the runtime, so no JS, reduced motion and print all show only the real works and
+   the duplicates never enter the accessible document. */
+.tv-lead {
+	display: none;
+}
+
+/* Under the traverse they are real coil members — the .tv-work rules above already size and place them —
+   but they are never interactive and never focus targets; they exist only to complete the coil above the
+   crown. Higher specificity than the baseline rule, so they appear only while the runtime is active. */
+.tv[data-tv-active] .tv-lead {
+	display: block;
+	pointer-events: none;
+}
+
+/* The caption belongs to the photograph and travels with it, so it is never a label placed on a surface
+   the world does not have. It is legible only near the reading moment.
+
+   THE HALO IS NOT DECORATION. The caption sits just below its work, and in a world this dense that lands it
+   on top of a NEIGHBOURING photograph: measured, 22 of 55 reading moments put the caption entirely over
+   another work, against no backdrop treatment at all. The world's rule forbids giving it a surface — no
+   plate, no scrim, no chip — so legibility has to come from the glyph itself. A tight dark halo travels
+   with the text, costs no layout, and adds no object to a world that is only photographs. */
+.tv[data-tv-active] .tv-cap {
+	position: absolute;
+	inset-inline-start: 0;
+	inset-block-start: calc(100% + 0.6rem);
+	margin: 0;
+	white-space: nowrap;
+	opacity: var(--tv-cap-o, 1);
+	color: var(--tone-strong, #e8ecf0);
+	text-shadow:
+		0 1px 2px rgb(0 0 0 / 0.9),
+		0 0 6px rgb(0 0 0 / 0.75),
+		0 0 14px rgb(0 0 0 / 0.5);
+}
+
+/* ---- the reading moment's gold hairline (P8.5 / D-76) ----------------------------------------- *
+ *
+ * WHAT THIS REPLACES, AND WHY IT IS A MOVE RATHER THAN AN ADDITION. Gold used to appear on this page when
+ * you CLICKED: `.tv-work a:focus` painted a 3px solid gold outline, and the pointer-user suppression below
+ * it was written for `.tv-work` only — so it never applied to the anchor the mouse actually focuses.
+ * MEASURED: click a work, close the lightbox, and `getComputedStyle(activeElement).outline` reads
+ * `rgb(232, 192, 122) solid 3px`, left drawn around that photograph until something else takes focus. Gold
+ * was therefore marking "the last thing you touched", which is the one thing in this world that does not
+ * need marking. The owner's instruction is to move it to where it means something: the reading position.
+ *
+ * SO GOLD NOW MEANS EXACTLY ONE THING HERE — "this photograph is square-on, at the front of the coil, being
+ * shown to you." Nothing else on the page is allowed to use it, which is why the focus ring below changes
+ * colour rather than staying gold: two gold marks with two different meanings is how a signal stops being
+ * one.
+ *
+ * IT IS A MOUNT LINE, NOT A BORDER. The frame sits 12px OUTSIDE the photograph, so it never touches, crops
+ * or overlays a single pixel of Leo's work (6.16, and the standing absolute rule). 1px, champagne, and at
+ * peak it is still only 0.6 alpha — the "dun, luxe" the brief asks for, in the same gold family as the
+ * header datum, the footer datum and the CTA close.
+ *
+ * THE SLOW FADE IS IN THE RUNTIME, NOT IN A TRANSITION. `--tv-gold` is written every frame by traverse.js
+ * from the work's own angle, so a CSS transition would fight the frame loop (and lag it). The easing lives
+ * in the envelope: a smoothstep over ±8° of rotation, i.e. gold is genuinely absent until a work is nearly
+ * square-on, reaches full only AT square-on, and leaves the same way. Because the coil's spring settles
+ * into the reading angle over roughly a second, that reads as a slow bloom and a slow release. */
+/* ── P8.6 (D-77): FROM A MOUNT LINE TO MUSEUM LIGHT ─────────────────────────────────────────────────
+ * The owner's verdict on the D-76 line: "de reading highlight bestaat nu, maar maakt het beeld druk …
+ * veel dichter om de foto, dunner, eleganter, verstoort geen captions, verstoort geen omliggende foto's,
+ * verschijnt langzaam, verdwijnt langzaam. Moet voelen als museumverlichting. Niet als selectie."
+ *
+ * THREE DEFECTS, AND EACH ONE IS STRUCTURAL RATHER THAN A MATTER OF TASTE:
+ *   1. IT WAS A CLOSED RECTANGLE. In a world made only of floating photographs, a complete four-sided
+ *      frame is a new OBJECT — and a rectangle drawn round one item out of a set is the universal
+ *      grammar of SELECTION. That is exactly what the owner names. Light is not a shape; it is a
+ *      falloff. So the border stays only as a whisper (0.6 → 0.26 alpha) and the actual signal becomes a
+ *      soft champagne bloom OUTSIDE the photograph — a picture light washing the wall around a frame.
+ *   2. IT CROSSED THE CAPTION. Measured: `inset: -12px` puts the bottom edge 12px below the photograph,
+ *      and `.tv-cap` starts at `calc(100% + 0.6rem)` = 9.6px below it. The line was drawn straight
+ *      through the caption's first row, on every reading moment. At `inset: -4px` it clears it by 5.6px.
+ *      That is the whole of "verstoort geen captions", and it was a two-character fix once measured.
+ *   3. IT ARRIVED AND LEFT TOO FAST. See traverse.js: the envelope is widened and re-eased there.
+ * The bloom is a `box-shadow` on the same pseudo-element, so it costs no extra node, no extra custom
+ * property write and no layout — and it is drawn OUTSIDE the element's box, so not one pixel of Leo's
+ * photograph is ever covered (the standing absolute rule). */
+.tv[data-tv-active] .tv-work::after {
+	content: '';
+	position: absolute;
+	inset: -4px;
+	border: 1px solid rgba(var(--p-champagne-rgb), 0.26);
+	box-shadow:
+		0 0 0 1px rgba(var(--p-champagne-rgb), 0.05),
+		0 0 22px 1px rgba(var(--p-champagne-rgb), 0.13),
+		0 0 54px 6px rgba(var(--p-gold-rgb), 0.07);
+	opacity: var(--tv-gold, 0);
+	pointer-events: none;
+}
+
+/* ---- focus ----------------------------------------------------------------------------------- */
+
+/* The site's reset sets outline-style:none; :focus-visible alone computed to `3px none` on the figure, so
+   a keyboard visitor travelling the world had NO visible focus indicator (WCAG 2.2 AA 2.4.7/2.4.11).
+   outline-style is stated explicitly, and :focus is matched alongside :focus-visible because the figure is
+   focused programmatically by the arrow-key handler, where UA heuristics do not always set focus-visible.
+
+   P8.5 (D-76): the ring is the SITE'S OWN focus colour (`--color-focus`, koningsblauw) instead of the gold
+   it used to hard-code. Two reasons, both load-bearing: gold now means "reading position" and may not also
+   mean "focused"; and every other focusable control on this site already rings blue, so the portfolio was
+   the one page where a keyboard visitor met a different indicator. Cool-on-warm also separates the ring
+   from the gold mount line when a keyboard visitor is standing on the reading work and both are drawn. */
+.tv-work:focus,
+.tv-work:focus-visible,
+.tv-work a:focus,
+.tv-work a:focus-visible {
+	outline: 3px solid var(--color-focus);
+	outline-style: solid;
+	outline-offset: 5px;
+}
+
+/* Pointer users who click a work do not get a ring; keyboard users always do. The anchor is listed
+   explicitly — its absence here is what let a mouse click leave a persistent ring on the photograph, since
+   a click focuses the <a>, not the <figure>, and browsers do not set :focus-visible on a mouse click. */
+.tv-work:focus:not(:focus-visible),
+.tv-work a:focus:not(:focus-visible) {
+	outline-color: transparent;
+}
+
+/* …and neither does a POINTER visitor whose focus the near plane returned here on close (P12 / D-84). The
+   ring above is deliberately matched on `:focus` as well as `:focus-visible`, so the global
+   `[data-focus-quiet]` rule in base.css cannot reach it on specificity alone; it is restated here at the
+   selector's own weight. Removed on blur or on the next keydown — a keyboard visitor still rings. */
+.tv-work a[data-focus-quiet]:focus,
+.tv-work a[data-focus-quiet]:focus-visible,
+.tv-work[data-focus-quiet]:focus,
+.tv-work[data-focus-quiet]:focus-visible {
+	outline-color: transparent;
+}
+
+/* ---- reduced motion -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+	/* The runtime already refuses to mount; this is the belt-and-braces guarantee that no transform or
+	   transition can survive here even if a future change mounts it by accident. */
+	.tv .tv-work {
+		transform: none !important;
+		transition: none !important;
+		position: static !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+	}
+
+	.tv .tv-viewport {
+		position: static !important;
+		perspective: none !important;
+	}
+
+	.tv .tv-scroll {
+		display: none !important;
+	}
+}
+
+/* ---- deferred photography (P9 / D-80) --------------------------------------------------------- */
+
+/*
+ * While a far work's `srcset` is stashed (see the parse-time script in portfolio/index.astro), its <img>
+ * has no source at all. An <img> in that state paints its alt text, and although every deferred work is
+ * behind the overture and then culled by the engine before it can be seen, "although" is not a guarantee.
+ * Hiding the image itself makes it one: the figure keeps its box and its calm holding colour, the alt text
+ * stays in the accessibility tree, and the rule stops applying the instant the engine restores the srcset
+ * (which removes the attribute). Nothing here exists without JavaScript — nothing is ever stashed there.
+ */
+.tv img[data-tv-srcset] {
+	visibility: hidden;
+}

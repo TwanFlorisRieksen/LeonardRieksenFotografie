@@ -35,16 +35,70 @@
 	--p-paper-500: #8a91a0; /* muted / metadata — ~5.1:1 (AA normal text) */
 	--p-paper-700: #5b6270; /* disabled text (exempt from contrast) */
 
-	/* --- Gold: restrained warm "digital gold" (6.12) — muted champagne, not bright yellow. --- */
-	--p-gold-500: #c7a56a; /* accent — ~7.6:1 on ink-900 (AA for text + UI) */
-	--p-gold-400: #d8bd84; /* hover / brighter highlight */
+	/* --- Gold: restrained warm "digital gold" (6.12) — muted champagne, not bright yellow.
+	 *
+	 * P8.6 (D-77) — ONE GOLD HUE, DECLARED. The owner named a reference: "de goudkleur van de subtiele lijn
+	 * onder 'Bekijk het portfolio →'". Measured on the render, that line is `border-bottom-color:
+	 * rgb(199,165,106)` — i.e. `--p-gold-500`, which was ALREADY the primary accent. So the brief is not
+	 * "change the accent"; it is "make everything else on the site agree with it", and the audit found that
+	 * it did not:
+	 *
+	 *   family                       measured hue      verdict
+	 *   --p-gold-500 (the reference)     38.1°         the anchor
+	 *   --p-gold-700 / -800              38.4 / 37.6°  already on hue
+	 *   --p-gold-400, the champagne      40.7°         2.6° yellow of the anchor
+	 *   --p-atmos-warm + the warm
+	 *   light fields on diensten /
+	 *   interieur                        30.0–33.5°    5–8° ORANGE of the anchor  ← "te oranje goudtinten"
+	 *
+	 * The over-orange family is not a decorative accident: `--p-atmos-warm` also draws real gold HAIRLINES
+	 * (the werkwijze rule is struck at 0.85 alpha in it), so the site was literally drawing two different
+	 * golds and calling both gold. Every value below is re-derived by rotating HUE ONTO 38.1° while holding
+	 * its own lightness and saturation, so nothing gets brighter, no contrast ratio moves, and each value
+	 * keeps the job it was tuned for. `HUE` is the only thing that changes.
+	 *
+	 * The RGB triples exist so the recurring datum hairline can be drawn from the token everywhere instead of
+	 * from 45 hand-typed literals — which is how the two golds diverged in the first place. --- */
+	--p-gold-500: #c7a56a; /* THE REFERENCE — accent; ~7.6:1 on ink-900 (AA for text + UI) */
+	--p-gold-rgb: 199, 165, 106; /* the reference, as a triple for alpha use */
+	--p-gold-400: #d8b984; /* hover / brighter highlight (was #d8bd84, hue 40.7 → 38.1) */
+	--p-gold-300: #e0c18c; /* champagne — datum hairlines, catch-lights (was rgb(224,197,140)) */
+	--p-champagne-rgb: 224, 193, 140;
 	--p-gold-700: #8a6f3f; /* deep gold — hairline rules on light-ish surfaces */
 
-	/* --- Koningsblauw: royal-azure interaction colour, lifted for on-dark legibility (6.13). --- */
-	--p-blue-600: #2f52c4; /* brand-deep — large fills only (rare) */
-	--p-blue-500: #4a72e0;
-	--p-blue-400: #7aa2f5; /* interactive text/icon on dark — ~7.2:1 */
-	--p-blue-300: #a3c0fa; /* hover */
+	/* --- Koningsblauw: royal SAPPHIRE interaction colour, lifted for on-dark legibility (6.13).
+	   P8.5 (D-76) — RE-DERIVED, not replaced. The old ramp (#2f52c4 / #4a72e0 / #7aa2f5 / #a3c0fa) sat at
+	   hue ~223 but at a chroma that read as a generic periwinkle "link blue": correct in role, thin in
+	   material. Every step here keeps the same HUE FAMILY and the same functional role — so brand
+	   recognition and the gold/blue role separation are untouched (6.11–6.13, VIS-06) — and gains chroma
+	   and depth, which is what "premium blue" actually means. Measured on the primary background
+	   --p-ink-900 AND on the new sapphire chrome below; both ≥ AA (see the ratios per step). --- */
+	--p-blue-600: #2544b8; /* brand-deep — large fills only (rare); deeper + richer than the old #2f52c4 */
+	--p-blue-500: #3f66db;
+	--p-blue-400: #82a6f2; /* interactive text/icon on dark — 7.70:1 on ink-900, 7.73:1 on sapphire-900 */
+	--p-blue-300: #aac6fb; /* hover */
+
+	/* --- SAPPHIRE CHROME: the deep blue SURFACE family (P8.5 / D-76).
+	   The palette had no deep blue surface at all — only a near-neutral ink scale and a bright interaction
+	   ramp — so any request for a "deeper blue base" had to be improvised per component, which is exactly
+	   how a design system drifts. These are the missing rungs: dark enough that photography stays the light
+	   source (6.16) and every text token stays ≥ AA on them, blue enough to read unmistakably as the brand's
+	   koningsblauw rather than as more charcoal. They carry the site's CHROME (header, footer) and its
+	   non-photographic conversion fields (CTA, contact), never a photographic surface. --- */
+	/* P8.7 (D-78) — DE-ICED. The owner's note on the homepage's closing boundary asks for BOTH sides to
+	   change so they can become one whole, and this is the chrome's half of that. Measured, the ladder sat
+	   at saturation 0.55–0.61 across the board: a fully-committed cold navy, which is exactly the blue that
+	   nothing warm can stand next to — put any lamplight beside it and you get two unrelated pictures.
+	   Saturation × 0.86 with hue and LIGHTNESS held: still unmistakably the brand's koningsblauw, now a
+	   night SLATE rather than an ink navy. Nothing gets lighter or darker, so every contrast ratio measured
+	   against these surfaces is unchanged, and the whole chrome family — header, footer, CTA close, contact
+	   field, the architectuur sky's foot — moves together rather than one component being special-cased. */
+	--p-sapphire-975: #05070e; /* the deepest foot — the footer's own abyss */
+	--p-sapphire-950: #080c17;
+	--p-sapphire-900: #0c1321; /* the chrome base — header / footer body */
+	--p-sapphire-850: #0f192e; /* the lifted top edge of a chrome surface */
+	--p-sapphire-800: #14213d; /* raised sapphire field (hover fill on chrome) */
+	--p-sapphire-700: #1b3157; /* the deepest still-clearly-blue tone — sapphire hairlines/edges */
 
 	/* --- Functional state colours: distinct hues, AA on dark; meaning never colour-only (6.14/6.17). --- */
 	--p-success: #57b98a; /* ~7.1:1 */
@@ -58,7 +112,7 @@
 	   white SaaS card. Removed entirely if the rendered experiment doesn't earn its place. --- */
 	--p-stone-100: #ece7de; /* light surface — warm, desaturated, paper/concrete-like */
 	--p-stone-200: #ddd6c8; /* border/divider on the light surface */
-	--p-gold-800: #7c6339; /* deep gold, further darkened for AA small-text on stone-100 (4.6:1; gold-700 alone is 3.85:1) */
+	--p-gold-800: #7c6439; /* deep gold, further darkened for AA small-text on stone-100 (4.6:1; gold-700 alone is 3.85:1) */
 
 	/* --- P4.6 ATMOSPHERIC DEPTH (PROTOTYPE — used ONLY by the homepage "geselecteerd werk" slice; see
 	   DECISIONS.md D-25). Grounded, not decorative: blueprint 6.6.1 (colour must distinguish surfaces AND
@@ -72,8 +126,16 @@
 	/* P4.6-CORR (D-26): richer, more chromatic blue-hour ambient (cool) + a warmer amber echo (warm) — the
 	   warm deliberately sits near the champagne gold (199,165,106) so the chapter's warm light and its gold
 	   detail read as one material family. Both applied only at low alpha, always below photographic sat/lum. */
-	--p-atmos-cool: 112, 146, 214; /* blue-hour ambient lift */
-	--p-atmos-warm: 202, 156, 100; /* warm artificial-light / gold-family echo */
+	/* P8.5 (D-76): the cool ambient gains the same chroma the koningsblauw ramp gained (112,146,214 →
+	   98,136,226), so the atmosphere the whole site is modelled from and the brand's blue are one material
+	   rather than two neighbouring blues. Only the CHROMA moves; the hue and the low alphas it is always
+	   used at are unchanged, so no surface gets brighter and nothing under it loses contrast. */
+	--p-atmos-cool: 98, 136, 226; /* blue-hour ambient lift */
+	/* P8.6 (D-77): 202,156,100 (hue 32.9) → 202,165,100 (hue 38.1). Same lightness, same saturation, the
+	   reference gold's hue. This ONE value carries the homepage's warm chapter light, the werkwijze
+	   hairlines, the spec-card raking light and the hero's water lumen, so it was the single largest source
+	   of "te oranje goud" on the site — and it is corrected in one place rather than in nineteen. */
+	--p-atmos-warm: 202, 165, 100; /* warm artificial-light / gold-family echo — ON the reference hue */
 
 	/* --- Alpha primitives (borders / overlays over unknown surfaces incl. photography). --- */
 	--p-white-a08: rgba(236, 238, 242, 0.08);
@@ -92,6 +154,147 @@
 	--color-surface: var(--p-ink-850);
 	--color-surface-raised: var(--p-ink-800);
 	--color-surface-interactive: var(--p-ink-750);
+
+	/* --- SAPPHIRE CHROME semantics + gradients (P8.5 / D-76) --------------------------------------
+	 * WHY GRADIENTS AND NOT FLAT FILLS. The brief asks for richer blue AND better gradients, and those are
+	 * the same requirement: a flat premium blue does not exist. What reads as premium is a surface with
+	 * DEPTH in it — one that is lit from an edge and falls away — which is the same principle the rest of
+	 * this system already runs on (6.6.1 colour must distinguish surfaces AND depth; 6.9 hierarchy from
+	 * refined differences; 6.12 "zeer beperkte gradients" + "gecontroleerde highlights"). So the chrome is
+	 * never a colour, it is always a short vertical descent, and every one of these is painted ONCE (no
+	 * per-frame repaint, no animation, GPU-cheap).
+	 *
+	 * The travel in each is deliberately SHORT (2–3 stops, ~1.5 L* apart per stop). A long ramp would read
+	 * as a decorative "gradient background" — the 2010s antipattern 6.68/6.69 rules out — instead of as a
+	 * lit surface. The rule of thumb held here: you should be able to see that the surface has depth, but
+	 * never be able to point at where the gradient starts.  --- */
+	--color-chrome: var(--p-sapphire-900);
+	--color-chrome-deep: var(--p-sapphire-950);
+	--color-chrome-raised: var(--p-sapphire-800);
+	--color-chrome-hairline: var(--p-sapphire-700);
+
+	/* The header: lit along its top edge, settling into the deep. Reads as a polished bar with a light
+	   source above it rather than as a dark slab laid over the page (the D-45 defect class). */
+	--grad-chrome-header: linear-gradient(
+		180deg,
+		var(--p-sapphire-850) 0%,
+		var(--p-sapphire-900) 58%,
+		var(--p-sapphire-950) 100%
+	);
+	/* The footer: the inverse — it opens at the chrome tone and DESCENDS into the site's own abyss, so the
+	   page ends by going deeper rather than by hitting a floor. */
+	--grad-chrome-footer: linear-gradient(
+		180deg,
+		var(--p-sapphire-900) 0%,
+		var(--p-sapphire-950) 54%,
+		var(--p-sapphire-975) 100%
+	);
+	/* Conversion fields (CTA close, contact form field): a cool sapphire depth rising from the upper-left
+	   corner over whatever surface the page already has. Additive light — never an opaque fill — so it
+	   composes over any page background without becoming a panel.
+
+	   P8.7 (D-78): THE FOOT DEEPENING IS DELETED, AND IT WAS THE REMAINING EDGE. It ran
+	   `rgba(5,7,14,0) 52% → 0.58 100%`, i.e. it reached 58% opacity exactly AT the section's own bottom and
+	   then stopped existing — a ramp cut off mid-travel, which is a hard horizontal line by construction.
+	   D-76 added it so the block would "hand off downward into the footer instead of ending on a horizontal
+	   cut"; measured on the render it was producing precisely that cut, one screen above the boundary
+	   everyone was looking at. The footer's own transparent approach (D-77) now does this job properly,
+	   from the other side, over a distance and with nothing to cut. */
+	--grad-sapphire-field: radial-gradient(
+		92% 82% at 3% 0%,
+		rgba(var(--p-atmos-cool), 0.15) 0%,
+		rgba(var(--p-atmos-cool), 0.05) 44%,
+		rgba(var(--p-atmos-cool), 0) 74%
+	);
+	/* A sapphire hairline for chrome edges — deeper and bluer than the neutral --color-border-subtle, so a
+	   chrome surface is bounded by its own material rather than by a generic white alpha line. */
+	--color-border-chrome: rgba(var(--p-atmos-cool), 0.22);
+
+	/* ── THE DATUM (P8.6 / D-77) ───────────────────────────────────────────────────────────────────────
+	 * The site's recurring gold hairline — champagne caught at the left, dissolving to a neutral trace
+	 * across the width. It marks the top of the CTA close, the top of the footer, the underside of the
+	 * header and the hero's title card. It was written out FOUR TIMES with four slightly different stop
+	 * sets, which is why "check the whole site for inconsistencies" had something to find. One token now,
+	 * one line, everywhere; the only thing a component may vary is its opacity. */
+	--grad-datum: linear-gradient(
+		90deg,
+		rgba(var(--p-champagne-rgb), 0.82) 0%,
+		rgba(var(--p-gold-rgb), 0.5) 16%,
+		rgba(236, 238, 242, 0.15) 36%,
+		rgba(236, 238, 242, 0.1) 100%
+	);
+
+	/* ── DEEP BLUE FIELDS (P8.6 / D-77) ────────────────────────────────────────────────────────────────
+	 * The brief: "zoek alle resterende vlakke doffe blauwtinten … deze kleur mag nergens meer voorkomen.
+	 * Ontwerp overal rijkere diepblauwe gradients." The dull flatness was never one bad colour — it was
+	 * large areas painted with a single `--color-bg*` FILL (the contact page's body and the region under
+	 * its form, the footer's mid band, the 404/bedankt pages). A flat fill on a 900px-tall area has no
+	 * light in it, and "premium" in a dark interface is entirely a question of whether the surface is lit.
+	 *
+	 * So there is now a field for each SIZE of surface, all cut from the same sapphire material:
+	 *   --grad-sapphire-field  a block-sized conversion field (CTA close, form panel) — additive, composes
+	 *                          over whatever the page already has;
+	 *   --grad-sapphire-page   a PAGE-sized field: one high cool source, one low counter-light, and a
+	 *                          vertical descent underneath, so a whole route is lit rather than filled;
+	 *   --grad-sapphire-quiet  the same idea at half strength, for pages that are mostly photography and
+	 *                          must not gain a visible background.
+	 * All three are painted once, are GPU-cheap, and never travel past ~2.5 L* per stop — visible as depth,
+	 * never pointable-at as a gradient (6.68/6.69). */
+	--grad-sapphire-page: radial-gradient(
+			124% 66% at 10% -6%,
+			rgba(var(--p-atmos-cool), 0.22) 0%,
+			rgba(var(--p-atmos-cool), 0.075) 42%,
+			rgba(var(--p-atmos-cool), 0) 74%
+		),
+		radial-gradient(
+			100% 52% at 92% 104%,
+			rgba(var(--p-atmos-cool), 0.15) 0%,
+			rgba(var(--p-atmos-cool), 0.04) 44%,
+			rgba(var(--p-atmos-cool), 0) 68%
+		),
+		/* A third, weak source off the right edge at mid-height. Two corner sources leave the MIDDLE of a
+		   tall page unlit, and the middle of the contact page is exactly where the form is — measured on
+		   the render, the right-hand margin beside the form still had a luminance range of only 6.8 across
+		   800px with two sources. This one costs 0.08 of alpha and removes the last flat band. */
+			radial-gradient(
+				72% 42% at 106% 48%,
+				rgba(var(--p-atmos-cool), 0.08) 0%,
+				rgba(var(--p-atmos-cool), 0) 70%
+			),
+		linear-gradient(
+			180deg,
+			var(--p-sapphire-850) 0%,
+			var(--p-sapphire-900) 34%,
+			var(--p-sapphire-950) 72%,
+			#060a14 100%
+		);
+	--grad-sapphire-quiet: radial-gradient(
+			114% 60% at 8% -4%,
+			rgba(var(--p-atmos-cool), 0.14) 0%,
+			rgba(var(--p-atmos-cool), 0.04) 46%,
+			rgba(var(--p-atmos-cool), 0) 70%
+		),
+		linear-gradient(
+			180deg,
+			var(--p-sapphire-900) 0%,
+			var(--p-sapphire-950) 52%,
+			#060a14 100%
+		);
+
+	/* ── THE CLOSING DESCENT (P8.6 / D-77) ─────────────────────────────────────────────────────────────
+	 * The bridge a page crosses to reach its footer (brief item 3: "CTA → footer voelt abrupt"). MEASURED
+	 * on the render: the homepage's CTA sits in the warm end of its own sky and the footer opened at
+	 * `--p-sapphire-900` — a hue AND luminance step landing in one pixel row, under a bright hairline that
+	 * drew attention to exactly that row. This gradient is the footer's own approach: fully transparent at
+	 * the top so whatever the page ends with is still showing, and only reaching the footer's material a
+	 * long way down. It is tall on purpose — an edge you cannot find is a gradient nobody can point at. */
+	--grad-footer-approach: linear-gradient(
+		180deg,
+		rgba(12, 19, 33, 0) 0%,
+		rgba(12, 19, 33, 0.38) 34%,
+		rgba(12, 19, 33, 0.78) 68%,
+		var(--p-sapphire-900) 100%
+	);
 
 	/* P4.6-CORRECTION (D-26). The first P4.6 (D-25) atmosphere was technically correct but sub-threshold —
 	   product-owner review saw "almost no change": one low-alpha radial pair over a flat abyss, peaking in
@@ -144,19 +347,19 @@
 	   hairline, never a fill/heading/text-gradient, so D-10's anti-black-and-gold-template rule holds). */
 	--seam-gold: linear-gradient(
 		90deg,
-		rgba(199, 165, 106, 0) 0%,
-		rgba(199, 165, 106, 0.55) 12%,
-		rgba(224, 197, 140, 0.92) 31%,
-		rgba(199, 165, 106, 0.46) 60%,
-		rgba(199, 165, 106, 0) 100%
+		rgba(var(--p-gold-rgb), 0) 0%,
+		rgba(var(--p-gold-rgb), 0.55) 12%,
+		rgba(var(--p-champagne-rgb), 0.92) 31%,
+		rgba(var(--p-gold-rgb), 0.46) 60%,
+		rgba(var(--p-gold-rgb), 0) 100%
 	);
 	/* A controlled catch-light hugging the seam (6.12 "gecontroleerde highlights"; 6.64 gold-glow "met grote
 	   terughoudendheid" — so: whisper-soft, wide, low-alpha, more "the line catches warm light" than a glow). */
 	--seam-gold-glow: radial-gradient(
 		58% 100% at 34% 100%,
-		rgba(224, 197, 140, 0.12) 0%,
-		rgba(224, 197, 140, 0.04) 44%,
-		rgba(224, 197, 140, 0) 78%
+		rgba(var(--p-champagne-rgb), 0.12) 0%,
+		rgba(var(--p-champagne-rgb), 0.04) 44%,
+		rgba(var(--p-champagne-rgb), 0) 78%
 	);
 
 	/* Text */
@@ -167,8 +370,9 @@
 	--color-text-on-accent: var(--p-ink-950); /* text on a gold/blue fill */
 
 	/* Brand accents — role-separated (6.11–6.13) */
-	--color-accent: var(--p-gold-500); /* GOLD: premium detail, selective emphasis */
+	--color-accent: var(--p-gold-500); /* GOLD: premium detail, selective emphasis — THE REFERENCE (D-77) */
 	--color-accent-strong: var(--p-gold-400);
+	--color-accent-champagne: var(--p-gold-300); /* the lit end of the gold — datum lines, catch-lights */
 	--color-accent-hairline: var(--p-gold-700);
 	--color-interactive: var(--p-blue-400); /* BLUE: recognition + interaction */
 	--color-interactive-hover: var(--p-blue-300);

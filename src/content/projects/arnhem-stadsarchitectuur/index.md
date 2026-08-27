@@ -4,7 +4,7 @@ category: "architectuur"
 location: "Arnhem"
 year: 2014
 summary: "Een fotografische verkenning van hedendaagse en historische architectuur in het centrum van
-  Arnhem — van kleurrijke kantoortorens tot een cultuurgebouw en de verkeersruimte van de stad."
+  Arnhem, van kleurrijke kantoortorens tot een cultuurgebouw en de verkeersruimte van de stad."
 coverImage: "./cover.jpg"
 coverImageAlt: "Twee kantoortorens met een golvende, kleurrijke gevel gefotografeerd van onderaf tegen
   een roze avondlucht in Arnhem."
@@ -28,7 +28,7 @@ draft: false
 ---
 
 Eén dag in Arnhem, drie registers van dezelfde stad. De opname begint bij twee kantoortorens die het
-laatste avondlicht opvangen in een golvende glasgevel — een compositie waarin kleur en reflectie de
+laatste avondlicht opvangen in een golvende glasgevel, een compositie waarin kleur en reflectie de
 architectuur laten spreken. Van daaruit verschuift de reeks naar zwart-wit: de rechte lijnen van de ArtEZ
 Hogeschool voor de Kunsten, de historische gevelwand rond Rozet, en tot slot de ruimtelijke geometrie van
 een overkapte trappartij in het centrum.

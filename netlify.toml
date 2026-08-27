@@ -5,11 +5,17 @@
 [build.environment]
   NODE_VERSION = "22"
 
-# --- Security headers (SEC-02/11.47, centrally configured — 11.62) ---
+# --- Security headers + the default caching posture (SEC-02/11.47, centrally configured — 11.62) ---
 # CSP and HSTS are deliberately NOT set here yet. Blueprint 11.54/11.56: CSP must run Report-Only first
 # and HSTS must only be enabled after HTTPS/subdomain behaviour is validated — both are P6 work (SEC-03/04),
 # not P1. Shipping a premature strict CSP now would risk silently breaking the site with no real content
 # to test it against yet.
+#
+# CACHING (PERF-08). This block is FIRST on purpose: Netlify merges every matching rule and the LAST value
+# for a header wins, so the broad default must be stated before the specific overrides below. The default is
+# "always revalidate, never re-download": a CMS publish is visible immediately, while an unchanged page is
+# answered with a 304 and painted from cache — which is what makes a second visit and a browser-back feel
+# instant without ever serving stale content.
 [[headers]]
   for = "/*"
   [headers.values]
@@ -17,9 +23,38 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     X-Frame-Options = "DENY"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
-# --- Caching (PERF-08): Astro's build-hashed assets are safe to cache forever; HTML is not. ---
+# --- Caching overrides (PERF-08): content-addressed and content-stable assets ---
+# Astro's build-hashed assets are safe to cache forever; a change is a new filename.
 [[headers]]
   for = "/_astro/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Fonts are content-stable and versioned by filename (family-subset-weight-style.woff2), never edited in
+# place — a new weight is a new file. They are ~78 KB across five faces and are needed on every page, so a
+# revalidation round-trip for each of them on every visit was the most wasteful thing left in the repeat-
+# visit path (P9 / D-80). Immutable, like the hashed assets above.
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# The brand files are equally stable and equally per-visit. Same reasoning, a shorter horizon because they
+# are NOT content-hashed: a year would strand a brand change. P12 (D-84) replaced the Astro starter's
+# favicon.svg with a real LRF favicon.ico, so that rule is gone and the lockup/apple-touch files join it.
+[[headers]]
+  for = "/favicon.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/apple-touch-icon.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/brand/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

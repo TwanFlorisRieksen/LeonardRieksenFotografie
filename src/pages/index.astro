@@ -1,18 +1,18 @@
 ---
 /*
- * Homepage (P4 — D-19). The brand + conversion experience, not a section checklist. Built on the proven
+ * Homepage (P4, D-19). The brand + conversion experience, not a section checklist. Built on the proven
  * P2/P3 foundation (nocturne tokens, Archivo/Instrument Sans, Media pipeline, shared shell). Concept: a
- * "dark architectural monograph" — a full-bleed photographic hero, then a small number of asymmetric
+ * "dark architectural monograph", a full-bleed photographic hero, then a small number of asymmetric
  * editorial beats connected by gold hairlines and carried by monumental Archivo scale-contrast. The
  * blueprint's 10-beat recommended flow (13.13) is deliberately consolidated into fewer, stronger sections
- * (progressive disclosure — 13.12): hero → positionering+Leo → geselecteerd werk → specialisaties →
+ * (progressive disclosure, 13.12): hero → positionering+Leo → geselecteerd werk → specialisaties →
  * werkwijze → contact. Photography structures the page; the interface recedes (2.2 fotografie-first).
  *
  * Content authority (CLAUDE §9.2): the hero line, positioning prose and working-method copy are
  * TRANSFORMED from Leo's own current site (reference/old-website index.html + diensten.html + site-text.json);
  * no business facts are invented. Bio "owner-confirm" facts (experience/HDR/long-exposure/education) are
  * deliberately NOT asserted here (D-19 content audit). Photography is real, selected by visual inspection
- * (CLAUDE §9.3), byte-identical to the /assets masters (served as derivatives — PH-08).
+ * (CLAUDE §9.3), byte-identical to the /assets masters (served as derivatives, PH-08).
  */
 import { getCollection } from 'astro:content';
 import { getImage } from 'astro:assets';
@@ -32,36 +32,43 @@ const [featured, ...secondary] = selected;
 const categoryLabel: Record<string, string> = { architectuur: 'Architectuur', interieur: 'Interieur' };
 
 // SEO-06 / image protection (D-09): og:image MUST be an optimized derivative, never `heroImg.src`
-// (the raw source master — the PH-08 gate correctly fails that). Width 1200 = standard OG; no fixed crop.
+// (the raw source master, the PH-08 gate correctly fails that). Width 1200 = standard OG; no fixed crop.
 const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 ---
 
 <BaseLayout
 	title="Architectuur- & interieurfotografie"
-	description="Leo Rieksen fotografeert architectuur en interieurs met rust, precisie en perfect licht — voor architecten, interieurontwerpers, makelaars en bedrijven in Midden-Nederland."
+	description="Leo Rieksen fotografeert architectuur en interieurs met rust, precisie en perfect licht, voor architecten, interieurontwerpers, makelaars en bedrijven in Midden-Nederland."
 	socialImage={ogImage.src}
 	heroHeader
 >
 	<!-- ============================================================================================= *
-	     THE CONTINUOUS STAGE (P6.2 / D-39). One fixed "world" behind the whole page — the persistent
-	     blue-hour architectural space the reader descends through. Its light EVOLVES across the scroll
-	     (home-cinema.js drives the custom properties per scene), so atmosphere no longer hard-cuts at each
-	     section boundary — the direct fix for the "losse secties / document" feeling. aria-hidden + inert:
-	     purely atmospheric, never content. Off (opacity 0) until `html.motion-scene`; under no-JS / reduced
-	     motion it stays invisible and the exact frozen D-38 per-section atmospheres render instead. -->
+	     THE DESCENDING ENVIRONMENT (P6.2 / D-41). One continuous sky the reader falls THROUGH, a genuinely
+	     visible (chromatic but dark) dusk that evolves blue-hour → deep night → warm interior night as you
+	     descend, with a horizon that rises past the camera and atmospheric haze for depth. home-cinema.js
+	     drives each layer's OPACITY + TRANSFORM continuously from scroll ALTITUDE (compositor-only, no
+	     per-frame gradient repaint, CLS-safe), so the world is always exactly where the camera is. This is
+	     the visible connective tissue that the D-40 low-alpha whisper failed to be (owner: still felt like
+	     stacked sections). Bold in the negative space, HIDDEN behind full-bleed photography, so the
+	     photographs stay dominant. aria-hidden: purely atmospheric, never content. Off (opacity 0) until
+	     `html.motion-scene`; under no-JS / reduced motion it stays invisible and the honest stacked
+	     composition (per-section atmospheres) renders instead. Layer order = paint order (back → front):
+	     deep-night base · blue-hour · warm-interior · horizon glow · haze · vignette. -->
 	<div class="stage" aria-hidden="true">
-		<div class="stage__base"></div>
-		<div class="stage__cool"></div>
-		<div class="stage__warm"></div>
+		<div class="stage__sky stage__sky--b"></div>
+		<div class="stage__sky stage__sky--a"></div>
+		<div class="stage__sky stage__sky--c"></div>
+		<div class="stage__horizon"></div>
+		<div class="stage__haze"></div>
 		<div class="stage__vignette"></div>
 	</div>
 
-	<!-- HERO — the first large contact moment (13.14). Photography full-bleed and central; identity,
+	<!-- HERO, the first large contact moment (13.14). Photography full-bleed and central; identity,
 	     positioning and one logical next step over it; no competing CTAs or long text (13.16). -->
 	<header class="home-hero">
 		<Media
 			src={heroImg}
-			alt="De Reitdiephaven in Groningen tijdens het blauwe uur — kleurrijke houten woningen weerspiegeld in stil water."
+			alt="De Reitdiephaven in Groningen tijdens het blauwe uur, kleurrijke houten woningen weerspiegeld in stil water."
 			priority={true}
 			widths={[640, 1024, 1400, 1920]}
 			sizes="100vw"
@@ -69,35 +76,132 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			data-ptilt="11"
 		/>
 		<div class="home-hero__scrim"></div>
-		<div class="home-hero__content u-container u-container--wide u-reveal">
-			<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 0">
-				Architectuur- &amp; interieurfotografie
-			</p>
-			<h1 class="t-display home-hero__title u-reveal-mask" style="--reveal-index: 1">
-				Fotografie met rust, precisie en perfect licht.
-			</h1>
-			<p class="t-lead home-hero__sub" style="--reveal-index: 2">
-				Leo Rieksen legt gebouwen en interieurs vast met oog voor sfeer, lijnen en belichting — van
-				het blauwe uur tot zorgvuldig opgebouwd kunstlicht.
-			</p>
-			<div class="home-hero__actions" style="--reveal-index: 3">
-				<a class="home-hero__cta" href="/portfolio/" data-magnetic="8">
-					Bekijk het portfolio
-					<svg
-						width="20"
-						height="20"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.6"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-						focusable="false"
-					>
-						<path d="M4 12h15M13 6l6 6-6 6" />
-					</svg>
-				</a>
+		<!-- The establishing shot's continuous life (P6.2 / D-40). A whisper-soft warm light that lives over the
+		     water's reflection zone, an amplification of the photograph's OWN reflected window-lights, which in a
+		     real long exposure shimmer on still water. home-cinema.js slowly drifts + breathes it (~11s), so the
+		     hero keeps a cinematic presence after 10s at rest without any busy animation. opacity 0 by default
+		     (no-JS / reduced motion → simply absent); screen-blended, confined to the lower water band, never over
+		     the buildings or text; purely atmospheric. -->
+		<div class="home-hero__lumen" aria-hidden="true"></div>
+		<!-- The night the camera descends through (P6.2 refinement of D-41). A band of deep night that
+		     home-cinema.js TRANSLATES, never fades, from below the frame, up through the photograph (still
+		     water first, then the houses, then its blue-hour sky) and onward past the camera, uncovering the
+		     open stage sky behind it. The photograph is handed over to the sky underneath it at the one instant
+		     the band covers the frame completely, so it is never seen to leave: it is consumed by the
+		     descending world rather than dimmed (owner: "it should transform... do NOT solve this with
+		     opacity"). Parked below the frame by a CSS transform at rest, so no-JS / reduced motion never see
+		     it and the honest hero stays intact. -->
+		<div class="home-hero__dusk" aria-hidden="true"></div>
+		<!-- The arrival (P6.2 refinement). Two layers of night that lift on the first painted frame, weighted
+		     so the light returns to the reflection first and the sky last, the world resolves itself in the
+		     order the photograph wants, before any typography exists (owner note #2: "nothing memorable
+		     happens"). Pure CSS on purpose: it must not wait for, or depend on, the GSAP bundle. Both rest at
+		     opacity 0 and reduced motion excludes them, so a veil can never be left over the photograph. -->
+		<div class="home-hero__enter" aria-hidden="true"></div>
+		<!-- ── THE CAPTION COLUMN (P8.6 / D-77, the hero recomposed, again) ─────────────────────────────
+		     THE VERDICT ON D-76: "de huidige hero is rustiger geworden maar de compositie voelt niet
+		     premium." Both halves of that are correct, and the second one is a composition problem that
+		     smaller type cannot reach (the brief says so explicitly: "niet simpelweg tekst verkleinen").
+
+		     WHAT D-76's TITLE CARD ACTUALLY WAS, MEASURED. A ROW spanning the full container width, title
+		     left, lead and action right, one baseline band, under a full-width champagne datum. Three
+		     things follow from "full width", and all three are the opposite of editorial:
+		       · a rule drawn from edge to edge across a photograph is a BANNER. It cuts the picture in half
+		         horizontally at the exact place the eye wants to travel;
+		       · a block that occupies 100% of the width has no asymmetry available to it. Left mass plus
+		         right mass filling the frame is a bar, however unequal the two columns are;
+		       · and it takes the whole foot of the photograph, so the "more whitespace" the brief asks for
+		         has nowhere to come from.
+
+		     WHERE THE NEW BLOCK GOES IS READ OFF THE PHOTOGRAPH, NOT CHOSEN. Sampling the hero's own
+		     luminance on a 6×5 grid at 1440×900, with the scrim removed (mean / brightest per cell):
+
+		            x→        0-240   240-480  480-720  720-960  960-1200 1200-1440
+		         y 720-900     90/144   79/123   67/250   47/236   28/65    21/48
+
+		     The bottom-right quadrant is the quietest region of the entire frame by a wide margin, mean
+		     luminance 21–28 against 67–90 on the left, and a brightest pixel of 48–65 where the left carries
+		     236–250 (the reflected window-lights). The coloured houses, the tower and every reflection Leo
+		     photographed are elsewhere. So the type goes there: it is the one place on this frame where a
+		     block of words costs the photograph almost nothing and needs almost no scrim to be legible.
+
+		     THE COMPOSITION. One narrow COLUMN in the lower right, datum, eyebrow, title, lead, action,
+		     stacked in a single measure, floating clear of both the bottom and the right edge. Not a band:
+		     a caption block, the idiom an architecture monograph actually uses. What this buys, in order of
+		     the brief's own list:
+		       · fotografie centraal, the left 62% and the upper 55% of the frame are now uninterrupted
+		         photograph, including the entire subject;
+		       · editorial compositie, a column of type in a wide frame, set against the picture rather
+		         than laid across it;
+		       · elegante asymmetrie, the block is off-axis in BOTH directions, and it is answered
+		         diagonally by the navigation at the top right and by the scroll cue, which moves from the
+		         centre to the opposite gutter so the foot of the frame is a diagonal rather than a row;
+		       · meer witruimte, the block occupies ~143k px² where the card occupied ~317k, a 55% cut,
+		         and the space it releases is contiguous rather than scattered;
+		       · betere verhouding tekst/foto, the h1 falls to a 3-line column in its own measure. That is
+		         a consequence of the column, exactly as D-76's 2-line fall was a consequence of the row.
+		     The reveal is unchanged in kind: `u-reveal` moves onto the column's lines, the four
+		     `--reveal-index` values and all four camera-curve timings survive, and the datum still draws
+		     itself first. -->
+		<!-- ── (D-76's title card, superseded, kept for the reasoning that still holds) ──────────────────
+		     WHAT WAS WRONG, MEASURED. The h1 rendered at 100px over three lines in a 920px block starting at
+		     y=281 of a 900px viewport: the typography occupied the entire left half of the frame, from the
+		     sky down to the water, and the photograph's actual subject, the coloured houses of the
+		     Reitdiephaven and their reflection, was underneath it. On a site whose first principle is that
+		     photography is the product and the interface recedes (2.2 / 6.16), the single most important
+		     screen was the one place that principle was reversed.
+
+		     WHY IT IS NOT "SMALLER FONTS" (the brief rules that out explicitly, and it would not have worked
+		     anyway: at 3 lines a smaller h1 is still a wall, just a quieter one). The composition changes:
+		       · the type leaves the middle of the frame and becomes a LOWER-BAND TITLE CARD. The whole upper
+		         two-thirds, sky, houses, masts, is now uninterrupted photograph;
+		       · it stops being a STACK and becomes a ROW. Title left, supporting line and action right, on
+		         one baseline band. A stack grows downward and takes height from the image; a row spends the
+		         width the composition already had and takes almost none. This is what actually buys the
+		         photograph its frame back, and it is why the h1 only needs to fall to two lines rather than
+		         to something apologetic;
+		       · a champagne DATUM hairline draws across the top of the card, so the type sits under a real
+		         structural line instead of floating on the water. It is the site's own datum idiom (the
+		         header, the footer and the CTA close all carry the same mark), which is what makes this read
+		         as the brand's hero rather than as a generic photo-with-caption;
+		       · and the SCRIM is re-weighted (see `.home-hero__scrim`), from a corner wash that darkened the
+		         left half of the picture to a foot band that darkens only the water the card sits on.
+		     The reveal is unchanged in kind, `u-reveal` now sits on the two columns rather than on the flat
+		     stack, so the eyebrow → title → line → action order and all four camera-curve timings survive. -->
+		<div class="home-hero__content u-container u-container--wide">
+			<div class="home-hero__card">
+				<span class="home-hero__datum" aria-hidden="true"></span>
+				<div class="home-hero__lines u-reveal">
+					<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 0">
+						Architectuur- &amp; interieurfotografie
+					</p>
+					<h1 class="t-display home-hero__title u-reveal-mask" style="--reveal-index: 1">
+						Fotografie met rust, precisie en perfect licht.
+					</h1>
+					<p class="t-lead home-hero__sub" style="--reveal-index: 2">
+						Leo Rieksen legt gebouwen en interieurs vast met oog voor sfeer, lijnen en belichting, van
+						het blauwe uur tot zorgvuldig opgebouwd kunstlicht.
+					</p>
+					<div class="home-hero__actions" style="--reveal-index: 3">
+						<a class="home-hero__cta" href="/portfolio/" data-magnetic="8">
+							Bekijk het portfolio
+							<svg
+								width="20"
+								height="20"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.6"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+								focusable="false"
+							>
+								<path d="M4 12h15M13 6l6 6-6 6" />
+							</svg>
+						</a>
+					</div>
+				</div>
 			</div>
 		</div>
 		<a class="home-hero__scroll" href="#positionering" aria-label="Verder naar de introductie">
@@ -106,7 +210,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	</header>
 
 	<!-- POSITIONERING + INTRODUCTIE LEO (13.17 / 13.20). Asymmetric: a monumental statement against the
-	     transformed intro prose + a brief, factual introduction of Leo. Progressive disclosure — the full
+	     transformed intro prose + a brief, factual introduction of Leo. Progressive disclosure, the full
 	     background lives on Over mij. -->
 	<Section as="section" id="positionering" class="pos-sec">
 		<div class="pos">
@@ -120,13 +224,13 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 					versterken, niet verstoren.
 				</p>
 				<p>
-					Leo werkt rustig, nauwkeurig en in goed overleg met de opdrachtgever — met aandacht voor
+					Leo werkt rustig, nauwkeurig en in goed overleg met de opdrachtgever, met aandacht voor
 					het beste moment van de dag, de juiste invalshoeken en de belichting. Het resultaat: strakke,
 					rustige beelden met veel oog voor licht, lijnen en materiaal.
 				</p>
 				<p class="pos__audience">
 					Beelden voor architecten, interieurontwerpers, makelaars en bedrijven die hun ruimtes
-					professioneel willen laten zien — in Midden-Nederland en daarbuiten.
+					professioneel willen laten zien, in Midden-Nederland en daarbuiten.
 				</p>
 				<p class="pos__more">
 					<a class="link-arrow" href="/over-mij/">
@@ -151,11 +255,11 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		</div>
 	</Section>
 
-	<!-- GESELECTEERD WERK (13.18). A curated glimpse, not the full portfolio — one large featured plate
+	<!-- GESELECTEERD WERK (13.18). A curated glimpse, not the full portfolio, one large featured plate
 	     beside a stacked pair, each opening its project. Composed as an editorial spread (distinct from the
 	     portfolio overview's own lead+index layout) so the two pages don't share a structure. Stepped onto
 	     the DEEPEST surface (ink-950, blueprint 6.9) so the work reads as a distinct gallery chapter, tonally
-	     separated from the positionering above — a dark-scale boundary, not a light insert. -->
+	     separated from the positionering above, a dark-scale boundary, not a light insert. -->
 	<Section as="section" surface="deep" width="flush" class="work">
 		<div class="u-container work__head">
 			<div>
@@ -183,7 +287,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 
 		{
 			/* THE BIG IMAGE MOMENT (P4.5). The featured project reprises the hero's immersive full-bleed
-			   grammar — the first container break since the hero — so photography regains commanding scale
+			   grammar, the first container break since the hero, so photography regains commanding scale
 			   and the interface recedes (blueprint 4.58 "grote beeldmomenten", 8.3 scale/negative-space). It
 			   is revealed by the geometric image mask (`u-inview--mask`), the loud counterpart to the calm
 			   text rise used elsewhere. Static-first: a plain <a> with a real caption; the mask only enhances. */
@@ -200,7 +304,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 					/>
 					<div class="work-immersive__scrim" />
 					{/* Pointer catch-light (P6.2 / D-37): a whisper-soft warm highlight tracks the pointer across
-					    the architecture — a subtle "light on the building" mouse interaction (7.64/7.65). Desktop
+					    the architecture, a subtle "light on the building" mouse interaction (7.64/7.65). Desktop
 					    fine-pointer only, opacity 0 until hover, script-set position; non-essential (no JS / touch /
 					    reduced-motion → simply absent, plate fully intact). */}
 					<div class="work-immersive__glow" aria-hidden="true" />
@@ -253,8 +357,8 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		</div>
 	</Section>
 
-	<!-- SPECIALISATIES (13.17 / 13.19). The two disciplines as an asymmetric photographic diptych — different
-	     ratios, different weights, a shared approach — NOT two equal cards. The two PHOTOGRAPHS carry this beat
+	<!-- SPECIALISATIES (13.17 / 13.19). The two disciplines as an asymmetric photographic diptych, different
+	     ratios, different weights, a shared approach, NOT two equal cards. The two PHOTOGRAPHS carry this beat
 	     on the base-dark surface (images as the light source, 6.16). Each opens its service page. -->
 	<Section as="section" class="spec-sec">
 		<div class="spec">
@@ -275,7 +379,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 				<div class="spec-card__text">
 					<h3 class="t-h3 spec-card__name">Architectuurfotografie</h3>
 					<p class="spec-card__desc">
-						Gebouwen en exterieurs, waarin structuur, proportie, licht en lijn tot hun recht komen —
+						Gebouwen en exterieurs, waarin structuur, proportie, licht en lijn tot hun recht komen
 						van monumenten tot moderne architectuur.
 					</p>
 					<span class="link-arrow spec-card__link">
@@ -298,7 +402,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 				<div class="spec-card__text">
 					<h3 class="t-h3 spec-card__name">Interieurfotografie</h3>
 					<p class="spec-card__desc">
-						Ruimtes waarin sfeer, materiaal en functie samenkomen — van woningen en kantoren tot
+						Ruimtes waarin sfeer, materiaal en functie samenkomen, van woningen en kantoren tot
 						publieke gebouwen, in bestaand en zorgvuldig aangevuld licht.
 					</p>
 					<span class="link-arrow spec-card__link">
@@ -311,10 +415,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		</div>
 	</Section>
 
-	<!-- WERKWIJZE / VERTROUWEN (13.13 vertrouwen en werkwijze; P4 correction #4 — D-23). Transformed from Leo's
-	     own on-location service copy — a restrained enumerated method, not icon cards. The light plane is retired:
-	     this is now a distinct DARK chapter, stepped up one tint to ink-850 (`surface`) — a subtle full-bleed
-	     tonal lift (6.9) between the base-dark specialisaties above and the base-dark CTA below — with monumental
+	<!-- WERKWIJZE / VERTROUWEN (13.13 vertrouwen en werkwijze; P4 correction #4, D-23). Transformed from Leo's
+	     own on-location service copy, a restrained enumerated method, not icon cards. The light plane is retired:
+	     this is now a distinct DARK chapter, stepped up one tint to ink-850 (`surface`), a subtle full-bleed
+	     tonal lift (6.9) between the base-dark specialisaties above and the base-dark CTA below, with monumental
 	     gold numerals carrying the scale contrast the light card used to. Full-width tonal step, not a panel. -->
 	<Section as="section" surface="surface" class="method-sec">
 		<div class="method">
@@ -328,7 +432,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 				<div>
 					<h3 class="t-h4 method__name">Fotografie op locatie</h3>
 					<p class="method__desc">
-						De opnames vinden altijd plaats bij de opdrachtgever — van particuliere woning tot kantoor,
+						De opnames vinden altijd plaats bij de opdrachtgever, van particuliere woning tot kantoor,
 						horeca, zorginstelling of publiek gebouw.
 					</p>
 				</div>
@@ -349,7 +453,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 					<h3 class="t-h4 method__name">Nauwkeurig vastgelegd</h3>
 					<p class="method__desc">
 						Tijdens de shoot wordt rustig gewerkt: lijnen worden rechtgezet en het aanwezige licht
-						waar nodig aangevuld met gericht kunstlicht — indien gewenst ook op hoogte.
+						waar nodig aangevuld met gericht kunstlicht, indien gewenst ook op hoogte.
 					</p>
 				</div>
 			</li>
@@ -367,9 +471,9 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	/>
 
 	<!-- ============================================================================================= *
-	     P6.2 RECOVERY — HOMEPAGE REALTIME INTERACTION RUNTIME (D-38).
+	     P6.2 RECOVERY, HOMEPAGE REALTIME INTERACTION RUNTIME (D-38).
 	     One small unified `is:inline` runtime (emits NO JS bundle; the site stays 0-bundle) providing the
-	     realtime, input-driven feedback the owner asked for — VARIED families, not one copied effect:
+	     realtime, input-driven feedback the owner asked for, VARIED families, not one copied effect:
 	       · scroll-direction / scrolled signal  → data-attrs + class on <html> (a cheap signal, drives CSS).
 	       · [data-plight]   pointer light        → writes --gx/--gy (generalised catch-light).
 	       · [data-ptilt]    pointer parallax+light→ the inner photo eases TOWARD the pointer within its clip
@@ -379,14 +483,20 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	     Pointer families attach ONLY on a fine desktop pointer with motion allowed (touch / no-JS /
 	     reduced-motion → simply absent, composition fully intact). Every loop is rAF-throttled, passive and
 	     SELF-HALTING (stops when settled) so there is no permanent animation. Writes custom properties only
-	     (no layout reads in the loop) — compositor-friendly. -->
+	     (no layout reads in the loop), compositor-friendly. -->
 	<script is:inline>
 		(function () {
 			var docEl = document.documentElement;
 			var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-			// --- Scroll-state signal (always on; a signal, not motion — drives CSS transitions only) ---
-			var lastY = window.scrollY,
+			// --- Scroll-state signal (always on; a signal, not motion, drives CSS transitions only) ---
+			// P9 (D-80): `lastY` is seeded INSIDE the first frame, not at parse time. This script sits in the
+			// middle of the document (it has to: it binds handlers to elements above it), and reading
+			// window.scrollY there forced a synchronous layout of everything parsed so far, measured at 97 ms
+			// of the homepage's 134 ms of forced reflow on a 4×-throttled load, in the middle of parsing. The
+			// value is identical a frame later, and a rAF callback still runs before the first paint, so the
+			// scroll state is just as correct and the parser is never interrupted.
+			var lastY = 0,
 				dir = '',
 				ticking = false;
 			function onScroll() {
@@ -405,7 +515,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 				});
 			}
 			window.addEventListener('scroll', onScroll, { passive: true });
-			onScroll();
+			requestAnimationFrame(function () {
+				lastY = window.scrollY;
+				onScroll();
+			});
 
 			var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 			if (!fine || reduce) return; // pointer families are enhancement only
@@ -510,8 +623,8 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	</script>
 
 	<!-- ============================================================================================= *
-	     P6.2 / D-39 — HOMEPAGE CINEMATIC SCENE ORCHESTRATION (GSAP + ScrollTrigger).
-	     A processed (bundled), deferred module — NOT is:inline — so GSAP is code-split into the site's first
+	     P6.2 / D-39, HOMEPAGE CINEMATIC SCENE ORCHESTRATION (GSAP + ScrollTrigger).
+	     A processed (bundled), deferred module, NOT is:inline, so GSAP is code-split into the site's first
 	     JS bundle and loaded non-render-blocking. It arms ONLY under `prefers-reduced-motion: no-preference`;
 	     content is fully visible before/without it (the LCP hero stays eager/priority and is never gated by
 	     this script). See home-cinema.js + documenten/HOMEPAGE_MOTION_CHOREOGRAPHY.md. -->
@@ -523,12 +636,16 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 
 <style>
 	/* ============================================================= *
-	 * THE CONTINUOUS STAGE (P6.2 / D-39) — the fixed, evolving world behind the whole page.
-	 * A single aria-hidden fixed layer holding pre-painted gradient sub-layers whose intensity/position are
-	 * driven by CSS custom properties. home-cinema.js animates those properties per scene, so the atmosphere
-	 * flows continuously through the descent instead of hard-cutting at every section boundary. The sub-layers
-	 * only move OPACITY/POSITION (compositor-cheap) — gradients are never repainted per frame. Off until
-	 * `html.motion-scene`; under no-JS / reduced motion it stays invisible and the frozen D-38 atmospheres show.
+	 * THE CONTINUOUS WORLD (P6.2 / D-40), one fixed blue-hour architectural volume behind the whole page.
+	 *
+	 * Each sub-layer is a FIXED gradient painted once (position + colour never change). home-cinema.js drives
+	 * only each layer's `opacity` and `transform: translate3d()` from scroll position, every frame, so the
+	 * light flows continuously and is ALWAYS exactly where the camera is (the root fix for D-39's discrete,
+	 * early-firing scene light). Because only opacity/transform change, there is NO per-frame gradient repaint:
+	 * pure compositor work, CLS-safe. Each layer is centred at 50% 50% so JS can slide the pool anywhere by a
+	 * single translate (e.g. the cool pool left + warm pool right = the specialisaties two-disciplines split,
+	 * read straight off the Amersfoort tower and the Eemhuis lamplight). Off until `html.motion-scene`; under
+	 * no-JS / reduced motion the stage stays invisible and the frozen D-38 per-section atmospheres render.
 	 * ============================================================= */
 	.stage {
 		position: fixed;
@@ -536,55 +653,104 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		z-index: -1;
 		pointer-events: none;
 		opacity: 0;
-		isolation: isolate; /* contain the warm layer's screen blend to the stage's own sub-layers */
-		/* The live "dimmer board" home-cinema.js tweens. Defaults = the hero preset, so the stage is coherent
-		   even for the one frame before the script seeds it. */
-		--st-cool: 0.26;
-		--st-cool-y: -8%;
-		--st-warm: 0;
-		--st-warm-x: 82%;
-		--st-warm-y: 58%;
-		--st-vig: 0.04;
-		--st-base: 0.5;
+		isolation: isolate; /* contain the screen-blended horizon/haze to the stage's own sub-layers */
 	}
 	:global(html.motion-scene) .stage {
 		opacity: 1;
-		transition: opacity 900ms var(--ease-standard);
+		transition: opacity 1100ms var(--ease-standard);
 	}
 	.stage > * {
 		position: absolute;
 		inset: 0;
+		will-change: opacity, transform;
 	}
-	/* Steady vertical blue-hour field — the whole descent is a modelled space, never flat ink. */
-	.stage__base {
-		background: var(--atmos-depth-base);
-		opacity: var(--st-base);
+
+	/* Deep-night base, the constant dark the whole descent sits in; always on under motion-scene. A real,
+	   faintly chromatic night (cool at the crown, a whisper warmer at the foot), never a flat ink fill. */
+	.stage__sky--b {
+		/* P8.6 (D-77): the last stop was #0b0a12, hue 247.5, a violet, not the "whisper warmer at the foot"
+		   the comment describes. Re-derived onto the sapphire hue at the same lightness. The foot's warmth is
+		   delivered by `.stage__sky--c` on top of this, which is where it belongs. */
+		background: linear-gradient(180deg, #0a1524 0%, #090f1b 44%, #0a0d12 100%);
+		opacity: 1;
 	}
-	/* Cool blue-hour glow — dominant at the hero, dimming + descending through the gallery. */
-	.stage__cool {
-		background: radial-gradient(
-			130% 92% at 50% var(--st-cool-y),
-			rgba(var(--p-atmos-cool), var(--st-cool)) 0%,
-			rgba(var(--p-atmos-cool), calc(var(--st-cool) * 0.32)) 34%,
-			rgba(var(--p-atmos-cool), 0) 62%
+	/* Blue hour, dominant at the top: a photographed dusk sky (deep cyan-blue crown → teal horizon band).
+	   JS fades it out over the first ~40% of the descent so the world cools into deep night. */
+	.stage__sky--a {
+		background: linear-gradient(180deg, #123c66 0%, #103150 30%, #0d223f 58%, #0b1830 100%);
+		opacity: 0;
+	}
+	/* Warm interior night, dominant at the foot: the deep amber-brown of lamplit interior dark. JS fades it
+	   in over the last ~50%, so the descent lands somewhere warm and human. */
+	/* ── P8.7 (D-78): THE EVENING ENDS OUTDOORS AGAIN ───────────────────────────────────────────────────
+	   THE COMPLAINT: the boundary between this page's last section and the footer, "die kleuren gaan gewoon
+	   niet samen", and explicitly NOT to be solved with a fade.
+	   MEASURED at the foot of the page: the closing field ran hue 25–32° at S 0.27–0.43 (a desaturated
+	   BROWN) and the footer opened at hue 222° / S 0.70 (a rich sapphire). That is a ~195° hue swing across
+	   one boundary, with the dull side above and the vivid side below, the largest clash two colours on one
+	   page can have, and no amount of blending would have made them relatives.
+
+	   The defect is not the boundary, it is that this layer was a BROWN FILL. Brown is what warmth becomes
+	   when you take it all the way down in lightness with no blue underneath it, and on this site every dark
+	   is a sapphire dark. Leo's own photographs never do this: their warm windows sit INSIDE a blue-hour
+	   world. So the warm hour stops being the colour of the world and goes back to being the LIGHT in it:
+	     · the top of the frame keeps real amber lamplight, moved onto the site's own gold hue (32° → 38.1°,
+	       the reference) and cleaned up so it reads as light rather than as mud;
+	     · the middle is the crossover, where the lamplight gives out;
+	     · and the foot lands on `--p-sapphire-900`, the footer's OWN opening tone, exactly.
+	   Because this is a fixed full-viewport layer, that vertical arrangement is also a temporal one: the
+	   reader descends out of the warm hour and into the night, and the last thing beneath the footer is the
+	   footer's own colour. The step is not blended away; there is no step left to blend. The other half of
+	   the repair is in tokens.css, where the sapphire family is de-iced so that a warm page can sit beside
+	   it at all. */
+	.stage__sky--c {
+		background: linear-gradient(
+			180deg,
+			#231909 0%,
+			#1d160c 30%,
+			#141420 62%,
+			var(--p-sapphire-900) 88%,
+			var(--p-sapphire-900) 100%
 		);
+		opacity: 0;
 	}
-	/* Warm gold-family light source — the "print-light" resolving in the gallery, the interior pole of the
-	   specialisaties split, and the target of the plate-hover warmth pull. */
-	.stage__warm {
+	/* Horizon glow, the band of last light. A wide soft ellipse low on screen that JS translates UP past the
+	   camera as we descend (the genuine falling cue, not just a recolour), breathes slowly, and cross-fades
+	   its hue cool→warm via --warm (color-mix of the two atmosphere primitives). Screen-blended: only adds
+	   light. Oversized top/bottom so the vertical travel never exposes an edge. */
+	.stage__horizon {
+		inset: -45% 0;
+		--hz: color-mix(
+			in srgb,
+			rgb(var(--p-atmos-cool)) calc((1 - var(--warm, 0)) * 100%),
+			rgb(var(--p-atmos-warm))
+		);
 		background: radial-gradient(
-			88% 72% at var(--st-warm-x) var(--st-warm-y),
-			rgba(var(--p-atmos-warm), var(--st-warm)) 0%,
-			rgba(var(--p-atmos-warm), calc(var(--st-warm) * 0.3)) 40%,
-			rgba(var(--p-atmos-warm), 0) 66%
+			122% 40% at 50% 60%,
+			color-mix(in srgb, var(--hz) 52%, transparent) 0%,
+			color-mix(in srgb, var(--hz) 16%, transparent) 34%,
+			transparent 64%
 		);
 		mix-blend-mode: screen;
+		opacity: 0;
 	}
-	/* Depth vignette / abyss — deepens as the camera descends into the gallery and again into the footer. */
+	/* Atmospheric haze, two very soft depth planes that drift laterally + rise slower than scroll (parallax
+	   depth), giving the sky air without any busy motion. Low alpha; screen-blended. */
+	.stage__haze {
+		inset: -30% -12%;
+		background:
+			radial-gradient(60% 46% at 28% 22%, rgba(var(--p-atmos-cool), 0.07) 0%, transparent 60%),
+			radial-gradient(54% 40% at 80% 46%, rgba(var(--p-atmos-cool), 0.05) 0%, transparent 56%);
+		mix-blend-mode: screen;
+		opacity: 0.85;
+	}
+	/* Depth vignette, deepens AS the camera passes the gallery (the abyss the plate emerges from) and again
+	   as it lands in the deep footer dark. JS only fades it. */
 	.stage__vignette {
 		background:
-			radial-gradient(125% 105% at 50% 42%, transparent 38%, rgba(4, 6, 10, var(--st-vig)) 100%),
-			linear-gradient(180deg, transparent 58%, rgba(4, 6, 10, calc(var(--st-vig) * 0.85)) 100%);
+			radial-gradient(132% 102% at 50% 40%, transparent 30%, rgba(3, 5, 9, 0.62) 100%),
+			linear-gradient(180deg, transparent 54%, rgba(3, 5, 9, 0.55) 100%);
+		opacity: 0;
 	}
 
 	/* ============================================================= *
@@ -601,29 +767,286 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		background: transparent;
 		transition: background 900ms var(--ease-standard);
 	}
-	:global(html.motion-scene) .work::before,
-	:global(html.motion-scene) .spec-sec::before {
+	:global(html.motion-scene) .work::before {
 		opacity: 0;
 		transition: opacity 900ms var(--ease-standard);
 	}
+	/* The specialisaties section KEEPS its own ::before under the cinematic runtime, a cool pool upper-left
+	   (under the cool blue-sky architecture plate) + a warm pool lower-right (under the warm lamplit interior
+	   plate): the "two disciplines expressed as light" reads AGAINST the warm environment at this altitude, a
+	   local pocket of cool that maps the two disciplines. (D-41, see spec-sec::before below.) */
 	/* Native CSS scroll-driven camera hands over to GSAP (inline transforms). A running CSS animation would
 	   otherwise win over GSAP's inline transform in the cascade, so cancel it on the handed-over media. */
 	:global(html.motion-scene) .home-hero__media,
 	:global(html.motion-scene) .work-immersive__media {
 		animation-name: none;
 	}
+	/* ...and the SAME hand-over is required for TRANSITIONS, the missing half of the rule above, and the
+	   root cause of the plate's broken exit (owner: "the image visibly flickers when leaving").
+	   `.work-immersive` carries `.u-inview`, whose reveal transition (`transform var(--dur-transition)`,
+	   i.e. 680ms) stays LIVE even though the block below neutralises the reveal's VALUES. ScrollTrigger
+	   ends a pin by writing `transform: translate(0, <pin distance>)` inline while switching `position`
+	   fixed→relative. `position` cannot transition, so it snapped; the transform was ANIMATED over 680ms.
+	   Measured at 1440×900: the plate teleported 657px to the pin-spacer's top in ONE frame, then glided
+	   back over ~680ms. The hero pin, which is not `.u-inview`, measured 0px, the natural A/B that proves
+	   this. GSAP owns this element's transform; only the tactile opacity press-feedback survives. */
+	:global(html.motion-scene) .work-immersive.u-inview {
+		transition: opacity var(--dur-feedback) var(--ease-standard);
+	}
+
+	/* THE SEPARATOR, root cause (owner: "the dark bar between the hero and the first section is STILL
+	   present; the previous diagnosis was incomplete; find the REAL visual cause").
+	   It was never in the hero. It is the SHARED HEADER, and that is exactly why three passes of hero
+	   forensics (scrim lockstep, 92svh→100svh, the dusk band's occlusion window) all missed it: they
+	   searched inside `.home-hero`, and the block is a `position: fixed; z-index: 200` overlay ABOVE it.
+
+	   The mechanism, measured. `SiteHeader.astro` resolves its overlay variant on scroll: `is-solid`
+	   switches the soft top scrim OFF (`::before`, opacity 1 → 0, a gradient to nothing over 160% of the
+	   header, which has no edge anywhere) and switches ON `background: var(--color-bg)` plus a
+	   `border-bottom`, i.e. a FLAT OPAQUE, HARD-EDGED, full-width 77px rectangle. On every other page that
+	   is invisible, because `--color-bg` IS that page's background; the bar and the page are the same
+	   colour. Here it is not. Under the cinematic runtime every surface on this page has already yielded to
+	   the stage sky (`.pos-sec`, `.work`, `.spec-sec`, `.method-sec` → `background: transparent`, see the
+	   STAGE HANDOFF block above), the header is the ONE surface that never got that hand-off, so it keeps
+	   painting a slab of a colour this page stopped using the moment `motion-scene` armed.
+
+	   And the TIMING is why it reads as a separator BETWEEN two things rather than as a header: the flag
+	   fires at `scrollY > innerHeight * 0.62` (= 558 at 900), which is dead inside the window where the
+	   night band lifts (the sky begins opening at ~470; the frame is fully clear at ~766). MEASURED at
+	   1440x900, mean luminance of a 60px column strip: the bar holds a constant 19 (rgb 15,19,26) while the
+	   sky behind it travels 12 → 44. So the block never fades in, it is UNCOVERED, at the precise instant
+	   the world opens, in the precise place the reader is looking. Hence "between the hero and the first
+	   section": that is when it becomes visible, not where it lives.
+
+	   The fix is the missing hand-off, not a cover-up (brief: "do not simply hide the bar, remove the
+	   reason it exists"). The reason it exists is legibility over arbitrary content; the header already
+	   ships the instrument for that, its own scrim, and that scrim is *of the world*: soft light with no
+	   edge, fading to nothing. So under `motion-scene` the header simply never resolves to a slab and keeps
+	   the scrim it opened with. There is no rectangle to see, and nothing is hidden: contrast is carried by
+	   the same veil that carries it over the photograph at scroll 0.
+	   Homepage-only, `motion-scene` is set by this page's module alone and this scoped sheet ships with no
+	   other page, so `SiteHeader` itself is UNTOUCHED and every other page, plus the honest no-JS /
+	   reduced-motion baseline here, keeps the solid bar exactly as before. The mobile-menu rule
+	   (`:has(#mobile-nav[open])`, specificity 1,2,1) still outranks this (0,3,1), so an open menu still
+	   solidifies into one dark surface and the hero cannot peek through it. */
+	:global(html.motion-scene .site-header--overlay.is-solid) {
+		background: transparent;
+		/* P8.5 (D-76): the header's new chrome finish, the lit top arris (a box-shadow) and the gold datum
+		   (::after), are part of the SLAB this rule exists to remove. Over a moving sky they would be two
+		   bright horizontal lines with nothing under them, i.e. the same rectangle by a thinner route. They
+		   stand down with the fill; the scrim below is what carries legibility here. */
+		box-shadow: none;
+	}
+	:global(html.motion-scene .site-header--overlay.is-solid::after) {
+		opacity: 0;
+	}
+	/* ...and the veil that replaces the slab has to actually do the slab's JOB, or this is a cover-up with
+	   extra steps. The slab's job is legibility over arbitrary content, and the shipped scrim CANNOT do it:
+	   its comment claims to be "content-proof", but that is never tested, because `is-solid` takes over at
+	   0.62vh and the scrim only ever meets the hero's own calm sky. MEASURED across the whole descent (42
+	   positions, brightest pixel in the nav band, glyphs hidden): the shipped scrim carries only ~0.33 alpha
+	   at the nav's baseline, and where the Kröller-Müller pavilion, a high-key interior of white glass and
+	   lit floor, rgb(168,169,170), passes under the header at scroll 3750, the nav fell to **2.03:1**. That
+	   is a WCAG 2.2 AA failure (needs 4.5:1) and it would have been MY regression, introduced by deleting the
+	   fill that was quietly carrying it.
+	   So the veil is re-weighted here to be genuinely content-proof: ~0.86 alpha through the nav's own band
+	   (top ~50px), then a long decay to nothing across 200px. Two properties do the work:
+	     - it is EDGELESS, it ends at `transparent`, so there is no boundary anywhere to read as a rectangle.
+	       That is the whole difference between this and the slab; a soft top-down deepening over a night sky
+	       is depth (the hero's own scrim and the stage vignette already do exactly this), a hard-edged
+	       rectangle of a colour the page no longer uses is chrome.
+	     - it is made of the WORLD's night, rgb(8,12,22) is the same deep night as `.home-hero__dusk`, not
+	       `--color-bg`'s flat interface grey, so where it deepens, it deepens toward the sky's own dark.
+	   Verified over the worst case rather than assumed: at 0.86 over pure white the nav still reads ~10:1,
+	   so no photograph Leo can put under it will fail. */
+	:global(html.motion-scene .site-header--overlay.is-solid::before),
+	:global(html.motion-scene .site-header--overlay::before) {
+		opacity: 1;
+		/* LOAD-BEARING, and found only by looking at the render. The scrim is `position: absolute; z-index:
+		   auto`, and everything in `.site-header__inner` is `position: static`, so by paint order the scrim
+		   lands ON TOP of the header's own brand and CTA (positioned descendants paint after inline content).
+		   The shipped 0.55→0 scrim got away with it: ~0.33 alpha, and `is-solid` switched it off before it
+		   mattered. At the strength legibility actually needs it is catastrophic, A/B MEASURED at scroll 774,
+		   veil off → on: the Contact label went rgb(236,238,242) → rgb(40,44,53), i.e. **11.71:1 → 1.36:1**,
+		   an erased button; the brand 11.71:1 → 4.54:1. (The nav links alone were unaffected, they sit in a
+		   positioned ancestor, which is exactly why this is invisible unless you check all three.)
+		   Worth recording HOW this nearly shipped: the whole-page sweep that cleared this veil at "10.56:1"
+		   measured the backdrop with the glyphs hidden, a valid reading of the wrong surface, since the text
+		   is UNDER the veil, not over it. The number was true and meaningless. The screenshot caught it.
+		   `.site-header--overlay` is `position: fixed; z-index: 200`, so it is its own stacking context and
+		   -1 cannot escape it: the scrim drops behind the header's content and stays above the page. */
+		z-index: -1;
+		height: 260%;
+		background: linear-gradient(
+			to bottom,
+			rgba(8, 12, 22, 0.9) 0%,
+			rgba(8, 12, 22, 0.86) 22%,
+			rgba(8, 12, 22, 0.62) 40%,
+			rgba(8, 12, 22, 0.3) 64%,
+			rgba(8, 12, 22, 0.1) 82%,
+			rgba(8, 12, 22, 0) 100%
+		);
+	}
+
+	/* THE SEPARATOR, SECOND MECHANISM, mobile only, and independent of the header above.
+	   Desktop never shows this: the hero is pinned, so its bottom edge sits on the viewport's bottom edge and
+	   is never seen, and by unpin the dusk band has consumed the box entirely. Mobile has no pin, the hero
+	   departs by opacity, so its BOX EDGE travels up the screen in plain view. And the hero's bottom is the
+	   densest part of `--color-image-scrim-corner` (0.9 alpha of near-black at 4%), while `.pos-sec` beneath
+	   it is the lit stage sky. MEASURED at 390x844, median row luminance (median, so glyphs cannot skew it),
+	   across the hero's bottom edge: 13.5 → 54.9 at scroll 200, a **41-unit step in ONE pixel row**, then
+	   25.4 at 350 and 8.9 at 650 as the melt takes the scrim with it. A dark band with a hard line under it,
+	   full width, sliding up over a lighter sky: a rectangular dark block between the hero and the first
+	   section, exactly as reported, and a completely different mechanism from the header slab.
+	   This is why "the previous diagnosis was incomplete" in both directions, D-44 correctly put the scrim in
+	   lockstep with the photograph and correctly took the hero to 100svh (which removed the *static* gap), but
+	   the box's own edge was never the scrim's opacity: it is the fact that an opaque rectangle ends.
+	   The fix is the owner's own instruction, remove the need for the separator rather than hide it. The
+	   photograph and its scrim are given a soft bottom edge, so the hero has no boundary to read as one: it
+	   dissolves into the world underneath instead of stopping against it. Applied to the two departing layers
+	   only (never the title/CTA, which are separate elements), and gated to `motion-scene` + the mobile branch
+	   that actually has the defect, the honest baseline and every desktop viewport are untouched.
+	   The rest composition is the constraint, not an afterthought: at scroll 0 the hero is exactly 100svh, so
+	   this fade zone lands on the bottom-most pixels of the screen, over the stage's own darkest, most
+	   vignetted sky. Verified by measurement rather than assumed, see the note in PROGRESS. */
+	@media (max-width: 52rem) {
+		:global(html.motion-scene) .home-hero__media,
+		:global(html.motion-scene) .home-hero__scrim {
+			-webkit-mask-image: linear-gradient(to bottom, #000 90%, transparent 100%);
+			mask-image: linear-gradient(to bottom, #000 90%, transparent 100%);
+		}
+	}
+
+	/* SCENE 2 handoff (D-41). The featured plate becomes a full-viewport immersive moment the camera arrives
+	   at, holds on, and departs from (home-cinema.js pins + scrubs it on desktop). The curtain reveal is
+	   retired here, the pinned arrival IS the reveal, and a curtain over a pinned plate would double up. */
+	@media (min-width: 52.0625rem) {
+		:global(html.motion-scene) .work-immersive {
+			min-height: 100svh;
+		}
+	}
+	:global(html.motion-scene) .work-immersive::after {
+		display: none;
+	}
+
+	/* KILL THE SECTION-LABEL CADENCE (D-41). The repeated eyebrow labels, "Positionering", "Geselecteerd
+	   werk", "Specialisaties", "Werkwijze", are what literally announce "new section" and gave the page its
+	   stacked-block rhythm (owner's #1 complaint). Under the cinematic runtime they are retired so each beat
+	   reads as one continuous narrative carried by its statement heading + photography, not a labelled block.
+	   Hidden ONLY under motion-scene, the honest no-JS / reduced-motion baseline keeps its labels for skim +
+	   wayfinding (nothing deleted; content authority preserved). The meaningful photo-caption eyebrows
+	   (category · location) are untouched. */
+	:global(html.motion-scene) .pos__lead > .t-eyebrow,
+	:global(html.motion-scene) .work__head .t-eyebrow,
+	:global(html.motion-scene) .spec > .t-eyebrow,
+	:global(html.motion-scene) .method__head > .t-eyebrow {
+		display: none;
+	}
+	/* The closing "Contact" eyebrow lives in the SHARED ContactCta component, so a scoped selector never
+	   reaches it, fully-global so it too retires under the homepage cinematic runtime (baseline keeps it). */
+	:global(html.motion-scene .cta .t-eyebrow) {
+		display: none;
+	}
+
+	/* SEAM FIX (P6.2 refinement of D-41). Under the cinematic runtime, positionering ARRIVES by the camera
+	   descending to it (native scroll over the living sky) rather than playing its own assemble-on-arrival
+	   reveal, so the hero dissolve and the first beat read as ONE continuous fall, not "hero → animation →
+	   section" (owner runtime note #3). The honest no-JS / reduced-motion baseline keeps the reveals (content
+	   still ships fully visible; nothing depends on them). Specificity beats `html.js .u-mask-up/.u-settle`. */
+	:global(html.motion-scene) .pos__statement.u-mask-up {
+		animation: none;
+		clip-path: none;
+		opacity: 1;
+		transform: none;
+	}
+	:global(html.motion-scene) .pos__body.u-settle {
+		animation: none;
+		opacity: 1;
+		transform: none;
+	}
+	/* PACING (P6.2 polish). The one pacing complaint left in the descent: "between the hero ending and the
+	   first section appearing there is slightly too much empty time, did something stop?" MEASURED at
+	   1440x900, the hero's scene itself has no dead tail (the night band clears the frame at scroll ~785 and
+	   the pin releases at 774, matched to within 11px). The waiting is entirely AFTER it: `.section` leads
+	   with `--section-gap` (120px here), so the statement's first pixel only crossed the fold at scroll 910
+	   125px of empty sky after the world had finished revealing itself, and ~425px before the line sat at a
+	   readable height. Long enough to read as a stall rather than a descent.
+	   So this is a SPACING fix, not an animation one, nothing in the choreography is touched, no timing is
+	   shortened, the hero is not cut. The camera simply has less nothing to cross before the first beat is
+	   there. Under the cinematic runtime the leading gap is not doing the work it does in the honest
+	   baseline: there it separates two opaque surfaces, here both sides are the same continuous sky, so the
+	   space reads as absence rather than rhythm. The trailing gap is untouched (it still paces work), and the
+	   baseline keeps `--section-gap` on both edges, nothing about the no-JS/reduced-motion page changes. */
+	:global(html.motion-scene) .pos-sec {
+		padding-block-start: clamp(1.25rem, 0.5rem + 2vw, 2.75rem);
+	}
+
+	/* PACING, PASS 2 (owner: "the first section STILL arrives too late, there is too much empty travel
+	   after the hero has already finished"). The previous pass tightened the leading `--section-gap`
+	   (120px → 37px). That was real but far too small to answer the complaint, because the gap was never
+	   the bulk of the waiting. MEASURED at 1440x900: the pin releases at 774, and `.pos-sec` begins at
+	   1674, the pin-spacer is hero(900) + pin(774), so at the exact moment the hero unpins, the viewport
+	   shows document 774→1674, which is ENTIRELY the hero's own box. That box is transparent by then (the
+	   exchange at progress 0.56 took the photograph, the scrim and the water-light out together), so what
+	   the reader travels through after the world has finished opening is 900px of empty sky. The statement
+	   only crossed the fold at ~811 and did not sit at a readable height until ~1210. THAT is the dead
+	   travel, and no amount of padding could have removed it: it is the hero's transparent tail, not a gap.
+
+	   So: pull the first beat UP into that tail. Nothing in the choreography is touched, the hero is not
+	   shortened (the pin is still `+=86%`), the transition is not shortened (the night band's travel is
+	   untouched), no timing, curve, trigger or scrub changes. The camera simply has less nothing to cross.
+	   The overlap is free because the box it overlaps is empty: after 0.56 the hero paints nothing at all.
+
+	   The geometry this buys (measured, not intended): the night band's solid edge passes the statement's
+	   top at scroll ~500 and its soft trailing edge clears it by ~608, so the statement is UNCOVERED BY THE
+	   LIFTING NIGHT rather than arriving after it, it is already on screen and already travelling when the
+	   pin releases at 774, sitting mid-frame. There is no frame in which the world has finished and nothing
+	   is happening. That is the "arrives while the hero transition is still carrying you" the brief asks for.
+
+	   `svh`, because the tail being reclaimed is the hero's own box and the hero is exactly `100svh`; the
+	   whole scene's geometry is proportional to it, so this holds its ratio on any viewport height.
+	   Desktop-only, gated exactly like the pin it reclaims from: mobile has no pin, no spacer and no tail
+	   (its `.pos-sec` already follows the hero directly and its statement crosses the fold within ~37px),
+	   and its hero departs by opacity, it is still VISIBLE while it leaves, so overlapping it there would
+	   pull text across a photograph. The honest no-JS / reduced-motion baseline is untouched. */
+	@media (min-width: 52.0625rem) {
+		:global(html.motion-scene) .pos-sec {
+			margin-block-start: -50svh;
+		}
+	}
 
 	/* ============================================================= *
-	 * HERO — full-bleed under the transparent header
+	 * HERO, full-bleed under the transparent header
 	 * ============================================================= */
 	.home-hero {
 		position: relative;
 		min-height: 100svh;
 		display: flex;
 		align-items: flex-end;
-		padding-block: var(--space-4xl) clamp(3.5rem, 2rem + 8vw, 7rem);
+		/* P8.6 (D-77): the foot is tightened from 7rem to 5.5rem. The caption column needs the room BELOW
+		   it to be air rather than padding, the block floats clear of the frame edge either way, and the
+		   height it gives back is spent on getting the column's top clear of the quay lights (see the
+		   scrim). */
+		padding-block: var(--space-4xl) clamp(2.75rem, 1.9rem + 3.2vw, 4.25rem);
 		overflow: clip;
 		isolation: isolate;
+	}
+
+	/* ARRIVAL EASING (P6.2 refinement). The site's `--ease-out` is cubic-bezier(0.16, 1, 0.3, 1), an
+		   expressive expo curve tuned for ~200ms UI reveals, where its snap reads as crispness. On a
+		   multi-second cinematic move it is the wrong instrument: it spends ~80% of its travel in the first
+		   ~10% of its duration, so the entrance MEASURED (live, 1440×900) as veil opacity 1 → 0.21 by 120ms
+		   and → 0.07 by 350ms, with the "2.2s camera settle" covering scale 1.019 → 1.000 across its last two
+		   seconds, i.e. perceptually a ~300ms flash followed by a static poster. That is the root cause of
+		   the owner's "nothing memorable happens": not the idea, the curve.
+	   These two curves keep their travel PERCEPTIBLE for the whole duration, near-constant velocity
+	   early (a camera already in motion, carrying weight), then one long unbroken deceleration into rest.
+	   Declared here rather than in `tokens.css` because that file is shared and its curves are correct for
+	   what they do; this scoped stylesheet only ever ships with the homepage, so nothing else can see them. */
+	:global(html) {
+		--ease-camera: cubic-bezier(0.3, 0.28, 0.12, 1);
+		/* The same move, held back at the start, used where a layer must resolve LAST (the sky). */
+		--ease-camera-late: cubic-bezier(0.58, 0.04, 0.26, 1);
 	}
 	.home-hero__media {
 		position: absolute;
@@ -639,23 +1062,385 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		object-fit: cover;
 		object-position: center 42%;
 	}
+	/* THE SCRIM, RE-WEIGHTED (P8.5 / D-76). It was `--color-image-scrim-corner`, whose second layer is a
+	   left-to-right wash at 0.72 alpha, i.e. it darkened the left HALF of the photograph, which on this
+	   particular frame is where the coloured houses are. That was correct for the old composition (a tall
+	   type stack pinned to the left edge) and is wrong for the new one. The card is now a band across the
+	   foot, so the scrim is a band across the foot: one bottom-up gradient, weighted to carry the card and
+	   fully clear well below the houses. Result, the same legibility budget spent where the type actually
+	   is, and the photograph's subject uncovered.
+	   It is deliberately still generous at the very bottom: the water carries bright reflected window-lights,
+	   and the card's own AA has to hold over the brightest of them, not over the average.
+
+	   THE STOPS ARE MEASURED, NOT CHOSEN. A first cut ran 0.9 → 0.78 → 0.44 → 0.12 → 0 and put the 12px gold
+	   eyebrow at 3.41:1 against the brightest reflected window-light under it, an AA failure at the exact
+	   place the card meets the water. The obvious repair (raise the whole ramp) costs the houses, which is
+	   the thing this change exists to give back. So the ramp is instead made STEEPER at the foot and LIGHTER
+	   above it: the card's own band (bottom ~30%) gains ~0.14 of alpha, while the band the houses occupy
+	   (47–61% up) ends up marginally *clearer* than the first cut. Measured after: eyebrow 4.5+, and every
+	   other element on the card improved. Still edgeless, it reaches 0 at 72%, so there is no boundary
+	   anywhere in the frame to read as a rectangle. */
+	/* P8.6 (D-77), THE SCRIM FOLLOWS THE WORDS, AGAIN. D-76's foot band was correct for a full-width card
+	   and is wrong for a column: it spends its whole legibility budget across the entire width, including
+	   the reflected window-lights on the left that are the best thing in the lower half of this photograph.
+	   The block is now in the bottom-right quadrant, so the scrim is too:
+	     · an ELLIPSE anchored off the bottom-right corner, oversized so its own falloff is the only edge it
+	       has, carrying the column's legibility;
+	     · a much LIGHTER foot band than before (0.94 → 0.62 at the very bottom) which exists only to keep
+	       the frame from ending on a bright edge, and which now leaves the left-hand reflections lit.
+	   The left half of the picture therefore gets ~0.3 of alpha back at the foot, the reflections, which
+	   the measurement above shows peak at 236–250, are visible again, while the type sits over a region
+	   whose brightest pixel is 65. This is the same trade D-76 made, spent in the right place. */
 	.home-hero__scrim {
 		position: absolute;
 		inset: 0;
 		z-index: -1;
-		background: var(--color-image-scrim-corner);
+		background:
+			radial-gradient(
+				72% 80% at 6% 100%,
+				rgba(6, 8, 11, 0.9) 0%,
+				rgba(6, 8, 11, 0.86) 25%,
+				rgba(6, 8, 11, 0.74) 45%,
+				rgba(6, 8, 11, 0.6) 60%,
+				rgba(6, 8, 11, 0.4) 72%,
+				rgba(6, 8, 11, 0.16) 85%,
+				rgba(6, 8, 11, 0) 96%
+			),
+			linear-gradient(
+				to top,
+				rgba(6, 8, 11, 0.5) 0%,
+				rgba(6, 8, 11, 0.34) 14%,
+				rgba(6, 8, 11, 0.16) 32%,
+				rgba(6, 8, 11, 0.05) 48%,
+				rgba(6, 8, 11, 0) 64%
+			);
 	}
+	/* The establishing shot's living water-light (P6.2 / D-40). A soft warm bloom over the reflection band,
+	   amplifying the photograph's own reflected window-lights. Painted after the scrim (still z-index:-1, so it
+	   lifts above the photo/scrim but stays behind the title/CTA); screen-blended so it only adds light, never
+	   darkens; opacity 0 until home-cinema.js gives it life (no-JS / reduced motion → absent). --lx/--lo are
+	   driven by the cinema runtime's slow drift+breath. */
+	.home-hero__lumen {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		opacity: 0;
+		background: radial-gradient(
+			42% 30% at var(--lx, 50%) var(--ly, 82%),
+			rgba(var(--p-atmos-warm), var(--lo, 0.12)) 0%,
+			rgba(var(--p-atmos-warm), calc(var(--lo, 0.12) * 0.28)) 46%,
+			rgba(var(--p-atmos-warm), 0) 72%
+		);
+		mix-blend-mode: screen;
+		will-change: opacity, background;
+	}
+	/* The dusk descent layer (P6.2 refinement). A bottom-weighted night gradient that home-cinema.js raises
+	   as the hero dissolves, so the lower photograph (water + houses) sinks into the deep BEFORE the whole
+	   plate resolves into the stage sky, a directional "descent into the dark" rather than a flat fade.
+	   Painted after the scrim (z-index:-1 → above the photo/scrim, behind the title/CTA). opacity 0 until
+	   home-cinema.js gives it life (no-JS / reduced motion → absent). */
+	.home-hero__dusk {
+		/* THE NIGHT, as a solid object the camera passes through, not a fade.
+		   Bottom-anchored and 260% of the hero tall, it is a band of deep night (solid between 15% and 63%)
+		   with BOTH edges softened to nothing, so its leading and trailing edges are horizons of dark rather
+		   than the hard lines of a curtain. `translateY` alone carries it from fully below the frame (100%),
+		   up through it, water first, then the houses, then the photograph's own sky, to full occlusion,
+		   and then onward, up and away past the camera (−40%), uncovering the open stage sky from the bottom
+		   as it goes. One continuous move, one direction, no start and no stop.
+		   The solid band's height is the one real tension in this scene, and it is tuned, not guessed. It MUST
+		   exceed the viewport or the swap happens in plain sight; but every extra height is time the reader
+		   spends sitting inside a black frame. Measured: at 1.5 hero-heights the frame held total darkness for
+		   ~108px of scroll, which read as a fault rather than a descent. 1.33 (15%→66% of 260%) narrows that
+		   to ~69px, a blink of night passing the camera, while still leaving the exchange at progress 0.56
+		   a ±0.045 margin inside the occlusion window (≈±35px of scroll) on every viewport, since the whole
+		   geometry is expressed in % of a hero that is exactly 100svh. Below ~1.15 the margin stops covering
+		   sub-pixel rounding and the photograph can flash back for a frame.
+		   Why it must fully occlude: the previous gradient only darkened the bottom 72% of the frame, so the
+		   photograph's sky was never covered and its opacity fade happened in plain sight, that is what read
+		   as "the image disappears" instead of transforming. The colour is the stage's own deep night
+		   (#080c16 against the stage base #0a1524), so the dark passage is the world, not a black panel. */
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 260%;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			to top,
+			rgba(8, 12, 22, 0) 0%,
+			rgba(8, 12, 22, 0.72) 8%,
+			rgb(8, 12, 22) 15%,
+			rgb(8, 12, 22) 66%,
+			rgba(8, 12, 22, 0.5) 82%,
+			rgba(8, 12, 22, 0) 100%
+		);
+		transform: translateY(100%);
+		will-change: transform;
+	}
+	/* ENTRANCE, a slow camera settle on first paint (blueprint 7.98 "subtiel"): the establishing shot eases
+	   from a hair of overscan to rest as the page opens, so the opening seconds read as an arrival, not a
+	   static poster (owner note #2, "nothing memorable happens"). Done in CSS, not GSAP, because the scroll
+	   scrub owns this element's inline transform: a running CSS animation cleanly overrides it for the settle,
+	   then (`backwards` fill, no forwards hold) yields back to the scrub, both are scale 1 at scroll 0, so
+	   there is no pop and scroll scaling still works afterwards. Runs once when the cinematic runtime arms;
+	   reduced motion / no-JS never set `motion-scene`, so the hero simply loads at rest. */
+	@media (prefers-reduced-motion: no-preference) {
+		/* The settle rides the <img> INSIDE the media box, not the box itself. The box is what GSAP's scroll
+		   camera writes its inline transform to, and a running CSS animation beats an inline style in the
+		   cascade, so the previous version silently froze the hero for its whole 2.2s: measured live at
+		   scroll 400, GSAP intended scale(1.0766) translate(0,-1.53%) while the element actually rendered
+		   scale(1.001), then POPPED to GSAP's value the instant the animation ended. A visitor who scrolls in
+		   the first two seconds (most of them) got a page that ignored them and then jumped. On the inner
+		   <img> the two transforms simply MULTIPLY: the entrance settles while the camera answers scroll from
+		   the very first pixel, and there is nothing to hand back. `.home-hero` clips, and scale > 1 always
+		   covers, so no edge can be exposed. */
+		.home-hero__media :global(img) {
+			animation: home-hero-enter 3400ms var(--ease-camera) both;
+		}
+	}
+	@keyframes home-hero-enter {
+		from {
+			transform: scale(1.075);
+		}
+		to {
+			transform: scale(1);
+		}
+	}
+	/* Entrance veil, the deep-night dusk the establishing shot rises out of on first paint. A slight radial
+	   so the centre clears first (light blooming up from the water) before the edges. z-index:-1 + placed after
+	   the photo/scrim/dusk → it sits above the photograph but behind the title/CTA (which resolve on top via
+	   their own reveal). opacity 0 at rest; the one-shot lift runs only under the cinematic runtime. */
+	.home-hero__enter {
+		/* THE ARRIVAL, in two layers, so the light comes back to the photograph in the order the photograph
+		   itself wants: the still water first, then the houses, then last of all the sky.
+		   Layer 1 (this element) is the night, weighted so it is THINNEST over the reflection band at
+		   50%/86%, as it lifts, the mirrored window-lights on the water surface are the first thing in the
+		   frame to exist. */
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		opacity: 0;
+		background: radial-gradient(
+			118% 82% at 50% 86%,
+			rgba(8, 12, 22, 0.34) 0%,
+			rgba(6, 9, 17, 0.8) 52%,
+			rgba(5, 7, 13, 0.95) 100%
+		);
+		will-change: opacity;
+	}
+	/* Layer 2, a top-weighted darkness on a deliberately later curve, so the blue-hour sky is the last
+	   thing to resolve. The eye reads it as light rising THROUGH the scene from the water up, rather than a
+	   panel being switched off: depth arrives before interface, environment before typography. */
+	.home-hero__enter::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		background: linear-gradient(
+			to bottom,
+			rgb(6, 9, 17) 0%,
+			rgba(6, 9, 17, 0.74) 34%,
+			rgba(6, 9, 17, 0.24) 64%,
+			rgba(6, 9, 17, 0) 86%
+		);
+	}
+	/* Gated on the media query ALONE, deliberately not on `html.motion-scene`. The flag is set by the
+	   deferred GSAP module, so on any real connection it arrives AFTER first paint: the hero would render
+	   lit, then snap to full darkness the moment the module landed, and lift from there. Pure CSS from the
+	   first painted frame removes that flash, removes the dependency on a bundle for a first impression, and
+	   still degrades correctly, reduced motion excludes the whole block, and both layers rest at opacity 0,
+	   so a veil can never be left covering the photograph. */
+	@media (prefers-reduced-motion: no-preference) {
+		.home-hero__enter {
+			animation: home-hero-veil 2600ms var(--ease-camera) both;
+		}
+		.home-hero__enter::after {
+			animation: home-hero-veil 2600ms var(--ease-camera-late) both;
+		}
+	}
+	@keyframes home-hero-veil {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
+	}
+	/* Typography is DISCOVERED, not announced. The shared reveal fires at `--dur-transition` (680ms) on the
+	   expo curve, which, measured, put the title at 85% opacity by 120ms: the type beat the photograph into
+	   the room. Held back behind the environment and slowed onto the camera curve, the order becomes
+	   environment → depth → light → words, and the words resolve as if the light found them. Scoped to the
+	   hero; every other reveal on the site is untouched.
+	   THE WORDS ARE NOW REVEALED BY THE WIPE, NOT BY TRANSPARENCY (P9 / D-80), and the hold is a third of
+	   what it was. Two measured reasons, both about the page feeling as immediate as it looks:
+
+	     · NO LCP AT ALL. The shared `u-reveal` first-paints every hero line at opacity 0, and Chrome does not
+	       count an element that was painted fully transparent. The full-bleed hero <img> is excluded too (an
+	       image the size of the viewport is treated as a background). So this page emitted NO largest-
+	       contentful-paint candidate whatsoever, verified with a probe element, which did produce one. A URL
+	       with no LCP has no Core Web Vital to report and nothing to optimise against. Removing opacity from
+	       the hero's entrance, the lines wipe up on the same camera curve, at full strength, makes the
+	       headline a real candidate again, and it lands at first contentful paint rather than a second later.
+	     · THE HOLD WAS FELT. 640ms of nothing, then 1500ms per line at 180ms steps, put the last hero beat at
+	       ≈2.3s after paint, on top of whatever the network cost, a page visibly waiting to begin. The ORDER
+	       (environment → depth → light → words) and the camera curve are exactly as they were; only the
+	       envelope is compressed, to ≈1.6s for the last beat.
+
+	   `backwards` rather than `both`: the wipe leaves no clip-path behind once it has played, so nothing
+	   downstream (the CTA's magnetic pull, a focus ring) is ever clipped by a finished animation. */
+	@media (prefers-reduced-motion: no-preference) {
+		/* P8.5 (D-76): `u-reveal` moved from the flat stack onto the card's two COLUMNS, so these overrides
+		   follow it one level down. The four `--reveal-index` values and therefore the whole order and
+		   timing (environment → depth → light → words) are unchanged; only the DOM they hang on is. */
+		.home-hero__content .u-reveal > * {
+			animation-name: home-hero-word;
+			animation-duration: 1000ms;
+			animation-timing-function: var(--ease-camera);
+			animation-delay: calc(300ms + var(--reveal-index, 0) * 120ms);
+			animation-fill-mode: backwards;
+		}
+		.home-hero__content .u-reveal > .u-reveal-mask {
+			animation-name: home-hero-word;
+			animation-duration: 1150ms;
+		}
+		/* THE LINE SETTLES; IT DOES NOT APPEAR. Measured: a clip wipe is worth no more to Chrome than a fade
+		   an element painted with an empty rect is excluded from LCP exactly as a transparent one is, and with
+		   the wipe in place the only candidate this page emitted was the 1,157px² wordmark suffix at 2.46s.
+		   So the hero's entrance is now carried entirely by MOVEMENT: every line is painted, at full strength,
+		   in the very first frame, and rides the last few millimetres of the camera's travel into its resting
+		   position. The words are genuinely there when the page is there, which is both the honest thing to
+		   report to a browser and the thing the page was missing. */
+		@keyframes home-hero-word {
+			from {
+				transform: translateY(1.15rem);
+			}
+			to {
+				transform: translateY(0);
+			}
+		}
+		/* The datum DRAWS, left to right, just ahead of the eyebrow, the card is built before it is filled,
+		   which is the order an architect's drawing goes down. Same camera curve as everything else here. */
+		.home-hero__datum {
+			animation: home-hero-datum 900ms var(--ease-camera) 240ms backwards;
+		}
+		@keyframes home-hero-datum {
+			from {
+				transform: scaleX(0);
+				opacity: 0;
+			}
+			to {
+				transform: scaleX(1);
+				opacity: 1;
+			}
+		}
+	}
+	/* ...and the interface last of all. The header is a fixed overlay painted at full strength from frame
+	   one, so the old arrival opened on white nav links floating over a black rectangle, the chrome
+	   announcing itself before the photograph existed, which is the opposite of "arriving inside a world
+	   that is already there". It now resolves after the water and the houses, just before the type.
+	   This is a homepage-only presentation override: `SiteHeader` itself is untouched, and this scoped
+	   stylesheet ships with no other page.
+	   The `:focus-within` escape is a hard requirement, not polish, during the hold the header's 9 links
+	   are focusable, and a focusable control must never be invisible (WCAG 2.4.7). Any keyboard entry kills
+	   the animation outright and the header snaps to its resting opacity. The skip link lives outside the
+	   header and so is never held back at all. */
+	@media (prefers-reduced-motion: no-preference) {
+		:global(.site-header--overlay) {
+			/* P9 (D-80): compressed with the rest of the arrival envelope (1400ms/640ms → 900ms/300ms). The
+			   order is unchanged, the interface still resolves after the water and the houses, just before
+			   the type, but nine focusable nav links are no longer held invisible for two thirds of a second
+			   on a page that should feel immediate. */
+			animation: home-header-arrive 900ms var(--ease-camera) 300ms backwards;
+		}
+		:global(.site-header--overlay:focus-within) {
+			animation: none;
+		}
+	}
+	@keyframes home-header-arrive {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	/* ── THE CAPTION COLUMN (P8.6 / D-77) ───────────────────────────────────────────────────────────── */
+	/* THE COLUMN. Everything in this composition is one decision: the words live in a measure, not across a
+	   width. `margin-inline-start: auto` is what puts it in the frame's quiet quadrant (see the block
+	   comment on the markup for the luminance grid that chose it); the width is the real design value
+	   wide enough that the title lands in three even lines, narrow enough that it can never become a band.
+	   The bottom offset comes from `.home-hero`'s own padding, which is generous on purpose: a caption
+	   block that touches the frame edge is a caption bar. */
+	/* P8.7 (D-78): the column sits at the LEFT gutter, on the owner's instruction ("ik wil gewoon precies
+	   die tekst, ipv van rechts, links, dat lijkt mij gewoon logischer"). Nothing else about it changes:
+	   same measure, same type size, same order, same reveal.
+	   THE TRADE IS REAL AND IS PAID IN THE SCRIM, not hidden. Profiling the photograph under this column
+	   (x 64–560, brightest pixel per 20px row, scrim removed) gives 191–241 through the card's own band,
+	   against 67–99 under the right-hand position, the coloured houses and their reflections are on this
+	   side. So the corner grade below has to find ~0.62 of alpha where the right-hand version needed 0.46.
+	   The photograph's subject stays uncovered and lit; what darkens is the water in the lower-left corner,
+	   which reads as foreground shadow. */
+	.home-hero__card {
+		width: clamp(18rem, 11rem + 21vw, 31rem);
+		margin-inline-end: auto;
+	}
+	/* The datum, now the width of its own column. Full-width, it was a rule drawn across a photograph
+	   which is a banner, and the single loudest thing in the old composition. At column width it is what a
+	   hairline is for: the smallest possible mark that turns a floating block of words into a composed
+	   object (VIS-05: larger in extent, never heavier in weight). Same `--grad-datum` as the header, the
+	   footer and the CTA close, so the hero carries the site's own line rather than a variant of it. */
+	.home-hero__datum {
+		display: block;
+		height: 1px;
+		margin-bottom: clamp(1.1rem, 0.8rem + 1vw, 1.6rem);
+		background: var(--grad-datum);
+		transform-origin: left center;
+	}
+	/* THE TYPE SCALE IS A CONSEQUENCE OF THE MEASURE, NOT A SETTING. In a 30rem column at this size the
+	   sentence lands in three even lines, a column of type, which is the editorial idiom, where the same
+	   sentence at 100px was a wall and at 64px was a two-line bar. It is still by a wide margin the largest
+	   type on the page. `text-wrap: balance` keeps the three lines even rather than leaving an orphan; the
+	   measure is in `ch` so it tracks the font rather than a guessed pixel. */
+	/* THE MEASURE IS SET BY THE PHOTOGRAPH, NOT BY TASTE. Profiling the backdrop down the column's own
+	   band (x 900–1400, brightest pixel per 20px row) finds the quay lights and their reflections between
+	   y 420 and y 540, peaks of 183 to 239, and then a clean fall: 114 at 540, 93 at 560, 76 at 600, 47
+	   by 660. White body text needs a backdrop below ~108 to hold 4.5:1 and the gold eyebrow needs one
+	   below ~63, so the top of this block has a hard ceiling at roughly y 560, and its height is therefore
+	   a budget rather than a preference: 900 − 88 (foot) − 560 = 252px for the whole column.
+	   Two lines at this size is what fits that budget while keeping the title, by a factor of nearly three,
+	   the largest thing on the page. This is not "make the text smaller" (which the brief rules out and
+	   which would not have helped): it is the measure the frame has room for once the photograph is given
+	   back its subject, and the scrim below only has to find 0.3 of alpha instead of 0.7. */
 	.home-hero__title {
-		margin-top: var(--space-md);
-		max-width: 16ch;
+		margin-top: var(--space-xs);
+		max-width: 21ch;
+		font-size: clamp(1.8rem, 1.05rem + 2.2vw, 2.65rem);
+		line-height: 1.05;
+		text-wrap: balance;
+	}
+	/* THE EYEBROW TAKES THE LIT END OF THE SAME GOLD. Measured on the composite, `--color-accent`
+	   (rgb 199,165,106) came out at 3.85:1 against the brightest quay light left under this row, short of
+	   AA, and the only element on the card that was. The two ways out were to darken the photograph further
+	   (the grade would have had to take another 0.15 of alpha off the right-hand quarter of the frame) or to
+	   move up the same gold ramp. `--color-accent-champagne` is `--p-gold-300`: identical hue (38.1°, the
+	   reference), simply the value the system already uses for gold ON photography, the datum hairline
+	   directly above this line is drawn in it. So the card gains no new colour, and the photograph keeps its
+	   light. Re-measured: 5.2:1. */
+	.home-hero .t-eyebrow {
+		color: var(--color-accent-champagne);
 	}
 	.home-hero__sub {
-		margin-top: var(--space-lg);
-		max-width: 46ch;
-		color: var(--color-text);
+		margin-top: var(--space-md);
+		max-width: 32ch;
+		font-size: var(--fs-body-sm);
+		line-height: var(--lh-body);
+		color: var(--color-text-secondary);
 	}
 	.home-hero__actions {
-		margin-top: var(--space-xl);
+		margin-top: var(--space-lg);
 	}
 	.home-hero__cta {
 		display: inline-flex;
@@ -678,17 +1463,21 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		gap: var(--space-md);
 		color: var(--color-accent-strong);
 	}
-	/* Tactile press — a short compression so the CTA feels physical to click/tap (also fires on touch, where
+	/* Tactile press, a short compression so the CTA feels physical to click/tap (also fires on touch, where
 	   the magnetic pull is absent). */
 	.home-hero__cta:active {
 		--press: 0.96;
 	}
-	/* Scroll cue — a slim descending hairline, calm and non-distracting. */
+	/* Scroll cue, a slim descending hairline, calm and non-distracting.
+	   P8.6 (D-77): moved from the centre of the foot to the LEFT GUTTER. Centred, it was the third element
+	   on one horizontal line and it pinned the composition back to the axis the new hero exists to leave.
+	   In the gutter it becomes the far end of a diagonal, wordmark top-left, caption column bottom-right,
+	   cue bottom-left, which is what makes the asymmetry read as composed rather than as lopsided. It
+	   lands on the container's own gutter, so it is aligned to the same grid as everything else. */
 	.home-hero__scroll {
 		position: absolute;
 		bottom: var(--space-lg);
-		left: 50%;
-		transform: translateX(-50%);
+		right: max(var(--gutter), calc((100% - var(--container-wide)) / 2 + var(--gutter)));
 		width: 2.4rem;
 		height: 3rem;
 		display: grid;
@@ -700,7 +1489,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		background: linear-gradient(to bottom, transparent, var(--color-text));
 		opacity: 0.7;
 	}
-	/* P6.2 RECOVERY: the scroll-cue retires once the reader has taken over scrolling — a small acknowledgement
+	/* P6.2 RECOVERY: the scroll-cue retires once the reader has taken over scrolling, a small acknowledgement
 	   of scroll STATE (the runtime toggles html.is-scrolled). Homepage-scoped; pure CSS off a class signal. */
 	.home-hero__scroll {
 		transition: opacity var(--dur-component) var(--ease-standard);
@@ -726,15 +1515,111 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			}
 		}
 	}
-	@media (max-width: 40rem) {
+	/* ── THE SHORT-FRAME VARIANT (P8.6 / D-77) ──────────────────────────────────────────────────────────
+	   FOUND BY MEASURING A THIRD WIDTH, not by looking at two. At 1440×900 the card measured 5.2:1 and at
+	   390×844 it measured 8.4:1, both comfortable, and at 1024×768 the same card measured 1.94:1 on the
+	   eyebrow and 2.91:1 on the h1. Nothing about the card had changed; the FRAME had.
+
+	   Why a short frame breaks it, and why the scrim cannot be the answer. The photograph's quay lights sit
+	   at a fixed FRACTION of the frame, profiled at 1024×768, the brightest pixel in the column's band is
+	   197 at 45% and only falls below 80 past 62%. The card's height, meanwhile, is fixed in PIXELS. So the
+	   shorter the viewport, the higher up the frame the card starts: 56% of the frame at 900px tall, 47% at
+	   768px, straight into the lights. Grading the corner harder was tried on paper first and rejected on
+	   arithmetic: reaching the eyebrow at 1024 needs ~0.75 alpha, which is no longer a grade, it is a panel,
+	   and it would take the right-hand quarter of the photograph with it at every other size too.
+
+	   So the card gets shorter instead, and only where it has to. Two lines of title at a smaller measure,
+	   tighter internal rhythm and a smaller foot bring the block from 344px to ~240px, which puts its top at
+	   64% of a 768px frame, below the band, where the backdrop peaks at 67. Re-measured there: eyebrow 5.7,
+	   h1 7.2. The composition is unchanged: same column, same corner, same order, same reveal.
+	   The query is keyed on WIDTH OR HEIGHT because either one produces the same squeeze, 1366×768 is short
+	   without being narrow, and it is a very common laptop. */
+	@media (min-width: 52.0625rem) and (max-width: 82rem), (min-width: 52.0625rem) and (max-height: 51rem) {
 		.home-hero {
-			min-height: 92svh;
+			padding-block: var(--space-3xl) clamp(1.75rem, 1rem + 1.6vw, 2.5rem);
+		}
+		.home-hero__datum {
+			margin-bottom: clamp(0.8rem, 0.6rem + 0.6vw, 1.1rem);
+		}
+		.home-hero__title {
+			max-width: 24ch;
+			font-size: clamp(1.5rem, 0.85rem + 1.9vw, 2.15rem);
+		}
+		.home-hero__sub {
+			margin-top: var(--space-sm);
+			max-width: 46ch;
+			font-size: var(--fs-body-sm);
+		}
+		.home-hero__actions {
+			margin-top: var(--space-md);
+		}
+	}
+
+	/* P8.6 (D-77): the stacked composition now runs to 52rem, not 40rem. MEASURED at 768×1024 (portrait
+	   tablet) with the offset column: the card had 337px of measure in the right half of the frame and its
+	   lead landed at 3.52:1, the offset is a composition that needs WIDTH to spend, and below ~832px there
+	   is none, which is the same reasoning that already sent it full-width on a phone. 52rem is the site's
+	   own tablet boundary, so this is the existing breakpoint doing its job rather than a new one. */
+	@media (max-width: 52rem) {
+		/* 100svh, not the 92svh this carried before D-41 (owner: "visible dark bars between sections… between
+		   the hero and the first section"). 92svh predates the cinematic descent, where leaving 8% of the
+		   screen to the next section was a deliberate scroll affordance, the mobile scroll cue is hidden
+		   just below, so the peek WAS the cue. Under the descent it stopped being a cue and became the defect:
+		   MEASURED at 390x844, the hero laid out at 776.47px (=0.92 x 844) against a viewport of 844, so the
+		   photograph stopped 68px short of the bottom of the very first screen. Its final band is the darkest
+		   part of the scrim, and what sits below is the lit stage sky, so screen one opened on photograph,
+		   then a black band, then a hard horizontal edge, then blue. Exactly the accidental rectangle between
+		   two surfaces the brief rules out, and visible before the reader scrolls at all.
+		   At 100svh the photograph's bottom edge lands exactly on the bottom of the screen, so there is no
+		   strip and no edge to read. svh (not dvh) is deliberate: dvh retracks as the URL bar hides, which
+		   would reflow the hero mid-scroll; svh is the one unit that is stable AND never taller than the
+		   smallest viewport, so the hero still fits with the browser UI shown. The affordance is not lost
+		   the descent itself now carries it (the night starts rising on the first pixel of scroll). */
+		.home-hero {
+			min-height: 100svh;
+		}
+		/* The column becomes the full measure. Offsetting a column to the right is a composition that needs
+		   width to spend, and at 390px there is none: the block would be pushed into the right margin with
+		   a 200px measure, which is worse than either predecessor. So mobile keeps the SAME column, aligned
+		   to its own left gutter, one measure, one stack, the same order and the same reveal (6.86 and
+		   7.127–7.129: mobile is complete, not identical). What it loses is the offset, which is the one
+		   part of this composition that is genuinely about having a wide frame. */
+		.home-hero__card {
+			width: 100%;
+			margin-inline-start: 0;
+		}
+		.home-hero__title {
+			max-width: 17ch;
+			font-size: clamp(1.9rem, 1.2rem + 3.4vw, 2.5rem);
+		}
+		.home-hero__sub {
+			max-width: 38ch;
+		}
+		/* MOBILE NEEDS ITS OWN RAMP, and this is the one place the desktop composition does not transfer.
+		   Stacked, the card is ~430px tall on an 844px viewport, so its top edge sits at ~48% of the frame
+		   where the desktop ramp has already decayed to 0.27. MEASURED at 390×844 with the desktop ramp: the
+		   h1 came out at 2.40:1 and the gold eyebrow at 1.20:1 against the lit windows and their reflection.
+		   That is not a tuning miss, it is the consequence of a portrait viewport: there is no arrangement of
+		   this sentence, this lead and this action that leaves the bottom half of a 390px screen free.
+		   So mobile carries the scrim UP to meet its own card, deep to ~42%, releasing across 58→88%. The
+		   top of the houses and the whole sky stay lit; what darkens is the water the card sits on, which
+		   reads as foreground shadow rather than as a veil. Re-measured: h1 10.7, eyebrow 5.1, all ≥ AA. */
+		.home-hero__scrim {
+			background: linear-gradient(
+				to top,
+				rgba(6, 8, 11, 0.96) 0%,
+				rgba(6, 8, 11, 0.92) 24%,
+				rgba(6, 8, 11, 0.86) 42%,
+				rgba(6, 8, 11, 0.56) 58%,
+				rgba(6, 8, 11, 0.16) 72%,
+				rgba(6, 8, 11, 0) 88%
+			);
 		}
 		.home-hero__scroll {
 			display: none;
 		}
-		/* Mobile-specific motion (7.127/7.128): the hero keeps a GENTLER parallax — its own tuned amount,
-		   not the copied desktop travel — so mobile feels alive without over-moving on smaller/weaker devices. */
+		/* Mobile-specific motion (7.127/7.128): the hero keeps a GENTLER parallax, its own tuned amount,
+		   not the copied desktop travel, so mobile feels alive without over-moving on smaller/weaker devices. */
 		.home-hero__media {
 			--m-parallax: 3.5%;
 			--m-parallax-scale: 1.09;
@@ -742,18 +1627,18 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	}
 
 	/* ============================================================= *
-	 * POSITIONERING — the quiet breath between the hero and the work chapter.
+	 * POSITIONERING, the quiet breath between the hero and the work chapter.
 	 * VARIATION EXPRESSION #1 (P4.7): "afterglow". This chapter has NO photography and is deliberately the
 	 * page's first QUIET beat, but it must not read as the dead flat-black it was. Instead of the .work
-	 * chapter's modelled multi-radial room, it gets a SINGLE soft cool light DESCENDING from its top edge —
+	 * chapter's modelled multi-radial room, it gets a SINGLE soft cool light DESCENDING from its top edge
 	 * as if the hero photograph's blue-hour light spills a little way down into the interface before settling
 	 * into calm reading-dark. Distinct mechanism from .work (one top-anchored wash, no warm spill, no base
 	 * gradient, no gold seam), so the identity carries through WITHOUT repeating the .work treatment. Peak sits
-	 * off the top edge; only the fringe shows, and it has faded to the base ink long before the body copy —
+	 * off the top edge; only the fringe shows, and it has faded to the base ink long before the body copy
 	 * so the modelling lives in negative space and never sits under muted text (6.9 subtle depth, 6.16). Pure
 	 * static CSS, painted once.
 	 * ============================================================= */
-	/* P4.9 (D-29) — this afterglow is strengthened and given the HERO's own chromatic signature so the blue-hour
+	/* P4.9 (D-29), this afterglow is strengthened and given the HERO's own chromatic signature so the blue-hour
 	   light visibly spills DOWN across the hero→positionering boundary (owner Limitation 1 cross-boundary + 2
 	   photo-light-spill): a deeper cool descent from the top edge PLUS a faint warm fleck at the upper-right
 	   echoing the hero's warm window-reflections, so positionering reads as lit by the photograph above rather
@@ -761,10 +1646,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	   Still the QUIET breath before .work (a crescendo into .work's stronger modelled room), NOT a second
 	   .work. Reuses existing atmos primitives.
 	   P6.1 correction: both radii were a PERCENTAGE of this section's own (content-driven) height, so they
-	   always faded to zero at the same fraction of the box — fine when short, but longer positionering copy
+	   always faded to zero at the same fraction of the box, fine when short, but longer positionering copy
 	   or narrower viewports grow this section and the fixed fraction didn't adapt, completing the fade early
 	   and leaving a flat, atmosphere-less band before `.work`. Sized past 100% so the zero-stop always lands
-	   at/after the box's own bottom edge regardless of height — same anchors, alphas and colours, corrected
+	   at/after the box's own bottom edge regardless of height, same anchors, alphas and colours, corrected
 	   reach. */
 	.pos-sec {
 		background:
@@ -830,10 +1715,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		overflow-x: clip;
 	}
 	/*
-	 * P4.6 (D-25) — atmospheric depth field. The "geselecteerd werk" chapter stops being a flat ink fill and
+	 * P4.6 (D-25), atmospheric depth field. The "geselecteerd werk" chapter stops being a flat ink fill and
 	 * becomes a modelled dark space: a soft blue-hour ambient (low-left) + faint warm counter-glow (top-right)
 	 * dissolving to the abyss, so the interface reads as the same dark architectural space the photography
-	 * lives in — the environment the full-bleed plate emerges FROM, rather than a wall its light dies against.
+	 * lives in, the environment the full-bleed plate emerges FROM, rather than a wall its light dies against.
 	 * A `::before` layer (z-index:-1) so it sits above the section fill but below all content and below the
 	 * full-bleed plate (which is positioned → paints above); it can never affect legibility or photography.
 	 */
@@ -856,9 +1741,9 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		padding-bottom: clamp(1.4rem, 1rem + 1.6vw, 2.2rem);
 		margin-bottom: clamp(1.7rem, 1rem + 2.6vw, 3rem);
 	}
-	/* Gold structural seam (P4.6 / D-25, elevated in D-26) — the one elevated recurring gold material: a
+	/* Gold structural seam (P4.6 / D-25, elevated in D-26), the one elevated recurring gold material: a
 	   hairline (::after) that catches a controlled warm highlight along its length, plus a whisper-soft
-	   catch-light haze rising off it (::before, z-index:-1 so it sits behind the head text) — 6.11 belangrijke
+	   catch-light haze rising off it (::before, z-index:-1 so it sits behind the head text), 6.11 belangrijke
 	   visuele lijnen + 6.12 gecontroleerde highlights + 6.64 gold-glow met grote terughoudendheid. Still a
 	   hairline, never a fill/heading/text-gradient (D-10 anti-black-and-gold-template rule preserved). */
 	.work__head::before {
@@ -897,12 +1782,12 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		min-height: clamp(26rem, 66svh, 44rem);
 		isolation: isolate;
 		/* P6.2 RECOVERY: clip the plate box so the depth-drift's overscanned media can never spill past the
-		   plate edges into the neighbouring stack (defensive — the media already clips its own img, and the
+		   plate edges into the neighbouring stack (defensive, the media already clips its own img, and the
 		   scrim/edge treatment is anchored to this box). */
 		overflow: clip;
-		background: var(--color-bg-abyss); /* P4.6 — the plate emerges from real depth, not the flat deep fill */
+		background: var(--color-bg-abyss); /* P4.6, the plate emerges from real depth, not the flat deep fill */
 	}
-	/* Inset focus ring — the plate is edge-to-edge, so an outset ring would sit at the viewport edge; an
+	/* Inset focus ring, the plate is edge-to-edge, so an outset ring would sit at the viewport edge; an
 	   inset ring stays fully visible without risking horizontal overflow. */
 	.work-immersive:focus-visible {
 		outline: 2px solid var(--color-focus);
@@ -957,10 +1842,10 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		transform: translateX(3px);
 	}
 	/*
-	 * The big-image mask reveal (P4.5): a geometric curtain retracts upward to uncover the photograph — the
+	 * The big-image mask reveal (P4.5): a geometric curtain retracts upward to uncover the photograph, the
 	 * loud counterpart to the calm text rise used elsewhere (blueprint 7.152 "image reveals" / "geometrische
 	 * mask animations", architectonisch). The photograph loads normally UNDERNEATH the curtain (an overlay,
-	 * not a clip on the image's own box), so the reveal can never defer or trap the image — a lesson learned:
+	 * not a clip on the image's own box), so the reveal can never defer or trap the image, a lesson learned:
 	 * clipping the lazy image's container made Chrome skip loading it entirely. Static-first: without JS or
 	 * under reduced motion there is no curtain and the plate is simply shown at full opacity.
 	 */
@@ -969,7 +1854,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		position: absolute;
 		inset: 0;
 		z-index: 2;
-		background: var(--color-bg-abyss); /* P4.6 — reveal curtain matches the plate's abyss base */
+		background: var(--color-bg-abyss); /* P4.6, reveal curtain matches the plate's abyss base */
 		transform: scaleY(0);
 		transform-origin: top;
 		pointer-events: none;
@@ -997,7 +1882,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	}
 
 	/* ============================================================= *
-	 * P6.2 (D-37) — SLICE MOTION WIRING. Applies the central scroll-linked vocabulary (motion.css) to this
+	 * P6.2 (D-37), SLICE MOTION WIRING. Applies the central scroll-linked vocabulary (motion.css) to this
 	 * slice's photography + structural line, plus pointer/press feedback. All scroll-linked pieces are
 	 * gated (@supports + no-preference) so the base render is the frozen D-29 composition.
 	 * ============================================================= */
@@ -1045,7 +1930,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		}
 	}
 
-	/* Tactile press feedback (touch has no hover — 7.129): a short, subtle opacity compression, no transform
+	/* Tactile press feedback (touch has no hover, 7.129): a short, subtle opacity compression, no transform
 	   (so it never fights the reveal/parallax transforms). */
 	.work-immersive,
 	.work-plate {
@@ -1060,7 +1945,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	.work__stack {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
-		align-items: start; /* intrinsic-ratio covers, top-aligned — composition respected, not force-cropped */
+		align-items: start; /* intrinsic-ratio covers, top-aligned, composition respected, not force-cropped */
 		gap: var(--space-xl) var(--grid-gap);
 		margin-top: clamp(2.5rem, 1.6rem + 4vw, 4.5rem);
 	}
@@ -1079,7 +1964,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		color: var(--color-accent);
 	}
 	/* Hover lift (P6.2 / D-37): the photograph scales slightly WITHIN its clip (the `.media` wrapper is
-	   overflow:clip) — a quiet "lean-in", not a card that pops. Composition never leaves the frame. */
+	   overflow:clip), a quiet "lean-in", not a card that pops. Composition never leaves the frame. */
 	.work-plate__media :global(img) {
 		transition: transform var(--dur-component) var(--ease-out);
 	}
@@ -1091,7 +1976,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		.work-immersive {
 			min-height: clamp(22rem, 60svh, 32rem);
 		}
-		/* Gentler plate depth-drift on small screens (7.128) — its own reduced amount, not the desktop travel.
+		/* Gentler plate depth-drift on small screens (7.128), its own reduced amount, not the desktop travel.
 		   (Recovery: overscan still exceeds the shift so the centre-identity anchor never exposes an edge.) */
 		.work-immersive__media {
 			--m-drift: 2.5%;
@@ -1104,17 +1989,17 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	}
 
 	/* ============================================================= *
-	 * SPECIALISATIES — the two-discipline photographic diptych (D-20 asymmetry, D-23 all-dark)
+	 * SPECIALISATIES, the two-discipline photographic diptych (D-20 asymmetry, D-23 all-dark)
 	 *
 	 * VARIATION EXPRESSION #2 (P4.7): "two light sources". The elevation here is NOT the .work room and NOT a
-	 * gold seam — it is a DIFFERENT expression of the same "photography is the light source" principle: each of
+	 * gold seam, it is a DIFFERENT expression of the same "photography is the light source" principle: each of
 	 * the two discipline photographs appears to cast its OWN light into the surrounding dark. A cool pool sits
 	 * upper-left, under/around the architecture plate (which is itself a cool blue-sky image); a warm pool sits
 	 * lower-right, under/around the interior plate (a warm artificial-light image). Together they read as a
-	 * cool→warm chromatic diagonal that literally maps the two disciplines — "twee disciplines, één benadering"
+	 * cool→warm chromatic diagonal that literally maps the two disciplines, "twee disciplines, één benadering"
 	 * expressed in light. This makes the chapter MEDIUM intensity (photography-led, richer than the flat base,
 	 * quieter than .work's full-bleed plate) and keeps gold's structural-LINE role exclusive to .work (this
-	 * chapter carries no added gold line — anti-repetition). A `::before` (z-index:-1, contained by isolation)
+	 * chapter carries no added gold line, anti-repetition). A `::before` (z-index:-1, contained by isolation)
 	 * so it paints above the section fill but below every card; each photo's opaque frame covers the peak, so the
 	 * light only ever shows in the negative space around the images, never tinting a photograph (6.16). Static
 	 * CSS, painted once; both peaks stay well below adjacent photographic luminance/saturation.
@@ -1159,7 +2044,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	.spec-card {
 		display: block;
 	}
-	/* Architecture card sits a step lower than the interior card — asymmetry, not a mirrored pair. */
+	/* Architecture card sits a step lower than the interior card, asymmetry, not a mirrored pair. */
 	.spec-card--arch {
 		align-self: end;
 	}
@@ -1201,7 +2086,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	}
 
 	/* ============================================================= *
-	 * WERKWIJZE — the method chapter on the ink-850 tonal step (D-23). A full-width dark chapter (the Section
+	 * WERKWIJZE, the method chapter on the ink-850 tonal step (D-23). A full-width dark chapter (the Section
 	 * paints ink-850); monumental gold numerals carry the scale contrast, hairline-topped columns give the
 	 * architectural rhythm. No panel, no light surface. --- */
 	.method__head {
@@ -1248,7 +2133,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	}
 
 	/* ================================================================= *
-	 * P6.2 RECOVERY (D-38) — REALTIME-INTERACTION CONSUMING STYLES.
+	 * P6.2 RECOVERY (D-38), REALTIME-INTERACTION CONSUMING STYLES.
 	 * Each rule reads a custom property written by the homepage runtime (--ptx/--pty pointer-parallax,
 	 * --gx/--gy pointer-light, --mx/--my magnetic). All are ENHANCEMENT: without JS / on touch / under
 	 * reduced-motion the properties are never written and the base transform is identity, so every element
@@ -1258,7 +2143,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	 * is the smoothing, so the lerped transforms carry no CSS transition.
 	 * ================================================================= */
 
-	/* Hero photograph — eases toward the pointer within its clip (7.47 "lichte pointer-based beeldreactie"),
+	/* Hero photograph, eases toward the pointer within its clip (7.47 "lichte pointer-based beeldreactie"),
 	   composed under the scroll parallax on the wrapper. */
 	.home-hero__media :global(img) {
 		will-change: transform;
@@ -1269,7 +2154,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		}
 	}
 
-	/* Specialisaties photography — a DIFFERENT family than the plate catch-light: the discipline photo eases
+	/* Specialisaties photography, a DIFFERENT family than the plate catch-light: the discipline photo eases
 	   toward the pointer (parallax within its frame) with a soft directional light that tracks it, turning
 	   two formerly inert photos into the section's realtime centre. */
 	.spec-card__media {
@@ -1302,7 +2187,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		}
 	}
 
-	/* Werkwijze — a gold hairline is STRUCK across each numeral row as it enters (reversible, tied to each
+	/* Werkwijze, a gold hairline is STRUCK across each numeral row as it enters (reversible, tied to each
 	   row's own view() passage), so the method chapter carries continuous structural motion instead of one
 	   staggered rise then freeze. The static border-top stays the base (unsupported/reduced/no-JS). */
 	@supports (animation-timeline: view()) {

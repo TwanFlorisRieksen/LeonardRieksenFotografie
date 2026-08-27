@@ -1,0 +1,407 @@
+/*
+ * THE APERTURE — reusable light-mechanism infrastructure (P7.0 / D-46).
+ *
+ * WHAT THIS IS. The engine for the Diensten film's single mechanism, as frozen in
+ * `documenten/DIENSTEN_MOTION_BLUEPRINT.md` §4:
+ *
+ *   "Every photograph on the Diensten routes is an aperture: it holds the only illumination in an
+ *    otherwise unlit room, and the room takes what little light it has from whichever aperture the
+ *    reader is standing at."
+ *
+ * WHAT THIS IS NOT. It is not the film. This stylesheet contains **no page-specific behaviour and no
+ * photograph-specific expression**. It is applied to nothing: adding it to a page changes that page by
+ * zero pixels until an author opts an element in with `.u-aperture`. Every artistic value below
+ * (amplitude, reach, tint geometry, breath depth) is a PROVISIONAL default marked `TUNE` — the blueprint
+ * deliberately does not decide them (§16.4: "A director does not choose the lens"), and they can only be
+ * settled against the render, by eye, by the product owner (§4.5, §14.2). Do not treat a default here as
+ * a decision. It is a placeholder that renders honestly.
+ *
+ * THE ONE RULE THAT DECIDES WHETHER THIS WORKS (§4.5). Sub-threshold is not restraint; it is absence, and
+ * it has been rejected four times on this project. The difference between *at a window* and *between
+ * windows* must be plainly visible in a screenshot to someone who was not told to look. If a beat feels
+ * weak the fix is never "more subtle" and never "a longer duration" — it is MORE LIGHT, LESS OFTEN, or
+ * delete the aperture entirely and let that photograph be still.
+ *
+ * WHY THERE IS NO JAVASCRIPT HERE (resolves DIENSTEN_MOTION_BLUEPRINT §16.3 open question #2 — see
+ * DECISIONS.md D-46). The requirement is exactly one thing: "each aperture's light is a continuous
+ * function of that aperture's position relative to the viewport" (§12.1). That is the literal definition
+ * of `animation-timeline: view()`. Diensten has no pins, no scrubbed camera, no multi-element
+ * choreography and no world layer (§8.1, §14 #1/#2/#14) — every reason GSAP earns its place on the
+ * homepage is absent here. Native therefore costs 0 KB, is reversible by construction, and needs no
+ * `motion-scene`-style JS flag: the arming condition is declarative, so the honest baseline is not
+ * restored by a runtime, it is simply what renders. Verified this session: `animation-timeline: view()`
+ * is supported by Chromium AND **WebKit 26.5** (Safari 26 / iOS) — the Safari trap flagged in §12.1 is
+ * measured, not assumed. Engines without it get no declaration at all (see ARMING) and render the frozen
+ * D-29 composition, which §11 designates a first-class render.
+ *
+ * COMPOSITOR DISCIPLINE (§12.2). Only `opacity` and `transform` are ever animated. The gradient is
+ * painted ONCE and never repainted per frame — deliberately unlike the homepage's catch-light, which
+ * re-positions a radial gradient from JS every frame. Diensten's §12.2 forbids that, so the pointer layer
+ * here TRANSLATES a pre-painted blob instead.
+ *
+ * STACKING CONTRACT — read before use, this is the one thing that will silently break.
+ *   · `.u-aperture-room` MUST wrap the apertures and MUST create a stacking context. The light paints at
+ *     `z-index: -1` so it sits ABOVE the room's background but BELOW every photograph and every glyph;
+ *     without an isolating ancestor a `z-index: -1` layer escapes behind the section's own background and
+ *     vanishes. (`.dien-spreads`, `.svc-gallery` and `.svc-scope-sec` already isolate — this utility is
+ *     the same idiom as `.dien-cover__marker::before`.)
+ *   · `.u-aperture` itself must NOT isolate. The light `mix-blend-mode: screen`s against the ROOM's dark,
+ *     which is outside the aperture; isolating the aperture would confine the blend to its own empty
+ *     backdrop and quietly cancel it.
+ *   · `screen` is not a look, it is a contrast guarantee: it can only ever ADD light, so an aperture can
+ *     never darken text behind it. It cannot, on its own, satisfy §9.1 — see READING below.
+ *
+ * READING IS PROTECTED STRUCTURALLY, NOT BY TASTE (§9.1). "Light never moves behind text being read. The
+ * aperture's light reaches into negative space ONLY. The text column is a dark, constant field, always."
+ * The reach is therefore DIRECTIONAL (`--ap-reach-*` per side) so an author can send the light up, down
+ * and away from the text and set the text-facing side to `0`. A symmetrical reach next to a text column
+ * is a defect, not a default worth keeping. Contrast is verified on the RENDERED TEXT at the light's
+ * PEAK, over the actual composite, never on the backdrop (§9.3 — this project has shipped a "10.56:1"
+ * verdict on an element whose real value was 1.36:1).
+ *
+ * NEVER (§14, the Diensten list — each is paid for):
+ *   #4  Never move a photograph. A lamp does not drift. This file animates light; it never touches media.
+ *   #8  Never animate the dark. Only light is animated; the dark is what is left.
+ *   #10 Never spill colour from a black-and-white photograph. The B&W duo is a window with the light off
+ *       — that is the point, not a defect. Enforcement is simply: do not put `.u-aperture` on it.
+ *   #11 Never use gold as atmosphere. Gold is an instrument (the datum lines) — never a tint here.
+ *   #12 Never let the two apertures light the room identically. Cool-from-beyond vs warm-from-within IS
+ *       the comparison the page exists to make.
+ *   #13 Never make the light smaller to be "restrained." Make it rarer.
+ */
+
+/* ============================================================================================= *
+ * 1. THE ROOM — the stacking context the light hangs in, and its clip.
+ *
+ * `overflow-x: clip` is NOT housekeeping; it is required twice over, and `clip` is the only value that
+ * works:
+ *
+ *   1. A window's light is DESIGNED to escape its frame (that is the whole mechanism), so on any full-
+ *      width composition it escapes the viewport too and creates horizontal overflow. MEASURED on the
+ *      bench before this rule existed: 34px at 390, 91px at 768, 47px at 1440 — A/B'd to 0 by removing
+ *      the aperture, so the light was unambiguously the cause. §15 gates on ZERO horizontal overflow at
+ *      320/390/768/1024/1440/1920, so this belongs to the engine, not to each consumer's memory.
+ *
+ *   2. `overflow: hidden` would BREAK THE MECHANISM SILENTLY. It makes the room a scroll container, and
+ *      `animation-timeline: view()` resolves against the nearest scrollport — so every window's light
+ *      would start measuring its position against the ROOM instead of the viewport. `clip` establishes
+ *      no scroll container, so the timeline keeps reading the viewport. Never "fix" an overflow here
+ *      with `hidden`.
+ *
+ * (The site already uses exactly this idiom on `.dien-cover` and `.svc-scope-sec`.)
+ * ============================================================================================= */
+.u-aperture-room {
+	position: relative;
+	isolation: isolate;
+	overflow-x: clip;
+}
+
+/* ============================================================================================= *
+ * 2. THE WINDOW — the frame, and the whole tuning surface.
+ *
+ * Every custom property below is the knob for one artistic decision this session is not entitled to
+ * make. Defaults are provisional and render honestly; none is a finding.
+ * ============================================================================================= */
+.u-aperture {
+	/* Containing block for this window's own light. Deliberately no `isolation` (see STACKING). */
+	position: relative;
+
+	/* --- Amplitude ------------------------------------------------------------------------- *
+	 * `--ap-intensity` is THE knob §4.5 is about: the peak alpha of the light when the reader is
+	 * level with the window. TUNE against a side-by-side render, never against a number. */
+	--ap-intensity: 0.5; /* TUNE (§4.5) — provisional. Unproven by eye. */
+	--ap-amplitude: 1; /* device scaling; mobile drops to 0.6 below (§11). */
+
+	/* --- Reach: how far the light falls out of the window into the room's negative space ----- *
+	 * Per-side so light can be sent AWAY from a text column (§9.1). `--ap-reach` is the fallback for
+	 * all four sides; override any side individually with `--ap-reach-block-start` /
+	 * `-block-end` / `-inline-start` / `-inline-end`.
+	 *
+	 * THESE ARE INSET VALUES, AND THE SIGN IS DELIBERATE: negative = the light escapes the frame by
+	 * that much; `0` = flush with the frame, i.e. no light out of that side at all. Percentages
+	 * resolve against the frame's own height (block) and width (inline).
+	 *
+	 * The sign convention is NOT cosmetic — it is load-bearing, and it cost this session a real
+	 * defect. The obvious API is a positive `--ap-reach: 20%` negated in the layer with
+	 * `calc(-1 * var(--ap-reach))`. It is booby-trapped: an author writing the natural
+	 * `--ap-reach-inline-end: 0` to keep light off a text column (§9.1 — the single most important
+	 * use of this knob) yields `calc(-1 * 0)`, which multiplies a UNITLESS NUMBER and produces a
+	 * number, not a length. That is invalid for `inset`, so the side silently computes to `auto`,
+	 * and an empty absolutely-positioned box with an `auto` side collapses to **zero width**. The
+	 * light then animates flawlessly on an element with no area: MEASURED opacity 0.4996 at the
+	 * peak, and a screenshot showing an entirely black room. CSS cannot add a number to a length, so
+	 * there is no way to make unitless zero safe inside calc — the only fix is to not use calc.
+	 * Holding the inset directly means `0` is simply a valid length and the trap cannot be written. */
+	--ap-reach: -20%; /* TUNE */
+
+	/* --- The source's geometry inside the light layer ---------------------------------------- */
+	--ap-tint: var(--p-atmos-cool); /* rgb triplet; see the two materials in §4. */
+	--ap-origin-x: 50%;
+	--ap-origin-y: 50%;
+	--ap-size-x: 86%;
+	--ap-size-y: 78%;
+
+	/* --- Breath (§4.6) ----------------------------------------------------------------------- *
+	 * The one place §4.5 is INVERTED. The mechanism must be decisively visible; the breath must be
+	 * imperceptible — "present everywhere, noticed nowhere". A visible breath is a defect. The
+	 * visitor must never be able to tell whether the room responded to them or was simply breathing.
+	 * 11s matches the homepage's water-light cycle deliberately: one world, shared light logic
+	 * (CINEMATIC_MOTION_LANGUAGE §11.2). Period must stay >= 10s. */
+	--ap-breath-period: 11s;
+	--ap-breath-depth: 0.06; /* TUNE — keep imperceptible. */
+
+	/* --- Pointer travel (§13, opt-in; see 6.) ------------------------------------------------ */
+	--ap-catch-travel: 3%; /* TUNE */
+}
+
+/* §11 — mobile keeps the mechanism, gently. "What mobile drops is weight, never quality": both windows
+   still light the room, so the fork still reads. 52rem is the site's desktop boundary (it matches
+   home-cinema.js's `min-width: 52.0625rem`). Mobile-specific risk recorded in §11: stacked, the two
+   windows sit close together — verify the DARK BETWEEN THEM still reads, or the comparison flattens into
+   one continuous glow. That is a tuning gate, not something this default can guarantee. */
+@media (max-width: 52rem) {
+	.u-aperture {
+		--ap-amplitude: 0.6;
+	}
+}
+
+/* ============================================================================================= *
+ * 3. THE LIGHT — inert until armed.
+ *
+ * Two nested layers, and the nesting is load-bearing. Scroll intensity rides the outer element's
+ * opacity; the breath rides the inner ::before's opacity. Nested opacity MULTIPLIES for free, on the
+ * compositor. A single element cannot carry both (two animations on one property do not compose — the
+ * later simply wins), and driving one `opacity: calc(var(--a) * var(--b))` from two animated custom
+ * properties would move the work onto the main thread and repaint. This is the same "multiply, don't
+ * fight" fix that the homepage's entrance needed (D-43: the entrance was moved onto the inner <img> so
+ * it multiplies with the camera on the parent instead of losing to it in the cascade).
+ *
+ * `opacity: 0` is the REST STATE, and it is why this file is safe to ship before it is used: with no
+ * arming (unsupported engine, reduced motion) the layer contributes nothing and the frozen D-29
+ * composition renders untouched, byte for byte.
+ * ============================================================================================= */
+.u-aperture__light {
+	position: absolute;
+	/* No calc, by design — see the sign convention on `--ap-reach` above. A side must never be able to
+	   compute to `auto`: this box has no content, so a single `auto` side collapses it to zero and the
+	   whole mechanism disappears while every number still reads correct. */
+	inset-block-start: var(--ap-reach-block-start, var(--ap-reach));
+	inset-block-end: var(--ap-reach-block-end, var(--ap-reach));
+	inset-inline-start: var(--ap-reach-inline-start, var(--ap-reach));
+	inset-inline-end: var(--ap-reach-inline-end, var(--ap-reach));
+	z-index: -1;
+	pointer-events: none;
+	mix-blend-mode: screen; /* can only ADD light — never darkens (see STACKING). */
+	opacity: 0; /* inert; the ARMING block below is the only thing that ever raises it. */
+}
+
+/* The pre-painted source. Stops run at full alpha and are scaled by the layer's opacity above, so
+   `--ap-intensity` alone controls amplitude and the gradient itself is never re-rasterised. */
+.u-aperture__light::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		var(--ap-size-x) var(--ap-size-y) at var(--ap-origin-x) var(--ap-origin-y),
+		rgba(var(--ap-tint), 1) 0%,
+		rgba(var(--ap-tint), 0.34) 42%,
+		rgba(var(--ap-tint), 0) 72%
+	);
+}
+
+/* ============================================================================================= *
+ * 4. THE TWO MATERIALS (§5.2) — the comparison the page exists to make.
+ *
+ *   "Architecture is lit by what you cannot see. Interior is lit by what you can."
+ *
+ * These two variants encode ONLY the direction the frozen blueprint states in words; their numbers are
+ * provisional like every other. §14 #12: never let the two apertures light the room identically. The
+ * sharpest test (§13, §6.2): if the two could be swapped without anyone noticing, it is an effect, not
+ * direction — and the acceptance gate is that the cool window and the warm window are distinguishable
+ * WITH THE COPY HIDDEN (§15).
+ * ============================================================================================= */
+
+/* COOL — architecture. "Light from beyond the frame — the sky. Cool, high, entering from above/outside.
+   You never see the source." */
+.u-aperture--cool {
+	--ap-tint: var(--p-atmos-cool);
+	--ap-origin-y: 4%; /* high: it arrives from outside the frame, above. */
+	--ap-size-y: 94%;
+}
+
+/* WARM — interior. "Light from inside the frame — the building's own lamps. Warm, low, enclosed. You can
+   see the source." Note this is the ONE sanctioned warm atmosphere on the page: it is a photograph being
+   honest about its own lamps, not the interface going warm (§5.3). It is NOT gold (§14 #11). */
+.u-aperture--warm {
+	--ap-tint: var(--p-atmos-warm);
+	--ap-origin-y: 58%; /* low, and enclosed: the source is in the room with you. */
+	--ap-size-y: 68%;
+}
+
+/* ============================================================================================= *
+ * 5. ARMING — the only block that produces motion, and the whole progressive-enhancement story.
+ *
+ * Three independent gates, in this order:
+ *   1. `@supports (animation-timeline: view())` — an engine without scroll-driven animation gets NO
+ *      declaration at all, so the light stays at its `opacity: 0` rest state. The guard is not optional:
+ *      without it an unsupported engine falls back to the DOCUMENT timeline and would PLAY these
+ *      keyframes as a timed animation on load — a window that lights up once and dies.
+ *   2. `prefers-reduced-motion: no-preference` — reduced motion never arms it (and motion.css's global
+ *      reduce guard is the backstop).
+ *   3. `opacity`/`transform` only, off the main thread.
+ *
+ * There is no `html.js` gate here, deliberately: this layer never hides content, it only adds light to
+ * negative space, so no-JS has nothing to restore. (Contrast the reveals in motion.css, which DO hide
+ * content and are therefore JS-gated.)
+ * ============================================================================================= */
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		/* Longhands, NEVER the `animation` shorthand — a recorded build gotcha (D-37): the CSS minifier
+		   folds a trailing `animation-timeline` into the shorthand, which per spec RESETS the timeline to
+		   `auto` and silently disables the scroll link. Longhands cannot be folded that way. Verified in
+		   the built CSS every time this file changes. */
+		.u-aperture__light {
+			animation-name: u-aperture-rise;
+			/* `linear` is not a default, it is the rule. The reader's scroll IS the timeline, so any curve
+			   here distorts the map between where they are and how lit the room is — "nothing moves more
+			   than the reader scrolls" (§12.2). And the token curves are a trap: `--ease-out` is an EXPO
+			   curve (0.16,1,0.3,1) that spends ~80% of its travel in the first ~10% of the range. It is
+			   correct for a 200ms hover and catastrophic on a camera range, and it is invisible in code
+			   review (§9.5, §16.2 — still open sitewide). Never point this at a token. */
+			animation-timing-function: linear;
+			animation-fill-mode: both;
+			animation-timeline: view();
+			animation-range: cover 0% cover 100%;
+			will-change: opacity;
+		}
+
+		/* The continuous function, and it is read straight off §4.1: "Approaching, it reaches. Level with
+		   it, it is full. Past it, it falls behind. Reverse and it runs backwards exactly."
+		   Reversibility is not implemented, it is structural: progress IS the element's own view position,
+		   so scrolling up runs the identical function backwards to identity. There is no state to strand
+		   under a fling, a reversal or an oscillation.
+		   The dark between windows is not authored and is never animated (§4.4/§14 #8) — it is simply what
+		   is left when no window is near. */
+		@keyframes u-aperture-rise {
+			from,
+			to {
+				opacity: 0;
+			}
+			50% {
+				opacity: calc(var(--ap-intensity) * var(--ap-amplitude));
+			}
+		}
+
+		/* Breath rides the inner layer so it multiplies with the scroll intensity instead of fighting it
+		   (see 3.). The `animation` shorthand IS correct here and is not the gotcha above: this animation
+		   wants the document timeline, which is exactly what the shorthand's reset to `auto` gives it. */
+		.u-aperture__light::before {
+			animation: u-aperture-breath var(--ap-breath-period) ease-in-out infinite;
+		}
+		@keyframes u-aperture-breath {
+			0%,
+			100% {
+				opacity: 1;
+			}
+			50% {
+				opacity: calc(1 - var(--ap-breath-depth));
+			}
+		}
+	}
+}
+
+/* ============================================================================================= *
+ * 6. THE POINTER REGISTER (§13) — opt-in, enhancement only, and deliberately compositor-only.
+ *
+ * "The windows get the catch-light family — the one effect the owner has praised in every review since
+ * D-37. It is perfectly consonant with this page's mechanism, because on Diensten a photograph IS a
+ * light source, so light responding to the reader is the page's own logic."
+ *
+ * `aperture-light.js` writes `--ap-px` / `--ap-py` (damped, -1..1, centre-relative) and `--ap-pointer`
+ * (0..1 presence) onto any element carrying `data-aperture-track`; custom properties inherit, so the
+ * layer below reads them for free. It TRANSLATES a pre-painted blob rather than re-positioning a
+ * gradient's origin from script — which is what the homepage does and what §12.2 forbids here
+ * ("pre-painted gradients; never repainted per frame"). Same family, better material.
+ *
+ * REDUCED MOTION AND TOUCH ARE HANDLED STRUCTURALLY, not by a media query: the runtime is the only
+ * writer of `--ap-pointer`, and it arms only on a fine pointer with motion allowed. Everywhere else the
+ * property is simply never set, the fallback `0` holds, and the layer is inert. There is nothing to
+ * remember to gate.
+ *
+ * THE STACKING SPLIT — the two lights blend against different things, and this is the whole reason
+ * `__frame` exists:
+ *   · `__light` spills into the ROOM, so it must NOT be isolated from the room (see STACKING above).
+ *   · `__catch` is light falling ON THE PHOTOGRAPH, so it must be isolated WITH the photograph and paint
+ *     above it. `__frame` is that boundary; without it a `z-index` on the catch would escape into the
+ *     room's context and could paint over a text column.
+ *
+ * The two windows MUST NOT share one expression (§13): the cool window's catch-light comes from beyond,
+ * the warm one's from within. That is an artistic decision and is deliberately NOT made here — this is
+ * the family, not its two materials.
+ * ============================================================================================= */
+
+/* The photograph's own box: the blend boundary for the catch-light, and its clip. */
+.u-aperture__frame {
+	position: relative;
+	isolation: isolate;
+	overflow: clip; /* the travelling blob can never escape the photograph it sits on. */
+}
+
+.u-aperture__catch {
+	position: absolute;
+	inset: 0;
+	z-index: 1; /* above the photograph, inside `__frame`'s isolated group. */
+	pointer-events: none;
+	mix-blend-mode: screen;
+	/* Damping lives in the runtime, not in a CSS transition — one source of easing, and it is
+	   frame-rate independent there. The light EASES toward the reader and never tracks it exactly:
+	   exact tracking reads as a cursor gimmick, damping reads as light with mass (§9.3). */
+	opacity: calc(var(--ap-pointer, 0) * var(--ap-amplitude));
+	transform: translate3d(
+		calc(var(--ap-px, 0) * var(--ap-catch-travel)),
+		calc(var(--ap-py, 0) * var(--ap-catch-travel)),
+		0
+	);
+	background: radial-gradient(
+		42% 42% at 50% 50%,
+		rgba(var(--ap-tint), 0.5) 0%,
+		rgba(var(--ap-tint), 0.14) 46%,
+		rgba(var(--ap-tint), 0) 74%
+	);
+}
+
+/* ============================================================================================= *
+ * 7. STILLNESS — `.u-still`: this beat is UNCOVERED by light; it does not assemble on arrival.
+ *
+ * Two separate problems, one utility (§12.2, §16.2 hazard 1, and CINEMATIC_MOTION_LANGUAGE §3.1.3):
+ *
+ *   (a) An `.u-inview` block that fades/rises in as it enters view is ASSEMBLE-ON-ARRIVAL — "the most
+ *       section-ey pattern that exists". Under the aperture mechanism a beat must arrive because light
+ *       reached it, not because it built itself (§7.5, §14 #16/#17).
+ *   (b) A LEFTOVER CSS TRANSITION WILL ANIMATE ANY INLINE TRANSFORM WRITTEN NEAR IT. This is the root
+ *       cause of the homepage's 657px pin teleport: index.astro neutralised the reveal's VALUES but left
+ *       its 680ms `transition: transform` live, so ScrollTrigger's pin-release transform was animated by
+ *       CSS. Proven by A/B on the same page — the hero pin (no `.u-inview`) measured 0px; the plate
+ *       measured 637px. **Neutralising a reveal's values is not enough; its transition must go too.**
+ *
+ * Specificity, not source order — this is a D-32 lesson. `motion.css` is bundled into the shared
+ * BaseLayout stylesheet while this file is page-scoped, so their relative source order is Astro's to
+ * decide, not ours. Production CSS order has ALREADY silently broken a rule on this project once (the
+ * diensten crossing's top padding). Both selectors below therefore out-specify their targets outright:
+ * `html.js .u-still.u-inview` (0,3,1) beats `html.js .u-inview` (0,2,1), and
+ * `html.js .u-still.u-inview.is-inview` (0,4,1) beats `html.js .u-inview.is-inview` (0,3,1).
+ *
+ * Baseline: outside the arming gates this utility does NOTHING, so reduced-motion and unsupported
+ * engines keep the reveal exactly as shipped — "the honest baseline restores everything the cinema
+ * neutralised" (§9.5, §11). A consumer that needs press feedback re-declares its own transition.
+ * ============================================================================================= */
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		html.js .u-still.u-inview,
+		html.js .u-still.u-inview.is-inview {
+			opacity: 1;
+			transform: none;
+			transition: none;
+		}
+	}
+}

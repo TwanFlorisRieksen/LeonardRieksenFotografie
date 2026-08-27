@@ -1,66 +1,96 @@
 ---
 /*
- * Lightbox — full-viewport photo viewer (P6 recovery — D-34 / PH-13, blueprint 8.36).
+ * THE NEAR PLANE — the enlarged view (Portfolio Experience Architecture §10; blueprint 8.36–8.47).
  *
- * Progressive enhancement: the markup below is inert until the script upgrades the `a[data-lb-full]`
- * anchors on the page. Without JS every photograph is still openable (the anchor targets an optimised
- * derivative) and every image is server-rendered — nothing hides behind the viewer (MOT-08). With JS the
- * viewer shows each photograph WHOLE (object-fit: contain — never cropped, 2.14/8.14), cycles within its
- * group, and is fully keyboard- and touch-operable with focus management and a scroll lock.
+ * NOT a modal placed on top of a page. It is "the same world, closer" (§10.1): the photograph the visitor
+ * pointed at visibly TRAVELS from its own place on the wall to the centre of the view, growing as it comes,
+ * while the wall recedes and dims behind it (§10.2). However the visitor leaves, the photograph returns to
+ * its own place and the page is exactly as they left it.
  *
- * One instance per page (included by the portfolio overview + project detail). The script is small and
- * Astro inlines it (no emitted JS bundle — the site's PE baseline is preserved and only grows a little).
+ * Why the travel is structural rather than decorative: in a conventional lightbox the relationship between
+ * the small photograph and the large one is ASSERTED — something appeared and you are expected to believe
+ * it is what you clicked. Here it is SHOWN, and the consequence is that the visitor's place is never
+ * restored on exit BECAUSE IT WAS NEVER LOST (§10.2, §7.1). That is the single largest practical
+ * improvement in the portfolio design, and it is why this is the page's one mechanism: THE RECESSION.
+ *
+ * The field behind is dark and effectively opaque once open (§10.3): a ghost of forty other photographs
+ * behind the one being viewed is competition, however faint (blueprint 8.39/8.40). Place is preserved by
+ * the continuity of the transition, not by transparency of the backdrop.
+ *
+ * Progressive enhancement (§16.3): the markup below is inert until the script upgrades the `a[data-lb-full]`
+ * anchors. Without JavaScript every photograph is still openable — the anchor targets an optimised
+ * derivative — and every image is server-rendered. Nothing hides behind an initial state only script can
+ * release. Only the recession is absent.
+ *
+ * Reduced motion (§16.1): the recession RESOLVES INSTANTLY instead of travelling. Nothing else is lost —
+ * everything this view carries is carried by static properties.
  */
 ---
 
-<div class="lb" id="lightbox" hidden>
-	<div class="lb__backdrop" data-lb-close></div>
-	<div class="lb__dialog" role="dialog" aria-modal="true" aria-label="Foto­weergave" tabindex="-1">
-		<figure class="lb__figure">
-			<img class="lb__img" alt="" decoding="async" />
-			<figcaption class="lb__caption" hidden></figcaption>
+<div class="np" id="near-plane" hidden>
+	<!-- The field: dark, opaque when settled, and the click-to-close hit area (§10.4 exit #3). -->
+	<div class="np__field" data-np-close></div>
+
+	<div class="np__dialog" role="dialog" aria-modal="true" aria-label="Vergrote weergave" tabindex="-1">
+		<!-- IMAGE PROTECTION REACHES THE ENLARGED VIEW TOO (P12 / D-84). Every photograph in the document is
+		     inside a `[data-photo-protected]` <Media> box, but this <img> is created by this component and
+		     was the one photographic surface on the site the deterrent never covered — and it is the LARGEST
+		     derivative, so it was also the most worth taking. One attribute: the global delegated handler in
+		     BaseLayout already refuses contextmenu / dragstart / selectstart inside anything carrying it, so
+		     this costs no new listener, nothing per frame, and nothing at all while the view is closed. The
+		     controls are deliberately OUTSIDE this element, so every button, the swipe and the click-to-close
+		     field keep their native behaviour. Deterrent only — see the note in BaseLayout. -->
+		<figure class="np__figure" data-photo-protected>
+			<img class="np__img" alt="" decoding="async" draggable="false" />
+			<figcaption class="np__caption" hidden></figcaption>
 		</figure>
 
-		<div class="lb__bar">
-			<span class="lb__counter" aria-hidden="true"></span>
+		<!-- Chrome: minimal and PERMANENT, never hover-revealed (blueprint 8.45, §10.5). It fades in only
+		     once the photograph has arrived, so nothing competes with the travel itself. -->
+		<div class="np__chrome">
+			<span class="np__counter" aria-hidden="true"></span>
+
+			<button type="button" class="np__btn np__btn--close" data-np-close aria-label="Sluiten">
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
+			</button>
+			<button type="button" class="np__btn np__btn--prev" data-np-prev aria-label="Vorige foto">
+				<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M15 5l-7 7 7 7" /></svg>
+			</button>
+			<button type="button" class="np__btn np__btn--next" data-np-next aria-label="Volgende foto">
+				<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M9 5l7 7-7 7" /></svg>
+			</button>
 		</div>
 
-		<button type="button" class="lb__btn lb__btn--close" data-lb-close aria-label="Sluiten">
-			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
-		</button>
-		<button type="button" class="lb__btn lb__btn--prev" data-lb-prev aria-label="Vorige foto">
-			<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M15 5l-7 7 7 7" /></svg>
-		</button>
-		<button type="button" class="lb__btn lb__btn--next" data-lb-next aria-label="Volgende foto">
-			<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M9 5l7 7-7 7" /></svg>
-		</button>
+		<!-- Position changes are announced politely, without interrupting (§15.2). -->
+		<p class="np__live u-visually-hidden" role="status" aria-live="polite"></p>
 	</div>
 </div>
 
 <style>
-	.lb {
+	.np {
 		position: fixed;
 		inset: 0;
 		z-index: var(--z-modal);
 		display: grid;
 		place-items: center;
 	}
-	.lb[hidden] {
+	.np[hidden] {
 		display: none;
 	}
-	/* The dark field is a solid, un-transitioned CHILD layer (also the click-to-close hit area). Painting
-	   it here — a normal absolutely-positioned child with a flat background and no opacity animation —
-	   rasterises reliably the instant the overlay is shown; putting it on the fixed parent, or fading it
-	   via an opacity transition, could leave a stale/empty composited layer until the next repaint. The
-	   image itself still scales/fades in (is-open + is-ready) for motion. */
-	.lb__backdrop {
+	/* The field fades from transparent to opaque ACROSS the travel, so the visitor actually sees the wall
+	   recede and dim (§10.2) and then sees nothing but the photograph (§10.3). Both halves of the sentence
+	   are true, in order. */
+	.np__field {
 		position: absolute;
 		inset: 0;
-		/* Opaque, not translucent: a photo viewer reads best on a solid dark field (full focus on the
-		   image), and an opaque fill also composites reliably as a fixed overlay across browsers. */
 		background: #06080c;
+		opacity: 0;
+		transition: opacity var(--np-dur, 440ms) var(--ease-emphasized);
 	}
-	.lb__dialog {
+	.np.is-open .np__field {
+		opacity: 1;
+	}
+	.np__dialog {
 		position: relative;
 		width: min(100vw, 1800px);
 		height: 100dvh;
@@ -68,8 +98,28 @@
 		place-items: center;
 		padding: clamp(1rem, 0.5rem + 3vw, 3.5rem);
 		outline: none;
+		/*
+		 * EXIT #3 MUST ACTUALLY EXIST (§10.4).
+		 *
+		 * The dialog is a full-viewport box laid over `.np__field`, so before this rule the field — the
+		 * click-to-close hit area — was unreachable at EVERY point on screen: `elementFromPoint` returned
+		 * `.np__dialog` at all four corners and at the centre. Clicking the field around the photograph, one
+		 * of the five ways out the architecture says are "all always available", silently did nothing. It
+		 * passed code review because both the element and its handler exist; only the browser showed it.
+		 *
+		 * The dialog is therefore transparent to the pointer, and only the things a visitor may legitimately
+		 * click take pointer events back. Everything else — all the dark space around the photograph — falls
+		 * through to the field beneath, which is exactly what the design says that space is for. Focus and
+		 * keyboard handling are unaffected: `pointer-events` does not govern either.
+		 */
+		pointer-events: none;
 	}
-	.lb__figure {
+	.np__img,
+	.np__caption,
+	.np__btn {
+		pointer-events: auto;
+	}
+	.np__figure {
 		margin: 0;
 		display: flex;
 		flex-direction: column;
@@ -78,49 +128,60 @@
 		max-width: 100%;
 		max-height: 100%;
 	}
-	.lb__img {
+	/* Fit, never fill: the whole photograph, always. Composition takes priority over filling the screen
+	   (blueprint 8.41, CLAUDE.md §4.3). No photograph is ever cropped to suit a viewport. */
+	.np__img {
 		display: block;
+		user-select: none;
+		-webkit-user-select: none;
+		-webkit-user-drag: none;
+		/* Suppresses the iOS/Android long-press "Save image / Copy" sheet on the enlarged photograph.
+		   Swipe and tap are untouched: this callout is a separate gesture from either. */
+		-webkit-touch-callout: none;
 		max-width: 100%;
-		/* leave room for the caption + breathing space; the image is shown WHOLE (contain), never cropped. */
-		max-height: min(84vh, 84dvh);
+		max-height: min(82vh, 82dvh);
 		width: auto;
 		height: auto;
 		object-fit: contain;
 		background: var(--color-bg-abyss);
-		box-shadow: var(--shadow-overlay);
-		opacity: 0;
-		transform: scale(0.985);
-		transition: opacity var(--dur-component) var(--ease-out),
-			transform var(--dur-component) var(--ease-out);
+		transform-origin: center center;
+		/* The travel. Transform only — the photograph is never masked, clipped or distorted. */
+		transition: transform var(--np-dur, 440ms) var(--ease-emphasized);
+		will-change: transform;
 	}
-	.lb.is-open .lb__img.is-ready {
-		opacity: 1;
-		transform: none;
-	}
-	.lb__caption {
+	.np__caption {
 		max-width: 62ch;
 		text-align: center;
 		color: var(--color-text-secondary);
 		font-size: var(--fs-body-sm);
 		line-height: var(--lh-snug);
 	}
-	.lb__bar {
+
+	/* Chrome appears once the photograph has arrived, and is permanent from then on. */
+	.np__chrome,
+	.np__caption {
+		opacity: 0;
+		transition: opacity var(--dur-interaction) var(--ease-standard);
+	}
+	.np.is-settled .np__chrome,
+	.np.is-settled .np__caption {
+		opacity: 1;
+	}
+	.np__counter {
 		position: absolute;
 		left: 0;
 		right: 0;
 		bottom: clamp(0.75rem, 0.4rem + 1vw, 1.5rem);
-		display: flex;
-		justify-content: center;
-		pointer-events: none;
-	}
-	.lb__counter {
+		text-align: center;
 		font-family: var(--font-display);
+		font-weight: var(--fw-display-soft);
 		font-size: var(--fs-caption);
 		letter-spacing: 0.08em;
 		color: var(--color-text-muted);
 		font-variant-numeric: tabular-nums;
+		pointer-events: none;
 	}
-	.lb__btn {
+	.np__btn {
 		position: absolute;
 		display: grid;
 		place-items: center;
@@ -132,53 +193,67 @@
 		border-radius: var(--radius-pill);
 		cursor: pointer;
 		transition: background var(--dur-interaction) var(--ease-standard),
-			border-color var(--dur-interaction) var(--ease-standard),
-			transform var(--dur-interaction) var(--ease-standard);
+			border-color var(--dur-interaction) var(--ease-standard);
 	}
-	.lb__btn:hover {
+	.np__btn:hover {
 		background: rgba(20, 25, 34, 0.8);
 		border-color: var(--p-white-a24);
 	}
-	.lb__btn:focus-visible {
+	.np__btn:focus-visible {
 		outline: 2px solid var(--color-focus);
 		outline-offset: 2px;
 	}
-	.lb__btn--close {
+	.np__btn--close {
 		top: clamp(0.75rem, 0.4rem + 1vw, 1.75rem);
 		right: clamp(0.75rem, 0.4rem + 1vw, 1.75rem);
 	}
-	.lb__btn--prev {
+	.np__btn--prev {
 		left: clamp(0.5rem, 0.2rem + 1vw, 1.5rem);
 		top: 50%;
 		transform: translateY(-50%);
 	}
-	.lb__btn--next {
+	.np__btn--next {
 		right: clamp(0.5rem, 0.2rem + 1vw, 1.5rem);
 		top: 50%;
 		transform: translateY(-50%);
 	}
-	.lb__btn--prev:hover {
-		transform: translateY(-50%) translateX(-2px);
-	}
-	.lb__btn--next:hover {
-		transform: translateY(-50%) translateX(2px);
-	}
-	.lb__btn[hidden] {
+	.np__btn[hidden] {
 		display: none;
 	}
+
+	/* THE WALL RECEDES. Applied to <main>, which is not an ancestor of this overlay (the script portals the
+	   overlay to <body> on init), so transforming it cannot break the overlay's fixed positioning. */
+	:global(body.is-np-open) :global(main) {
+		transform: scale(0.965);
+		transition: transform var(--np-dur, 440ms) var(--ease-emphasized);
+	}
+	:global(body.is-np-closing) :global(main) {
+		transform: none;
+		transition: transform var(--np-dur, 440ms) var(--ease-emphasized);
+	}
+
+	/* Reduced motion (§16.1): the recession resolves instantly. No travel, no recession, no fades.
+	   Everything the view carries — the whole photograph, the caption, the position, every control — is
+	   still here, because none of it was ever carried by the motion (§16.2). */
 	@media (prefers-reduced-motion: reduce) {
-		.lb__backdrop,
-		.lb__img,
-		.lb__btn {
-			transition: none;
+		.np__field,
+		.np__img,
+		.np__chrome,
+		.np__caption,
+		.np__btn,
+		:global(body.is-np-open) :global(main),
+		:global(body.is-np-closing) :global(main) {
+			transition: none !important;
 		}
-		.lb__img {
+		:global(body.is-np-open) :global(main) {
 			transform: none;
 		}
 	}
-	/* Touch: the arrows can crowd a small screen; keep them but slightly smaller, and swipe also works. */
+
+	/* Touch: keep the visible controls — swipe NEVER replaces them (blueprint 8.45, §13). They sit clear of
+	   the screen edges and of the photograph, with generous targets. */
 	@media (max-width: 34rem) {
-		.lb__btn {
+		.np__btn {
 			width: 2.75rem;
 			height: 2.75rem;
 		}
@@ -186,143 +261,384 @@
 </style>
 
 <script>
+	import { focusWithoutRing, isKeyboardActivation } from '../scripts/quiet-focus.js';
+
 	(() => {
-		const root = document.getElementById('lightbox');
+		const root = document.getElementById('near-plane');
 		if (!root) return;
-		const anchors = Array.from(
-			document.querySelectorAll<HTMLAnchorElement>('a[data-lb-full]'),
-		);
+		const anchors = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[data-lb-full]'));
 		if (!anchors.length) return;
 
-		const dialog = root.querySelector<HTMLElement>('.lb__dialog')!;
-		const img = root.querySelector<HTMLImageElement>('.lb__img')!;
-		const cap = root.querySelector<HTMLElement>('.lb__caption')!;
-		const counter = root.querySelector<HTMLElement>('.lb__counter')!;
-		const btnPrev = root.querySelector<HTMLButtonElement>('.lb__btn--prev')!;
-		const btnNext = root.querySelector<HTMLButtonElement>('.lb__btn--next')!;
-		const closers = Array.from(root.querySelectorAll<HTMLElement>('[data-lb-close]'));
+		// Portal the overlay to <body> so that transforming <main> (the wall receding) cannot establish a
+		// containing block for this fixed-position overlay. Without this, the recession would drag the near
+		// plane along with the wall.
+		document.body.appendChild(root);
 
-		// Group anchors by their data-lightbox value so next/prev cycles within one exhibition context.
+		const dialog = root.querySelector<HTMLElement>('.np__dialog')!;
+		const img = root.querySelector<HTMLImageElement>('.np__img')!;
+		const cap = root.querySelector<HTMLElement>('.np__caption')!;
+		const counter = root.querySelector<HTMLElement>('.np__counter')!;
+		const live = root.querySelector<HTMLElement>('.np__live')!;
+		const btnPrev = root.querySelector<HTMLButtonElement>('.np__btn--prev')!;
+		const btnNext = root.querySelector<HTMLButtonElement>('.np__btn--next')!;
+		const closers = Array.from(root.querySelectorAll<HTMLElement>('[data-np-close]'));
+
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const DUR = 440;
+
+		// Group anchors so next/prev cycles within ONE exhibition context — grouping follows the wall
+		// (§10.5): a photograph opened in Architectuur cycles through Architectuur, and the visitor never
+		// falls out of one discipline into another without having chosen to.
 		const groups = new Map<string, HTMLAnchorElement[]>();
 		anchors.forEach((a) => {
 			const g = a.getAttribute('data-lightbox') || 'default';
-			(groups.get(g) ?? groups.set(g, []).get(g)!).push(a);
+			const list = groups.get(g) ?? [];
+			list.push(a);
+			groups.set(g, list);
 		});
 
 		let current: HTMLAnchorElement[] = [];
 		let index = 0;
-		let lastFocus: HTMLElement | null = null;
+		let isOpen = false;
+		let historyPushed = false;
+		/*
+		 * WHICH HAND CLOSED IT (P12 / D-84). On close the photograph the visitor was viewing takes focus back
+		 * — that is what makes Tab continue from the photograph rather than from the top of the document.
+		 * But a script-driven focus() paints Chromium's focus ring whatever the visitor actually did, so a
+		 * MOUSE open-and-close left a blue rectangle around the photograph on the wall. This tracks the
+		 * modality of the interaction that is actually driving the view: set from the opening click's
+		 * `detail`, raised by any key pressed while open, lowered by any pointer press on the overlay. The
+		 * focus move itself never changes — only whether it is indicated.
+		 */
+		let kbd = false;
+		/** The wall's position, held across the close so the visitor lands exactly where they left. */
+		let wallY = 0;
+		let holdUntil = 0;
 
-		const preload = (src: string) => {
-			const im = new Image();
-			im.src = src;
+		const thumbOf = (a: HTMLAnchorElement) => a.querySelector('img');
+
+		/** Bring a photograph's place on the wall back into view, instantly — never a smooth glide (§5.2). */
+		const ensureInView = (a: HTMLAnchorElement) => {
+			const r = a.getBoundingClientRect();
+			if (r.bottom < 0 || r.top > window.innerHeight) {
+				a.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior });
+			}
 		};
 
-		const show = (i: number) => {
+		/**
+		 * THE RECESSION, as geometry. `from` is the photograph's own place on the wall; the near-plane image
+		 * is placed exactly over it and then released to its centred position (opening), or driven onto it
+		 * and then hidden (closing). Because both rects are the same photograph, the scale is uniform — the
+		 * picture plane stays parallel to the screen and the image can only ever scale, never distort (§2.1).
+		 */
+		const travel = (from: DOMRect, back: boolean, done?: () => void) => {
+			const to = img.getBoundingClientRect();
+			if (!to.width || !to.height || !from.width) {
+				done?.();
+				return;
+			}
+			const s = from.width / to.width;
+			const dx = from.left + from.width / 2 - (to.left + to.width / 2);
+			const dy = from.top + from.height / 2 - (to.top + to.height / 2);
+			const atWall = `translate(${dx}px, ${dy}px) scale(${s})`;
+
+			if (back) {
+				img.style.transform = atWall;
+				window.setTimeout(() => done?.(), DUR);
+				return;
+			}
+			img.style.transition = 'none';
+			img.style.transform = atWall;
+			void img.offsetWidth; // flush, so the next frame animates FROM the wall rather than jumping
+			img.style.transition = '';
+			img.style.transform = '';
+			window.setTimeout(() => done?.(), DUR);
+		};
+
+		/** Load the photograph into a definite layout box before it decodes, so the travel can be measured. */
+		const paint = (a: HTMLAnchorElement) => {
+			const full = a.getAttribute('data-lb-full')!;
+			const w = Number(a.getAttribute('data-lb-w')) || 0;
+			const h = Number(a.getAttribute('data-lb-h')) || 0;
+			if (w && h) {
+				img.width = w;
+				img.height = h;
+			}
+			img.alt = a.getAttribute('data-lb-alt') || '';
+
+			// Seed with the already-decoded thumbnail so the photograph is VISIBLE the instant it starts
+			// travelling, then upgrade to the full derivative in place. The box is fixed by the intrinsic
+			// width/height above, so the upgrade cannot reflow or flicker — it only gains resolution.
+			const thumb = thumbOf(a);
+			const seed = thumb?.currentSrc || thumb?.src;
+			img.src = seed || full;
+			if (seed && seed !== full) {
+				const hi = new Image();
+				hi.onload = () => {
+					if (isOpen && current[index] === a) img.src = full;
+				};
+				hi.src = full;
+			}
+		};
+
+		const preload = (a?: HTMLAnchorElement) => {
+			const src = a?.getAttribute('data-lb-full');
+			if (src) new Image().src = src;
+		};
+
+		const show = (i: number, animate: boolean) => {
 			const n = current.length;
 			index = ((i % n) + n) % n;
 			const a = current[index];
-			const full = a.getAttribute('data-lb-full')!;
-			const alt = a.getAttribute('data-lb-alt') || '';
+			paint(a);
+
 			const caption = a.getAttribute('data-lb-caption') || '';
-			img.classList.remove('is-ready');
-			img.src = full;
-			img.alt = alt;
-			const reveal = () => img.classList.add('is-ready');
-			if (img.complete) reveal();
-			else img.addEventListener('load', reveal, { once: true });
-			if (caption) {
-				cap.textContent = caption;
-				cap.hidden = false;
-			} else {
-				cap.textContent = '';
-				cap.hidden = true;
-			}
+			cap.textContent = caption;
+			cap.hidden = !caption;
+
 			const single = n < 2;
 			btnPrev.hidden = single;
 			btnNext.hidden = single;
+			// Position is stated WITHIN THE GROUP, not the site (§10.5): "12 / 40" is the twelfth of the
+			// architecture works. Category clarity survives into the near plane.
 			counter.textContent = single ? '' : `${index + 1} / ${n}`;
-			// Preload neighbours for snappy nav.
+			live.textContent = single ? img.alt : `Foto ${index + 1} van ${n}. ${img.alt}`;
+
 			if (!single) {
-				preload(current[(index + 1) % n].getAttribute('data-lb-full')!);
-				preload(current[(index - 1 + n) % n].getAttribute('data-lb-full')!);
+				preload(current[(index + 1) % n]);
+				preload(current[(index - 1 + n) % n]);
+			}
+			// Stepping to a neighbour exchanges the image within a STATIONARY frame (§10.5) — which is what
+			// makes comparison-in-time work (§8) and keeps the near plane from becoming a place where the
+			// camera performs. No travel here, deliberately.
+			if (!animate) img.style.transform = '';
+		};
+
+		const settle = () => root.classList.add('is-settled');
+
+		const doOpen = (group: string, i: number) => {
+			current = groups.get(group) ?? [];
+			if (!current.length) return;
+			isOpen = true;
+
+			/* CAPTURE THE WALL POSITION ON OPEN, not on close (Phase 3 / D-73). On the spatial portfolio the
+			   "position" is window.scrollY (the coil is a pure function of it), and closing traverses history —
+			   history.back() can restore a stale scroll BEFORE doClose runs, so capturing there returned the
+			   visitor to the wrong photograph. Capturing here, before any history/overflow change, records the
+			   exact place the visitor left; the hold + final restore force the page back to it (instantly, and
+			   hidden behind the still-opaque overlay). Scroll is locked while open, so this equals the close
+			   position in the flat layouts too — safe for the project-page galleries that also use this. */
+			wallY = window.scrollY;
+
+			const from = thumbOf(current[((i % current.length) + current.length) % current.length])
+				?.getBoundingClientRect();
+
+			root.hidden = false;
+			document.documentElement.style.overflow = 'hidden'; // shift-free: scrollbar-gutter is reserved
+			document.body.classList.remove('is-np-closing');
+			document.body.classList.add('is-np-open');
+			show(i, true);
+			dialog.focus({ preventScroll: true });
+			document.addEventListener('keydown', onKey);
+
+			if (reduce.matches || !from) {
+				root.classList.add('is-open');
+				settle();
+				return;
+			}
+			// Paint the transparent field for one frame before flipping is-open, so the dim actually runs
+			// instead of being batched into the un-hide.
+			requestAnimationFrame(() => {
+				travel(from, false, settle);
+				root.classList.add('is-open');
+			});
+		};
+
+		const finishClose = () => {
+			// Instant, not smooth: html{scroll-behavior:smooth} would otherwise animate the restore and the
+			// frame-hold would chase a moving target. The visitor lands exactly where they left, in one step.
+			if (Math.abs(window.scrollY - wallY) > 1) window.scrollTo({ top: wallY, behavior: 'instant' });
+			holdUntil = 0;
+			try {
+				// A genuine back-navigation (from a project page) must still restore natively (§11).
+				history.scrollRestoration = 'auto';
+			} catch {
+				/* ignore */
+			}
+			root.hidden = true;
+			root.classList.remove('is-open', 'is-settled');
+			document.body.classList.remove('is-np-closing');
+			document.documentElement.style.overflow = '';
+			img.style.transition = 'none';
+			img.style.transform = '';
+			img.removeAttribute('src');
+			void img.offsetWidth;
+			img.style.transition = '';
+		};
+
+		const doClose = () => {
+			if (!isOpen) return;
+			isOpen = false;
+			document.removeEventListener('keydown', onKey);
+			root.classList.remove('is-settled');
+
+			// The photograph returns to ITS OWN place — the one currently being viewed, which is where the
+			// visitor now is. Bring that place into view first, so the return always lands on screen and
+			// focus follows the visitor rather than stranding them where they started (§10.4, §15.2).
+			const a = current[index];
+			ensureInView(a);
+			focusWithoutRing(a, !kbd);
+
+			/*
+			 * HOLD THE WALL (§7.1, §22.1).
+			 *
+			 * Closing traverses history (back means close — §10.4), and a history traversal makes the browser
+			 * restore the scroll position saved on the entry it lands on. Left alone, that silently teleports
+			 * the visitor away from the photograph they left — the precise failure this design exists to
+			 * prevent, and it is invisible in code review because nothing errors.
+			 *
+			 * `wallY` is now the OPEN position (captured in doOpen), NOT re-read here: on the coil, history.back()
+			 * can move scrollY BEFORE this runs, so re-reading it captured the wrong place and the hold then
+			 * "restored" the visitor to the wrong photograph. `scrollRestoration = 'manual'` prevents the
+			 * traversal we own from restoring; the instant frame-hold below is the belt to that brace and also
+			 * covers the non-history exits, forcing the page back to the exact open position within a frame,
+			 * behind the still-opaque overlay. Restoration returns to 'auto' in finishClose.
+			 */
+			holdUntil = performance.now() + DUR + 120;
+			const hold = () => {
+				if (Math.abs(window.scrollY - wallY) > 1) window.scrollTo({ top: wallY, behavior: 'instant' });
+				if (performance.now() < holdUntil) requestAnimationFrame(hold);
+			};
+			requestAnimationFrame(hold);
+
+			document.body.classList.remove('is-np-open');
+			document.body.classList.add('is-np-closing');
+
+			if (reduce.matches) {
+				finishClose();
+				return;
+			}
+			root.classList.remove('is-open');
+			const from = thumbOf(a)?.getBoundingClientRect();
+			if (from) travel(from, true, finishClose);
+			else finishClose();
+		};
+
+		/**
+		 * Browser back closes the near plane (§10.4, exit #5). This matters more than it looks: non-technical
+		 * visitors reflexively press back to undo anything, and in most galleries that exits the entire
+		 * portfolio and loses their position — the most common and most punishing failure in this whole
+		 * interaction class. Opening is therefore a step the browser knows about.
+		 *
+		 * Stepping between photographs deliberately adds NO history entries: back means close, not "previous
+		 * photograph". One meaning, always.
+		 */
+		const requestClose = () => {
+			if (historyPushed) {
+				historyPushed = false;
+				history.back(); // → popstate → doClose(). One close path, never two.
+			} else {
+				doClose();
 			}
 		};
 
-		const focusables = () =>
-			Array.from(
-				root.querySelectorAll<HTMLElement>(
-					'button:not([hidden]), [tabindex="-1"].lb__dialog',
-				),
-			).filter((el) => el.offsetParent !== null || el === dialog);
+		window.addEventListener('popstate', () => {
+			if (isOpen) {
+				historyPushed = false;
+				doClose();
+			}
+		});
+
+		/*
+		 * `history.scrollRestoration` is a property of the SESSION, not of this document — set it to 'manual'
+		 * and it stays 'manual' for the whole tab, surviving full navigations to other pages. Only
+		 * `finishClose()` puts it back, so any way of leaving the portfolio while the near plane is open, or
+		 * during the ~440ms close, strands the whole site in manual restoration. The visible consequence is
+		 * precisely the failure this design exists to prevent: browser back from a project page then returns
+		 * the visitor to the TOP of the wall instead of to the project they left (§11, §7.1). Observed in the
+		 * browser — a fresh page load reported 'manual' before any script on it had run.
+		 *
+		 * Restoring on pagehide closes the whole class: however the visitor leaves, and in whatever state,
+		 * the session goes back to native restoration.
+		 */
+		window.addEventListener('pagehide', () => {
+			try {
+				history.scrollRestoration = 'auto';
+			} catch {
+				/* ignore */
+			}
+		});
 
 		const onKey = (e: KeyboardEvent) => {
-			if (root.hidden) return;
+			if (!isOpen) return;
+			kbd = true; // the visitor has reached for the keyboard — from here the return focus is indicated
+
 			if (e.key === 'Escape') {
 				e.preventDefault();
-				close();
+				requestClose();
 			} else if (e.key === 'ArrowRight') {
 				e.preventDefault();
-				if (current.length > 1) show(index + 1);
+				if (current.length > 1) show(index + 1, false);
 			} else if (e.key === 'ArrowLeft') {
 				e.preventDefault();
-				if (current.length > 1) show(index - 1);
+				if (current.length > 1) show(index - 1, false);
 			} else if (e.key === 'Tab') {
-				// Simple focus trap across the visible controls.
-				const f = focusables();
+				const f = Array.from(
+					root.querySelectorAll<HTMLElement>('.np__btn:not([hidden])'),
+				);
 				if (!f.length) return;
 				const first = f[0];
 				const last = f[f.length - 1];
-				if (e.shiftKey && document.activeElement === first) {
+				const active = document.activeElement;
+				if (e.shiftKey && (active === first || active === dialog)) {
 					e.preventDefault();
 					last.focus();
-				} else if (!e.shiftKey && document.activeElement === last) {
+				} else if (!e.shiftKey && active === last) {
 					e.preventDefault();
 					first.focus();
 				}
 			}
 		};
 
-		const open = (group: string, i: number, trigger: HTMLElement) => {
-			current = groups.get(group) ?? [];
-			if (!current.length) return;
-			lastFocus = trigger;
-			root.hidden = false;
-			document.documentElement.style.overflow = 'hidden';
-			show(i);
-			// Paint the (dark, opacity:0) overlay one frame, THEN flip is-open so the fade actually runs
-			// instead of being batched into the un-hide (a Chrome compositor quirk if toggled same frame).
-			requestAnimationFrame(() => root.classList.add('is-open'));
-			document.addEventListener('keydown', onKey);
-			(dialog as HTMLElement).focus({ preventScroll: true });
-		};
-
-		const close = () => {
-			root.classList.remove('is-open');
-			document.removeEventListener('keydown', onKey);
-			document.documentElement.style.overflow = '';
-			root.hidden = true;
-			img.src = '';
-			img.classList.remove('is-ready');
-			lastFocus?.focus({ preventScroll: true });
-		};
-
 		anchors.forEach((a) => {
 			a.addEventListener('click', (e) => {
+				if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
 				e.preventDefault();
 				const g = a.getAttribute('data-lightbox') || 'default';
 				const list = groups.get(g)!;
-				open(g, list.indexOf(a), a);
+				kbd = isKeyboardActivation(e); // Enter/Space on the anchor reports detail 0; a click reports 1+
+
+				if (!historyPushed) {
+					try {
+						history.scrollRestoration = 'manual';
+					} catch {
+						/* not supported — the frame-level hold in doClose still covers it */
+					}
+					history.pushState({ np: true }, '');
+					historyPushed = true;
+				}
+				doOpen(g, list.indexOf(a));
 			});
 		});
-		closers.forEach((c) => c.addEventListener('click', close));
-		btnPrev.addEventListener('click', () => show(index - 1));
-		btnNext.addEventListener('click', () => show(index + 1));
 
-		// Touch swipe (mobile) — horizontal drag beyond a threshold pages the viewer.
+		// Any pointer press on the overlay (a control, the field, the photograph) means this is a pointer
+		// interaction, whatever it was opened with. Capture phase so it is recorded before the handler runs.
+		root.addEventListener('pointerdown', () => { kbd = false; }, true);
+		closers.forEach((c) => c.addEventListener('click', requestClose));
+		btnPrev.addEventListener('click', () => show(index - 1, false));
+		btnNext.addEventListener('click', () => show(index + 1, false));
+
+		/* Touch (§13): swipe left/right steps, past a deliberate threshold so an incidental finger movement
+		   never changes photograph (blueprint 8.44/8.46); swipe DOWN dismisses, matching the platform
+		   convention every phone user already knows (§10.4 exit #4). The visible controls remain — swipe
+		   never replaces them, because not every visitor discovers swipe (blueprint 8.45). */
 		let sx = 0;
 		let sy = 0;
-		dialog.addEventListener(
+		// Bound to the overlay ROOT, not to the dialog: the dialog is pointer-events:none so that the field
+		// beneath it can receive the click-to-close (see the CSS note above), which also means touches on the
+		// dark space around the photograph never reach the dialog. The root is an ancestor of both the field
+		// and the dialog, so a swipe is picked up wherever on the overlay the finger actually lands.
+		root.addEventListener(
 			'touchstart',
 			(e) => {
 				sx = e.changedTouches[0].clientX;
@@ -330,13 +646,15 @@
 			},
 			{ passive: true },
 		);
-		dialog.addEventListener(
+		root.addEventListener(
 			'touchend',
 			(e) => {
 				const dx = e.changedTouches[0].clientX - sx;
 				const dy = e.changedTouches[0].clientY - sy;
-				if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4 && current.length > 1) {
-					show(dx < 0 ? index + 1 : index - 1);
+				if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+					if (current.length > 1) show(dx < 0 ? index + 1 : index - 1, false);
+				} else if (dy > 90 && Math.abs(dy) > Math.abs(dx) * 1.4) {
+					requestClose();
 				}
 			},
 			{ passive: true },

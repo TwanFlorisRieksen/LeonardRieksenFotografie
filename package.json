@@ -1,26 +1,26 @@
 {
-  "name": "leonard-rieksen-fotografie",
-  "private": true,
-  "type": "module",
-  "version": "0.1.0",
-  "engines": {
-    "node": ">=22.12.0"
-  },
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build && node scripts/postbuild-verify-assets.mjs",
-    "build:astro": "astro build",
-    "preview": "astro preview",
-    "check": "astro check",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "@astrojs/sitemap": "^3.7.3",
-    "astro": "^7.0.7",
-    "gsap": "^3.15.0"
-  },
-  "devDependencies": {
-    "@astrojs/check": "^0.9.9",
-    "typescript": "^6.0.3"
-  }
+	"name": "leonard-rieksen-fotografie",
+	"private": true,
+	"type": "module",
+	"version": "0.1.0",
+	"engines": {
+		"node": ">=22.12.0"
+	},
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build && node scripts/postbuild-modulepreload.mjs && node scripts/postbuild-verify-assets.mjs",
+		"build:astro": "astro build",
+		"preview": "astro preview",
+		"check": "astro check",
+		"astro": "astro"
+	},
+	"dependencies": {
+		"@astrojs/sitemap": "^3.7.3",
+		"astro": "^7.0.7",
+		"gsap": "^3.15.0"
+	},
+	"devDependencies": {
+		"@astrojs/check": "^0.9.9",
+		"typescript": "^6.0.3"
+	}
 }

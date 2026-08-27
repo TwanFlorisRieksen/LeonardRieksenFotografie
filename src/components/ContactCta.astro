@@ -78,18 +78,17 @@ const {
 	 *     not heavier in weight"). It is a left-anchored architect's DIMENSION line, deliberately NOT the homepage
 	 *     `.work` glow-seam (no catch-light haze, no centred highlight) — a distinct member of the datum-rule gold
 	 *     family (D-28), extended to a longer trace. Static CSS, painted once; gold stays a hairline, never a fill. */
+	/* P8.5 (D-76): the two hand-tuned gradients this block carried are replaced by the shared
+	   `--grad-sapphire-field` token — the same construction (cool depth from the upper-left + a deepening
+	   toward the foot), now richer in chroma and, more importantly, no longer a one-off. The contact page's
+	   form field uses the identical token, so the site's two conversion surfaces are demonstrably the same
+	   material rather than two similar-looking guesses. Still additive light over the page's own
+	   background, never an opaque panel. */
 	.cta {
 		position: relative;
 		isolation: isolate;
 		overflow-x: clip;
-		background:
-			radial-gradient(
-				88% 78% at 3% 0%,
-				rgba(var(--p-atmos-cool), 0.11) 0%,
-				rgba(var(--p-atmos-cool), 0.03) 42%,
-				rgba(var(--p-atmos-cool), 0) 72%
-			),
-			linear-gradient(180deg, rgba(6, 8, 12, 0) 58%, rgba(6, 8, 12, 0.5) 100%);
+		background: var(--grad-sapphire-field);
 	}
 	/* Gold datum top rule (champagne caught at the left → neutral hairline across the full width). */
 	.cta::before {
@@ -99,13 +98,7 @@ const {
 		height: 1px;
 		z-index: 1;
 		pointer-events: none;
-		background: linear-gradient(
-			90deg,
-			rgba(224, 197, 140, 0.95) 0%,
-			rgba(199, 165, 106, 0.62) 16%,
-			rgba(236, 238, 242, 0.17) 34%,
-			rgba(236, 238, 242, 0.13) 100%
-		);
+		background: var(--grad-datum); /* P8.6 (D-77) — the shared datum, see tokens.css */
 	}
 	/* A short vertical gold riser at the left forms a precise architect's corner bracket (a partial frame — gold
 	   spatial extent as structure, not decoration). Sits at the section's left edge, clear of the content. */
@@ -118,7 +111,7 @@ const {
 		height: clamp(1.8rem, 1.2rem + 2vw, 3rem);
 		z-index: 1;
 		pointer-events: none;
-		background: linear-gradient(180deg, rgba(224, 197, 140, 0.82) 0%, rgba(199, 165, 106, 0) 100%);
+		background: linear-gradient(180deg, rgba(var(--p-champagne-rgb), 0.82) 0%, rgba(var(--p-gold-rgb), 0) 100%);
 	}
 	.cta__inner {
 		display: grid;

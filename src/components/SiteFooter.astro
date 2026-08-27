@@ -1,10 +1,8 @@
 ---
 /*
  * SiteFooter — shared footer foundation (FTR-01 / blueprint 13.72–13.79).
- * Contains: brand + short positioning, secondary navigation, contact, legal link, copyright + photo
- * rights (11.42). Intentional columns, NOT an overloaded dump (13.74). No social icons: the old-site
- * Instagram/Facebook presence is unconfirmed as actively maintained (A-03) and 13.78–13.79 forbid empty
- * or speculative social icons — they are added in a later phase only once confirmed.
+ * Contains: brand + short positioning, secondary navigation, contact, confirmed social links, legal link,
+ * copyright + photo rights (11.42). Intentional columns, NOT an overloaded dump (13.74).
  *
  * CONTENT NOTE: the contact values below are MIGRATED factual data extracted from the old site
  * (A-02, OLD_WEBSITE_CONTENT_INVENTORY), still owner-confirm. They are real extracted facts, not
@@ -12,6 +10,7 @@
  */
 import Wordmark from './Wordmark.astro';
 import Icon from './Icon.astro';
+import SocialLinks from './SocialLinks.astro';
 
 const year = new Date().getFullYear();
 
@@ -22,15 +21,28 @@ const primaryLinks = [
 	{ label: 'Over mij', href: '/over-mij/' },
 	{ label: 'Contact', href: '/contact/' },
 ];
-const legalLinks = [{ label: 'Privacyverklaring', href: '/privacy/' }];
+/* P11 (D-82): the legal column becomes the site's legal chrome. "Cookie-instellingen" is a deliberate
+   fourth entry rather than a duplicate of "Cookiebeleid": art. 7(3) AVG asks that withdrawing consent be as
+   easy as giving it, and a visitor looking for that does not search for a policy — they search for
+   settings. It is a plain link to the panel's own anchor, so it works with JavaScript disabled, survives a
+   shared URL, and needs no script in the footer itself. */
+const legalLinks = [
+	{ label: 'Privacyverklaring', href: '/privacy/' },
+	{ label: 'Cookiebeleid', href: '/cookies/' },
+	{ label: 'Cookie-instellingen', href: '/cookies/#voorkeuren' },
+	{ label: 'Algemene voorwaarden', href: '/voorwaarden/' },
+];
 
-// Migrated factual contact data (owner-confirm — A-02).
-const email = 'fotorieksen@hotmail.com';
+// P8.5 (D-76): the e-mail address is a current explicit OWNER instruction and supersedes the migrated
+// old-site address (CLAUDE §3.1.1). The telephone number is removed from the whole site by the same
+// instruction, so the footer never carried one and still does not.
+const email = 'LeonardRFotografie@gmail.com';
 const region = 'Midden-Nederland';
 ---
 
 <footer class="site-footer">
 	<div class="u-container u-container--wide">
+		<span class="site-footer__datum" aria-hidden="true"></span>
 		<div class="site-footer__grid">
 			<div class="site-footer__brand">
 				<Wordmark />
@@ -73,6 +85,7 @@ const region = 'Midden-Nederland';
 						</a>
 					</li>
 				</ul>
+				<SocialLinks class="site-footer__social" />
 			</div>
 		</div>
 
@@ -86,24 +99,84 @@ const region = 'Midden-Nederland';
 </footer>
 
 <style>
+	/* P8.5 (D-76) — the footer is the header's counterpart and is built from the same chrome material, so
+	   the page opens and closes on one recognisable surface. Where the header is lit along its top arris
+	   and settles, the footer DESCENDS: it starts at the chrome tone and falls into the site's own abyss
+	   (`--grad-chrome-footer`), so the page ends by going deeper rather than by meeting a floor. Its top
+	   edge carries the same champagne datum as the header's bottom edge — the two gold hairlines are the
+	   brackets the whole site sits between (gold as structural extent, 1px, never a fill — VIS-05). */
+	/* ── P8.6 (D-77): THE FOOTER IS ARRIVED AT, NOT BUMPED INTO ─────────────────────────────────────────
+	 * Two owner findings, opposite in symptom and identical in cause:
+	 *   item 3 — "CTA → footer voelt abrupt" (home, contact): the footer opened on an OPAQUE
+	 *            `--p-sapphire-900`, so whatever the page had been — the homepage's warm sky, the contact
+	 *            page's near-black — changed hue AND luminance inside one pixel row, under a bright gold
+	 *            hairline drawing the eye to exactly that row;
+	 *   item 4 — "op diensten / architectuur / interieur is de footer geen zelfstandige sectie meer": on
+	 *            those three routes D-76 had solved item 3's problem in advance by setting
+	 *            `background: transparent` under `motion-scene` and hiding the datum. No surface and no
+	 *            line is, precisely, no section.
+	 * So the fix cannot be a per-page tweak; it has to be one construction that is soft at the top AND
+	 * declares itself. It is built from three parts:
+	 *
+	 *   1. THE APPROACH. The footer's own fill now begins fully TRANSPARENT and only reaches its material
+	 *      `--footer-approach` down (~5–9rem). Whatever the page ends with — sky, photograph, ink — is
+	 *      still visible as the footer begins, and darkens into it over a distance no eye can locate. The
+	 *      step is not softened; there is no step to soften.
+	 *   2. THE DATUM MOVES INSIDE. A hairline at y=0 over a transparent top would be a bright line floating
+	 *      on a world with nothing under it (the D-45 defect class, and the exact reason D-76 had to hide
+	 *      it on the cinematic routes). Drawn instead directly above the footer's own first row, it stops
+	 *      being a seam between two things and becomes this section's opening line — the same mark the CTA
+	 *      close, the header and the hero card carry, from the same `--grad-datum` token.
+	 *   3. AIR. A closing chapter needs room before it speaks. The approach is padding, not decoration:
+	 *      content starts below it.
+	 * The `motion-scene` overrides on the three cinematic routes are deleted, so all seven routes now close
+	 * on one footer with one behaviour. */
 	.site-footer {
-		background: var(--color-bg-deep);
-		border-top: 1px solid var(--color-border-subtle);
-		padding-block: clamp(3rem, 2rem + 4vw, 5.5rem) var(--space-2xl);
-		margin-top: var(--space-4xl);
+		--footer-approach: clamp(5rem, 3rem + 6vw, 9rem);
+		position: relative;
+		background: linear-gradient(
+			180deg,
+			rgba(12, 19, 33, 0) 0%,
+			rgba(12, 19, 33, 0.34) calc(var(--footer-approach) * 0.42),
+			rgba(12, 19, 33, 0.8) calc(var(--footer-approach) * 0.78),
+			var(--p-sapphire-900) var(--footer-approach),
+			var(--p-sapphire-950) 62%,
+			var(--p-sapphire-975) 100%
+		);
+		padding-block: calc(var(--footer-approach) + clamp(2rem, 1.4rem + 2vw, 3.25rem)) var(--space-2xl);
+		margin-top: var(--space-2xl);
 	}
-	/* P4 correction (2026-07-11): ContactCta now renders through Section and carries its own
-	   `--section-gap` bottom padding (see ContactCta.astro / Section.astro). On every page that closes
-	   with ContactCta, stacking this footer's own generous top margin on top of that would double the
-	   gap. Pages that don't end in ContactCta (e.g. the portfolio pages) keep their own modest closing
-	   padding and still rely on this margin as their primary breathing room — untouched. */
+	/* The footer's own opening line — champagne caught at the left, dissolving across the width. */
+	.site-footer__datum {
+		display: block;
+		height: 1px;
+		margin-bottom: clamp(2rem, 1.4rem + 2vw, 3.25rem);
+		background: var(--grad-datum);
+		opacity: 0.7;
+	}
+	/* P4 correction (2026-07-11), re-derived at D-77: ContactCta carries its own `--section-gap` bottom
+	   padding, and the footer now carries a full approach of its own on top of that. On CTA-closing pages
+	   the two would stack into a void, so the margin is dropped there entirely. */
 	:global(main:has(> .cta)) + .site-footer {
 		margin-top: 0;
 	}
+	/* P8.6 (D-77) — THE CARRIED FOOTER OVERFLOW, FOUND AND FIXED. Earlier sessions recorded "footer 26px
+	   overflow at some widths (unrelated)". Measured here: at 834px the document scrolls to 905px and at
+	   900px to 907px, on EVERY route, and the offending boxes are `.site-footer__col` / `__list`. Two causes,
+	   both structural:
+	     · an `fr` track has `min-width: auto`, so a track can never be narrower than its widest unbreakable
+	       content — and the contact column contains `LeonardRFotografie@gmail.com`, one 28-character token.
+	       `minmax(0, …)` is what actually lets a grid track shrink;
+	     · four columns were attempted down to 52rem, and between ~832 and ~990px there is not room for four.
+	   The e-mail is additionally allowed to break, because a token that long will out-argue any track sizing
+	   at some viewport otherwise. */
 	.site-footer__grid {
 		display: grid;
-		grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
+		grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
 		gap: var(--space-2xl) var(--space-xl);
+	}
+	.site-footer__contact span {
+		overflow-wrap: anywhere;
 	}
 	.site-footer__positioning {
 		margin-top: var(--space-md);
@@ -131,6 +204,20 @@ const region = 'Midden-Nederland';
 		align-items: center;
 		gap: var(--space-xs);
 	}
+	.site-footer__social {
+		margin-top: var(--space-lg);
+	}
+	/* THE CORNER IS RESERVED FOR THE BACK-TO-TOP CONTROL (P8.5 / D-76). That control is `position: fixed` at
+	   the viewport's bottom-right, and this row is the last thing on every page — so at the foot of the
+	   document they occupy the same pixels. FOUND BY MEASURING, not by looking: the AA sweep on the rendered
+	   composite reported this line at 3.03:1, and the "brightest backdrop pixel" turned out to be the
+	   button's own gold border sitting on top of the text. A contrast number was the symptom; an overlap was
+	   the defect.
+	   Reserving the width here (button + its offset + a little air) is deliberately chosen over the
+	   alternatives — hiding the control at the page foot (where it is most wanted) or lifting it on a
+	   scroll-driven offset (a per-frame layout read, and a control that moves while you reach for it). This
+	   costs one padding value, needs no JS, cannot desynchronise, and the space it reserves is empty
+	   footer corner in every case. */
 	.site-footer__base {
 		display: flex;
 		flex-wrap: wrap;
@@ -138,6 +225,7 @@ const region = 'Midden-Nederland';
 		gap: var(--space-sm);
 		margin-top: clamp(2.5rem, 2rem + 3vw, 4rem);
 		padding-top: var(--space-lg);
+		padding-right: calc(2.875rem + clamp(1rem, 0.5rem + 1.4vw, 2rem) + var(--space-sm));
 		border-top: 1px solid var(--color-border-subtle);
 	}
 	.site-footer__rights {
@@ -146,9 +234,12 @@ const region = 'Midden-Nederland';
 		color: var(--color-text-muted);
 	}
 
-	@media (max-width: 52rem) {
+	/* 62rem, not 52rem: four columns do not fit between ~832 and ~990px — that gap is what produced the
+	   overflow above, and moving the breakpoint is the half of the fix that is about layout rather than
+	   about track sizing. */
+	@media (max-width: 62rem) {
 		.site-footer__grid {
-			grid-template-columns: 1fr 1fr;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		}
 		.site-footer__brand {
 			grid-column: 1 / -1;

@@ -1,12 +1,14 @@
 ---
 /*
- * Architectuurfotografie — service detail (P4 — D-19). Structure per blueprint 13.40 (intro · representatieve
+ * Architectuurfotografie, service detail (P4, D-19). Structure per blueprint 13.40 (intro · representatieve
  * fotografie · uitleg · toepassingen · werkwijze · relevante projecten · contact-CTA) but with content,
- * photography and rhythm specific to ARCHITECTURE — dramatic exterior/urban imagery, an emphasis on
+ * photography and rhythm specific to ARCHITECTURE, dramatic exterior/urban imagery, an emphasis on
  * structure, proportion, line, light and overview (incl. hoogtefotografie). Deliberately NOT the interior
  * page with nouns swapped. Copy transformed from Leo's own site + observation of his real portfolio; no
  * invented facts, no commercial overstatement (13.41). Photography real (PH-08 derivatives).
  */
+import { serviceNode } from '../../lib/schema';
+import { canonicalURL } from '../../lib/seo';
 import { getCollection } from 'astro:content';
 import { getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -34,13 +36,46 @@ const toepassingen = [
 	'Nieuwbouw & moderne architectuur',
 	'Stedelijke omgeving & hoogte',
 ];
+
+/* SEO-09 (P9 / D-80). A Service node for the one service this page describes, provided by the site's single
+   Organization, in the region the site actually states, nothing beyond what the page already says. The
+   breadcrumb mirrors the parent link this page really shows (ServiceHero's "Diensten" ancestor, D-22), so
+   the structured trail and the visible trail are the same trail. */
+const SVC_DESCRIPTION =
+	'Architectuurfotografie op locatie door Leo Rieksen, gebouwen en exterieurs waarin structuur, proportie, licht en lijn tot hun recht komen, van monumenten tot moderne architectuur.';
+const svcSchema = [
+	serviceNode(
+		Astro.site ?? new URL(Astro.url.origin),
+		canonicalURL(Astro.site, Astro.url),
+		'Architectuurfotografie',
+		SVC_DESCRIPTION,
+	),
+];
 ---
 
 <BaseLayout
 	title="Architectuurfotografie"
-	description="Architectuurfotografie op locatie door Leo Rieksen — gebouwen en exterieurs waarin structuur, proportie, licht en lijn tot hun recht komen, van monumenten tot moderne architectuur."
+	description="Architectuurfotografie op locatie door Leo Rieksen, gebouwen en exterieurs waarin structuur, proportie, licht en lijn tot hun recht komen, van monumenten tot moderne architectuur."
 	socialImage={ogImage.src}
+	breadcrumb={[{ name: 'Diensten', path: '/diensten/' }]}
+	schemaNodes={svcSchema}
 >
+	<!-- ── THE SKY (P8 / D-53). One fixed world behind the whole page, painted ONCE, arch-cinema.js drives
+	     only `opacity` and `translate3d()` from the reader's altitude, every frame, so there is no per-frame
+	     gradient repaint anywhere: pure compositor work, CLS-safe, and a genuinely visible evolving sky costs
+	     nothing (§12.1). Same ARCHITECTURE as the homepage's and the diensten room's stage (§11.2: the world
+	     is shared, no exceptions); this page's own HOUR and its own FUNCTION.
+	     aria-hidden: atmosphere, never content. Invisible (opacity 0) until `html.motion-scene`, which is set
+	     only under `prefers-reduced-motion: no-preference`, so the honest baseline never sees it. -->
+	<div class="stage" aria-hidden="true">
+		<div class="stage__base"></div>
+		<div class="stage__zenith"></div>
+		<div class="stage__dusk"></div>
+		<div class="stage__lift"></div>
+		<div class="stage__horizon"></div>
+		<div class="stage__vignette"></div>
+	</div>
+
 	<ServiceHero
 		image={heroImg}
 		alt="De skyline van Rotterdam met de Erasmusbrug onder een dramatische wolkenlucht, gezien vanaf hoogte."
@@ -57,64 +92,94 @@ const toepassingen = [
 		<div class="svc-intro">
 			<p class="t-lead svc-intro__lead">
 				Een gebouw vertelt een verhaal door zijn vorm, materiaal en verhouding tot de omgeving. Goede
-				architectuurfotografie maakt dat verhaal leesbaar — rustig, precies en zonder ruis.
+				architectuurfotografie maakt dat verhaal leesbaar, rustig, precies en zonder ruis.
 			</p>
 			<div class="prose">
 				<p>
 					Leo fotografeert architectuur op locatie: van historische gevels en monumenten tot moderne
 					nieuwbouw en stedelijke overzichten. Rechte lijnen, zorgvuldig gekozen standpunten en het
-					juiste licht zorgen ervoor dat de architectuur herkenbaar en overtuigend in beeld komt —
+					juiste licht zorgen ervoor dat de architectuur herkenbaar en overtuigend in beeld komt
 					waar nodig ook vanaf hoogte, voor het overzicht dat een gebouw in zijn omgeving plaatst.
 				</p>
 			</div>
 		</div>
 	</Section>
 
-	<!-- Representatieve fotografie: historic + modern → the range of the discipline. Stepped onto the deepest
-	     surface (ink-950, 6.9) as a distinct "gallery wall" chapter — an architectural, precise dark step that
-	     differentiates this page's rhythm from the interior page (which sequences a full-bleed plate instead). -->
-	<Section as="div" surface="deep" width="wide" class="svc-gallery">
-		<p class="t-eyebrow t-eyebrow--accent svc-gallery__label">Representatief werk</p>
-		<div class="svc-plates">
-			<figure class="svc-plate svc-plate--tall u-inview">
-				<Media
-					src={amersfoortImg}
-					alt="Een historische torenspits met de Onze Lieve Vrouwetoren van Amersfoort daarachter, tegen een bewolkte lucht."
-					widths={[400, 700, 900]}
-					sizes="(min-width: 52rem) 40vw, 100vw"
-					class="svc-plate__media"
-				/>
-				<figcaption class="t-caption svc-plate__cap">
-					Historische architectuur — Onze Lieve Vrouwetoren, Amersfoort.
-				</figcaption>
-			</figure>
-			{
-				arnhem && (
-					<figure class="svc-plate svc-plate--wide u-inview" style="--reveal-index: 1">
-						<Media
-							src={arnhem.data.coverImage}
-							alt={arnhem.data.coverImageAlt}
-							widths={[480, 800, 1200]}
-							sizes="(min-width: 52rem) 55vw, 100vw"
-							class="svc-plate__media"
-						/>
-						<figcaption class="t-caption svc-plate__cap">
-							Moderne architectuur — kantoortorens, Arnhem.
-						</figcaption>
-					</figure>
-				)
-			}
-		</div>
-	</Section>
+	<!-- ── THE SPREAD (P8.4), REBUILT. The previous composition forced both photographs onto one shared
+	     baseline with a gold datum hairline running under them, and dimmed the caption of whichever plate
+	     the head was not pointed at to 30%. Rendered, that read as crowded and ambiguous: it was not clear
+	     which words belonged to which photograph, the gold line had no readable job, and there was no
+	     hierarchy anywhere in the frame.
+	     It is now an ordinary, comfortable, premium editorial section. A quiet section head states what this
+	     is. Two photographs sit beside each other with real air around them, each with its OWN caption
+	     directly beneath its OWN frame, on its own left edge, so the relationship is never in question.
+	     No datum, no decorative line, nothing floating.
+	     THE DIRECTING IS THE HEAD TURN AND NOTHING ELSE: vertical scroll drives a head ANGLE, the plates
+	     swing on an arc around the reader (the one you look toward comes nearer and brighter, the other
+	     recedes a little into the periphery), and the sky behind sweeps a fraction of that distance. The
+	     layout itself barely changes. Both captions stay fully legible at every angle, the periphery is
+	     expressed by light and depth, never by making words hard to read. See arch-cinema.js. -->
+	<section class="spread" aria-label="Representatief werk">
+		<div class="spread__rail">
+			<header class="spread__head">
+				<p class="t-eyebrow t-eyebrow--accent">Representatief werk</p>
+				<h2 class="t-h3 spread__title">Twee gebouwen, twee verhalen.</h2>
+			</header>
 
-	<!-- Uitleg + toepassingen (P4 correction #4 — D-23). The light plane is retired. Dark dominance is now the
+			<div class="spread__pair">
+				<figure class="plate plate--l" data-w={amersfoortImg.width} data-h={amersfoortImg.height}>
+					<div class="plate__frame">
+						<Media
+							src={amersfoortImg}
+							alt="Een historische torenspits met de Onze Lieve Vrouwetoren van Amersfoort daarachter, tegen een bewolkte lucht."
+							widths={[300, 480, 700, 900]}
+							sizes="(min-width: 52rem) 30vw, 88vw"
+							class="plate__photo"
+						/>
+						<div class="plate__shade" aria-hidden="true"></div>
+					</div>
+					<figcaption class="plate__copy">
+						<p class="plate__cap">Historische architectuur</p>
+						<p class="t-caption plate__where">Onze Lieve Vrouwetoren, Amersfoort</p>
+					</figcaption>
+				</figure>
+
+				{
+					arnhem && (
+						<figure
+							class="plate plate--r"
+							data-w={arnhem.data.coverImage.width}
+							data-h={arnhem.data.coverImage.height}
+						>
+							<div class="plate__frame">
+								<Media
+									src={arnhem.data.coverImage}
+									alt={arnhem.data.coverImageAlt}
+									widths={[480, 700, 900, 1200]}
+									sizes="(min-width: 52rem) 50vw, 92vw"
+									class="plate__photo"
+								/>
+								<div class="plate__shade" aria-hidden="true" />
+							</div>
+							<figcaption class="plate__copy">
+								<p class="plate__cap">Moderne architectuur</p>
+								<p class="t-caption plate__where">Kantoortorens, Arnhem</p>
+							</figcaption>
+						</figure>
+					)
+				}
+			</div>
+		</div>
+	</section>
+
+	<!-- Uitleg + toepassingen (P4 correction #4, D-23). The light plane is retired. Dark dominance is now the
 	     compositional register (blueprint 6.8/6.9/6.15: predominantly dark neutrals, light neutrals for TEXT
-	     only — never obligatory light surfaces). This "specification wall" steps up ONE dark tint to ink-850
-	     (`surface`) — a subtle full-bleed tonal lift that reads as a distinct chapter without borders/shadows
+	     only, never obligatory light surfaces). This "specification wall" steps up ONE dark tint to ink-850
+	     (`surface`), a subtle full-bleed tonal lift that reads as a distinct chapter without borders/shadows
 	     (6.9), between the deepest gallery above (ink-950) and the base-dark werkwijze below (ink-900). Hierarchy
 	     comes from the tonal step + an asymmetric grid (statement/body left, a precise gold-hairline toepassingen
 	     index right) + scale contrast, all aligned to the wide representative-gallery grid so the photography
-	     structures the composition (4.23). No card, no panel — a full-width dark tonal chapter. -->
+	     structures the composition (4.23). No card, no panel, a full-width dark tonal chapter. -->
 	<Section as="section" surface="surface" width="wide" class="svc-scope-sec">
 		<div class="svc-scope">
 			<div class="svc-scope__main">
@@ -123,7 +188,7 @@ const toepassingen = [
 				<p class="svc-scope__body">
 					Sterke beelden van een gebouw werken jarenlang door: op de website, in het portfolio, bij
 					verkoop of publicatie. Ze laten zien hoe een ontwerp in elkaar zit en hoe het zich verhoudt
-					tot zijn omgeving — met de rust en precisie die passen bij professioneel vastgoed en
+					tot zijn omgeving, met de rust en precisie die passen bij professioneel vastgoed en
 					architectuur.
 				</p>
 			</div>
@@ -163,7 +228,7 @@ const toepassingen = [
 				<span class="svc-method__num">03</span>
 				<h3 class="t-h4">Nabewerking</h3>
 				<p>
-					Een zorgvuldige, terughoudende nabewerking waarin licht, kleur en perspectief kloppen — het
+					Een zorgvuldige, terughoudende nabewerking waarin licht, kleur en perspectief kloppen, het
 					gebouw blijft leidend, het beeld ondersteunt.
 				</p>
 			</li>
@@ -181,21 +246,29 @@ const toepassingen = [
 		secondaryLabel="Interieurfotografie"
 		secondaryHref="/diensten/interieurfotografie/"
 	/>
+
+	<!-- The film. Code-split; GSAP is the chunk already shared with the homepage and /diensten/, never a
+	     second copy. It arms ONLY under `prefers-reduced-motion: no-preference`; every photograph, every word
+	     and every link on this page is fully present before and without it. See arch-cinema.js / D-53. -->
+	<script>
+		import { initArchCinema } from '../../scripts/arch-cinema.js';
+		initArchCinema();
+	</script>
 </BaseLayout>
 
 <style>
 	/* --- Intro.
-	 * P4.9 (D-29) — the arch page's SIGNATURE afterglow, the COOL counterpart to the interieur page's WARM one:
+	 * P4.9 (D-29), the arch page's SIGNATURE afterglow, the COOL counterpart to the interieur page's WARM one:
 	 * the Rotterdam-skyline hero directly above is a cool blue-grey sky, and its light spills a little way down
 	 * across the hero→intro boundary before settling into calm reading-dark (owner Limitation 1 cross-boundary +
-	 * 2 photo-light-spill; and it gives the two service pages a matched cool/warm afterglow pair — clear
+	 * 2 photo-light-spill; and it gives the two service pages a matched cool/warm afterglow pair, clear
 	 * page-to-page variation). Same afterglow FAMILY as the homepage positionering / interieur intro (one soft
 	 * top-descending light), deliberately COOL here. Peak sits off the top edge, fading toward reading-dark.
 	 * P6.1 correction: the vertical radius is a PERCENTAGE of this section's own (content-driven) height, so
-	 * the original 60% always faded to zero at the same fraction of the box — fine when short, but longer
+	 * the original 60% always faded to zero at the same fraction of the box, fine when short, but longer
 	 * copy/narrower viewports grow this section and the fixed fraction didn't adapt, completing the fade
 	 * early and leaving a flat, atmosphere-less band before the next section. Sized past 100% so the
-	 * zero-stop always lands at/after the box's own bottom edge regardless of height — same anchor, alpha
+	 * zero-stop always lands at/after the box's own bottom edge regardless of height, same anchor, alpha
 	 * and colour, corrected reach. --- */
 	.svc-intro-sec {
 		background:
@@ -227,69 +300,155 @@ const toepassingen = [
 		}
 	}
 
-	/* --- Representative photography (asymmetric pair: portrait + landscape) on the deep gallery surface.
-	 * P4.8 CROSS-SITE (D-28): the shared "deep photography-grid chapter" gets an ACHROMATIC depth frame (vertical
-	 * abyss modelling at head + foot) so the plates emerge from architectural depth rather than a flat ink wall —
-	 * the same quiet-depth idiom used on the diensten spreads, always achromatic so it never tints photography
-	 * (6.16). The page's colour/gold SIGNATURE lives instead on the specification wall + toepassingen below. --- */
-	.svc-gallery {
+	/* ── THE SPREAD (P8.4), a normal, comfortable, premium section. Rebuilt from scratch.
+	 *
+	 * WHAT WAS WRONG, MEASURED ON THE RENDER. P8.3 forced both photographs onto one shared baseline (which
+	 * a portrait and a landscape frame can only share by cropping the composition's air), hung a gold datum
+	 * hairline across the full rail width, and dropped the unattended plate's caption to 30% opacity. The
+	 * result was crowded, had no hierarchy, and, the specific failure, you could not tell which words
+	 * belonged to which photograph. Reducing the photographs' size did not fix any of that, because size
+	 * was never the problem: DIRECTION was, and none of it had been given to anything but the pictures.
+	 *
+	 * WHAT THIS IS NOW. A section head that says what you are looking at. Two photographs side by side with
+	 * genuine air around and between them, each caption sitting directly under its own frame and flush with
+	 * its own left edge. Nothing floats, nothing is decorative, and there is no line anywhere that does not
+	 * carry meaning. The two frames are deliberately unequal, a portrait lead and a wider second, because
+	 * an editorial spread has a lead image, not two equals; and both are sized to a comfortable share of the
+	 * frame so they read as two premium examples rather than as either wallpaper or thumbnails.
+	 *
+	 * THE PHOTOGRAPH IS COMPLETE AND RIGID AT EVERY SCROLL POSITION. Only a UNIFORM transform ever touches a
+	 * plate, never a non-uniform scale, never a rotation of the image plane, never a mask, crop or feather.
+	 * The runtime sizes each plate from a budget that has ALREADY had the head turn's worst excursion and a
+	 * safety margin subtracted on both sides, so no edge can be reached by construction (arch-cinema.js).
+	 *
+	 * BASELINE (no-JS / reduced motion): exactly this composition, static and complete. --- */
+	.spread {
 		position: relative;
-		isolation: isolate;
+		padding-block: clamp(4rem, 2.5rem + 6vw, 8.5rem);
 	}
-	/* P5.1 (D-32) — same intro→photography band correction as the interieur page. The intro is `section--tight`;
-	   this gallery carried the full `--section-gap` top padding, so ~64px + ~112–136px stacked into an oversized
-	   empty band above the "Representatief werk" chapter (owner-reported black band). Tightened so the gallery
-	   answers the intro closely, keeping a premium break, the abyss depth-frame and the tonal step to ink-950 intact.
-	   Compounded onto `.section` (0,3,0) to beat Section.astro's `.section { padding-block }` shorthand in production
-	   (the cascade trap that broke the diensten crossing) — a specificity guarantee, not source-order luck. */
-	.svc-gallery.section {
-		padding-top: clamp(2.25rem, 1.25rem + 3vw, 4rem);
+	/* Under the runtime the spread sits above the CTA's terminal gold datum rule, so that mark is UNCOVERED
+	   as the composition departs (§7.5) rather than swept across a photograph. */
+	:global(html.motion-scene) .spread {
+		z-index: 1;
 	}
-	.svc-gallery::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		pointer-events: none;
-		background: linear-gradient(
-			180deg,
-			rgba(6, 8, 12, 0.6) 0%,
-			rgba(6, 8, 12, 0) 22%,
-			rgba(6, 8, 12, 0) 78%,
-			rgba(6, 8, 12, 0.55) 100%
-		);
+	.spread__rail {
+		position: relative;
+		width: min(90vw, 74rem);
+		margin-inline: auto;
+		will-change: transform;
 	}
-	.svc-gallery__label {
-		display: block;
-		margin-bottom: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
+	/* The section head. It carries the label the left plate used to wear, which is precisely why the plate's
+	   caption was ambiguous: an eyebrow reading "Representatief werk" sitting above one photograph's caption
+	   reads as a heading for the whole section AND as that photograph's own label at the same time. Lifted
+	   out to where it belongs, each caption below is unmistakably about the frame above it. */
+	.spread__head {
+		max-width: 34ch;
+		margin-bottom: clamp(2.25rem, 1.4rem + 3.4vw, 4rem);
 	}
-	.svc-plates {
-		display: grid;
-		grid-template-columns: 0.75fr 1.25fr;
-		gap: var(--space-2xl);
-		align-items: end;
-	}
-	.svc-plate {
-		min-width: 0;
-	}
-	.svc-plate__cap {
+	.spread__title {
 		margin-top: var(--space-sm);
 	}
+	/* THE PAIR. Top-aligned with the wider plate stepped DOWN by the runtime so the two frames' optical
+	   centres agree, a relaxed editorial step rather than a forced shared edge. Generous gap: the air
+	   between the two photographs is what stops them reading as one crowded object. */
+	/* P8.6 (D-77): the gutter widens (4.5rem → 7rem at the top end). It is not decoration, it is the
+	   budget the mirrored diagonal spends. The two plates travel TOWARD each other for the second half of
+	   the beat, so whatever air is designed here is what is left at the closest moment minus twice the
+	   lateral amplitude; the runtime reads this gap from layout and solves the amplitude from it. A wider
+	   gutter therefore buys movement, and it costs the photographs nothing: they are sized from the HEIGHT
+	   budget first, and the rail has the width to spare at every breakpoint this rule applies to. */
+	.spread__pair {
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		gap: clamp(2rem, 1.25rem + 5vw, 7rem);
+	}
+	/* THE MOVING UNIT, photograph and caption together. Moving them as one is what makes a plate a thing
+	   you looked at rather than an image and, separately, some words (the D-52 lesson, carried forward). */
+	.plate {
+		margin: 0;
+		flex: 0 0 auto;
+		width: var(--plate-w, auto);
+		max-width: 100%;
+		margin-top: var(--plate-drop, 0px); /* set by the runtime so the optical centres agree. */
+		will-change: transform;
+	}
+	/* Baseline proportions, what a reader with JS off or reduced motion gets. They have to be a real
+	   composition on their own, so they are the same relationship the runtime resolves in pixels. */
+	.plate--l {
+		width: var(--plate-w, 33%);
+	}
+	.plate--r {
+		width: var(--plate-w, 56%);
+	}
+	.plate__frame {
+		position: relative;
+	}
+	.plate__photo {
+		display: block;
+	}
+	.plate__photo :global(img) {
+		display: block;
+		width: 100%;
+		height: auto; /* intrinsic ratio → the whole photograph, never cropped. */
+	}
+	/* The periphery falling into shadow, a uniform dark that lifts OFF the photograph as the head comes
+	   round to it. Inert in the baseline. */
+	.plate__shade {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: #07090f;
+		opacity: 0;
+	}
+	/* The caption belongs to the frame above it and to nothing else: same width, same left edge, tight
+	   beneath it. Two lines, what kind of architecture, then where, so the eye gets a title and a place
+	   rather than one long run-on sentence set in the same weight as everything around it. */
+	.plate__copy {
+		padding-top: clamp(0.9rem, 0.65rem + 0.9vw, 1.35rem);
+	}
+	.plate__cap {
+		color: var(--color-text);
+		font-weight: var(--fw-medium);
+		max-width: 30ch;
+	}
+	.plate__where {
+		margin-top: var(--space-2xs);
+		color: var(--color-text-secondary);
+		max-width: 32ch;
+	}
 	@media (max-width: 52rem) {
-		.svc-plates {
-			grid-template-columns: 1fr;
-			gap: var(--space-xl);
+		.spread__pair {
+			flex-direction: column;
+			align-items: stretch;
+			gap: var(--space-2xl);
+		}
+		.plate--l,
+		.plate--r {
+			width: 100%;
+			margin-top: 0;
 		}
 	}
-
+	/* THE RUNTIME LAYOUT (desktop, motion-scene only), the spread becomes one viewport the head turns
+	   inside. Deliberately NOT applied to the baseline, where a manufactured 100svh would only add empty
+	   space for a reader who has asked for less motion. */
+	@media (min-width: 52.0625rem) {
+		:global(html.motion-scene) .spread {
+			min-height: 100svh;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			overflow: clip; /* a backstop only, by construction nothing reaches it. */
+		}
+	}
 	/* --- Uitleg + toepassingen: an all-dark "specification wall" on the ink-850 tonal step (D-23). Statement +
-	   body on the left, a precise gold-hairline toepassingen index on the right — an asymmetric grid aligned to
+	   body on the left, a precise gold-hairline toepassingen index on the right, an asymmetric grid aligned to
 	   the wide representative-gallery above, so photography structures the composition. No light plane.
 	 *
-	 * P4.8 CROSS-SITE (D-28) — this is the arch page's SIGNATURE non-photographic premium moment. D-23's ink-850
+	 * P4.8 CROSS-SITE (D-28), this is the arch page's SIGNATURE non-photographic premium moment. D-23's ink-850
 	 * tonal step was near-imperceptible (owner Limitation 3: quiet zones read as flat). It is now MODELLED as a
 	 * lit specification wall: a faint cool raking gradient over the ink-850 surface gives the wall dimensional
-	 * depth (perceptible, still calm), and the toepassingen index rows gain a champagne METALLIC-EDGE TICK — a
+	 * depth (perceptible, still calm), and the toepassingen index rows gain a champagne METALLIC-EDGE TICK, a
 	 * short gold catch-light leading each hairline row (6.11 "belangrijke visuele lijnen" + 6.12 controlled
 	 * highlight). This is the page's distinct gold role (a precision edge on an index), NOT the homepage seam. --- */
 	.svc-scope-sec {
@@ -299,12 +458,12 @@ const toepassingen = [
 	}
 	/* ACHROMATIC lit-wall modelling (refinement pass): a faint raked sheen at the top edge + a deepening toward
 	   the abyss at the foot gives the ink-850 "specification wall" real dimensional light WITHOUT adding a cool
-	   hue — so the cool *linear wall* stays reserved as the site's masthead idiom (diensten/portfolio) and this
+	   hue, so the cool *linear wall* stays reserved as the site's masthead idiom (diensten/portfolio) and this
 	   page's colour signature is carried purely by the champagne gold index below (sharper per-page distinction,
 	   avoids "one cool wash, three coordinates"). */
-	/* P4.9 (D-29) — the D-28 lit-wall was still near-imperceptible (owner Limitation 4: quiet ≠ flat). The raked
+	/* P4.9 (D-29), the D-28 lit-wall was still near-imperceptible (owner Limitation 4: quiet ≠ flat). The raked
 	   achromatic sheen and the abyss foot are strengthened so the "specification wall" reads as a genuinely
-	   dimensional lit surface — a clear premium NON-photographic moment — while staying ACHROMATIC (no hue, so the
+	   dimensional lit surface, a clear premium NON-photographic moment, while staying ACHROMATIC (no hue, so the
 	   cool linear wall stays reserved as the masthead idiom and photography is never tinted; 6.16). Still calm. */
 	.svc-scope-sec::before {
 		content: '';
@@ -335,10 +494,19 @@ const toepassingen = [
 		color: var(--color-text-secondary);
 		max-width: 50ch;
 	}
-	/* Toepassingen — a precise architectural index: gold-accent label, hairline-ruled rows on dark. Deliberately
+	/* Toepassingen, a precise architectural index: gold-accent label, hairline-ruled rows on dark. Deliberately
 	   unnumbered so it stays distinct from the numbered werkwijze below. Aligned to the top of the statement. */
+	/* P8.2, THE VIEW FROM THE SUMMIT. This beat's job is to look OUT after a whole page spent looking UP,
+	   and its carrier is COMPOSITION, not movement: nothing here is animated at all. The index is dropped
+	   well below the statement so the frame reads as a diagonal, title top-left, body, then the index low
+	   and right, instead of two blocks top-aligned against a dead bottom-right quadrant (measured on the
+	   render: roughly a third of the frame was an empty hole, and §5.5 is explicit that a gap you did not
+	   choose is not negative space). The emptiness that remains is now ABOVE the index, where the altitude
+	   arc brings the ground haze back up behind it: the horizon returns exactly here, level with a row of
+	   hairlines, which is the head coming back to horizontal made compositional. */
 	.svc-scope__apps {
 		padding-top: var(--space-sm);
+		margin-top: clamp(2rem, 0.5rem + 6vw, 6.5rem);
 	}
 	.svc-scope__aside-label {
 		color: var(--color-accent);
@@ -348,14 +516,25 @@ const toepassingen = [
 		display: flex;
 		flex-direction: column;
 	}
+	/* P8.3, THE LIGHT WALKS DOWN THE WALL.
+	 * This beat's carrier is ILLUMINATION and nothing else: no row translates, scales or fades in, and
+	 * there is no arrival to watch. A raking light travels down the four rows as the reader passes, the
+	 * way light crosses a real surface when the source moves. `--tick` is the light's strength on THIS
+	 * row; arch-cinema.js walks it down the list, one row after the next, scrubbed 1:1 with scroll and
+	 * fully reversible. Baseline default is 1, a reader with JS off or reduced motion gets the wall
+	 * evenly lit, which is the correct still version of the same composition. */
 	.svc-applist__item {
+		--tick: 1;
 		position: relative;
+		isolation: isolate; /* so the sheen's `z-index: -1` stays inside the row, behind its own words. */
 		padding: var(--space-md) 0;
 		border-top: 1px solid var(--color-border);
 		color: var(--color-text);
 		font-weight: var(--fw-medium);
 	}
-	/* Champagne metallic-edge tick — a short gold catch-light leading each index row's hairline (D-28 gold role). */
+	/* Champagne metallic-edge tick, a gold catch-light leading each index row's hairline (D-28 gold role).
+	   It LENGTHENS as the light reaches the row, so the gold itself is what travels. Gold stays a 1px
+	   hairline throughout, larger in extent, never heavier in weight (D-29). */
 	.svc-applist__item::before {
 		content: '';
 		position: absolute;
@@ -363,7 +542,28 @@ const toepassingen = [
 		left: 0;
 		width: clamp(1.1rem, 0.8rem + 1vw, 1.6rem);
 		height: 1px;
-		background: linear-gradient(90deg, rgba(224, 197, 140, 0.95) 0%, rgba(199, 165, 106, 0) 100%);
+		background: linear-gradient(90deg, rgba(var(--p-champagne-rgb), 0.95) 0%, rgba(var(--p-gold-rgb), 0) 100%);
+		transform: scaleX(calc(0.6 + 2.6 * var(--tick)));
+		transform-origin: 0 50%;
+		opacity: calc(0.3 + 0.7 * var(--tick));
+	}
+	/* The light on the row's own surface, a soft warm-neutral sheen raking in from the left. This is the
+	   part the reader actually SEES; the gold tick is the precision detail inside it. Kept well under the
+	   luminance of any photography (6.16) and clear of the body column, so it lights the index rather than
+	   washing text. */
+	.svc-applist__item::after {
+		content: '';
+		position: absolute;
+		inset: -1px 0 0 0;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			92deg,
+			rgba(226, 214, 190, 0.13) 0%,
+			rgba(214, 200, 176, 0.05) 46%,
+			rgba(200, 190, 170, 0) 82%
+		);
+		opacity: calc(var(--tick) * var(--tick));
 	}
 	.svc-applist__item:last-child {
 		border-bottom: 1px solid var(--color-border);
@@ -411,10 +611,370 @@ const toepassingen = [
 		color: var(--color-text-secondary);
 		font-size: var(--fs-body-sm);
 	}
+	/* P8.2, THE DESCENT, MADE COMPOSITIONAL. Three equal columns sitting on one line is the single most
+	   webpage-like frame on this page, and it left a dead band beneath itself. The steps now fall in a
+	   descending stair, so the eye travels DOWN and to the right across the beat, the composition itself
+	   performs the return to earth that the camera and the returning horizon are performing around it, and
+	   the emptiness moves up into the sky where it belongs. This is layout, not motion: the honest baseline
+	   gets the better composition too. */
+	@media (min-width: 52.0625rem) {
+		.svc-method__item:nth-child(2) {
+			margin-top: clamp(1.5rem, 0.5rem + 3vw, 3.5rem);
+		}
+		.svc-method__item:nth-child(3) {
+			margin-top: clamp(3rem, 1rem + 6vw, 7rem);
+		}
+	}
 	@media (max-width: 52rem) {
 		.svc-method {
 			grid-template-columns: 1fr;
 			gap: var(--space-xl);
 		}
+	}
+
+	/* ============================================================= *
+	 * THE SKY (P8 / D-53), one fixed world behind the whole page.
+	 *
+	 * Same ARCHITECTURE as the homepage's stage and the diensten room (§11.2: the world is shared,
+	 * "identical everywhere, no exceptions"); this page's own HOUR and its own FUNCTION. Every sub-layer is
+	 * painted ONCE, position, colour and gradient stops never change, and arch-cinema.js drives only
+	 * `opacity` and `transform: translate3d()` from the reader's altitude. No per-frame gradient repaint
+	 * exists anywhere in this page.
+	 *
+	 * THE HOUR (P8.5 / D-76, REVISED). It was read off this page's own three photographs, which are bright
+	 * exterior daylight ending in a magenta sunset, making this the site's one non-nocturne page (§11.2:
+	 * the world "is not a fixed gradient the site wears; it is a function of the photographs on the page").
+	 * A current explicit owner instruction, remove the purple, remove the cloud-like backgrounds, join the
+	 * rest of the brand identity, supersedes that reading (CLAUDE §3.1.1). The hour is now BLUE HOUR going
+	 * to NOCTURNE. What §11.2 actually protects is preserved: the sky is still a time of day that MOVES
+	 * across the page rather than a static tint, and it is still tuned to the photographs it sits behind.
+	 * It stays premium because the sky is DEEP: every layer is well below the luminance of the photography
+	 * in front of it, and the lights blaze in the negative space rather than across the text columns
+	 * (§5.4), measured on the composite, never assumed.
+	 * ============================================================= */
+	.stage {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		opacity: 0;
+		isolation: isolate; /* contain the screen-blended cloud strata to the stage's own sub-layers */
+	}
+	:global(html.motion-scene) .stage {
+		opacity: 1;
+		transition: opacity 1100ms var(--ease-standard);
+	}
+	.stage > * {
+		position: absolute;
+		inset: 0;
+		will-change: opacity, transform;
+	}
+	/* The sky you start under: deep slate blue, lifting a little toward the ground haze at the foot. Always
+	   on. Tuned to the surfaces it replaces so the walls that stay opaque never read as a slab of a colour
+	   the page stopped using (the D-45 defect class, avoided by matching rather than by luck). */
+	.stage__base {
+		/* P8.5 (D-76): re-derived onto the sapphire chrome scale, so the sky this page stands in and the
+		   header/CTA/footer it hands off to are one blue. Same five-stop construction and the same luminance
+		   ladder; the foot now lands on --p-sapphire-950, which is exactly the footer's own body. */
+		background: linear-gradient(180deg, #101c36 0%, #0c1529 30%, #091124 62%, #070c18 88%, #060a15 100%);
+		opacity: 1;
+	}
+	/* THE ZENITH, the deep blue that opens OVERHEAD as your head goes back, and blazes at the spire. It is
+	   anchored off the top edge and reaches zero well above the middle of the viewport, so it models the
+	   empty sky and never washes a paragraph (§5.4). */
+	.stage__zenith {
+		background: radial-gradient(
+			78% 62% at 50% -12%,
+			rgba(66, 106, 206, 0.52) 0%,
+			rgba(40, 68, 140, 0.2) 40%,
+			rgba(18, 30, 62, 0) 74%
+		);
+		opacity: 0;
+	}
+	/* ── P8.5 (D-76): THE PAGE REJOINS THE SITE'S OWN LIGHT ───────────────────────────────────────────
+	   The owner's instruction is explicit: no purple tints, no cloud-like backgrounds, and this page must
+	   sit inside the same brand identity as the rest of the site. Two layers were the cause, and both are
+	   replaced here rather than merely dimmed:
+	     · THE SUNSET was a magenta (rgba(196,108,118) / (136,70,92) / (178,96,110)) laid over a deep blue
+	       base. Magenta over blue composites to violet, so "the purple" was never a chosen colour, it was
+	       the by-product of two correct-in-isolation layers meeting. Dimming it would have kept the hue and
+	       lost the beat; it is replaced by DUSK, below.
+	     · THE WEATHER was built, deliberately, from "overlapping LUMPS with tight, bright cores" in a near-
+	       white blue-grey. That construction is exactly what makes a gradient read as a cumulus, and the
+	       near-white is what made it read as daylight weather rather than as this site's air. It is replaced
+	       by AIR, below.
+	   What is NOT thrown away is the film. Both layers keep their element slot, their driver and their
+	   parallax, because those carry the page's one idea, you are tipping your head back and climbing, and
+	   deleting them would leave a static sky, which the motion ambition (CLAUDE §4.5) forbids. Only the
+	   MATERIAL changes: from daylight-going-to-sunset, to the site's own blue hour going to nocturne.
+
+	   THE HOUR IS THEREFORE RE-READ. The original hour was taken off the Arnhem frame's magenta sky, and
+	   that reading was sound. It is superseded by a current explicit owner instruction (CLAUDE §3.1.1),
+	   which outranks it. The new hour is also better-founded at the page's END: this route now closes on a
+	   deep-sapphire CTA and footer, so a sky that lands in the same blue is a continuous hand-off, where the
+	   magenta was a clash the reader met at the exact moment they were asked to convert. */
+
+	/* DUSK, the blue hour deepening into nocturne, arriving last and going on deepening to the end. It
+	   rides `hour` exactly as the sunset did (an evening does not un-happen because you walked back down),
+	   so the driver, the timing and the narrative are unchanged; only the colour is the brand's. */
+	.stage__dusk {
+		background:
+			radial-gradient(
+				92% 46% at 50% -6%,
+				rgba(58, 96, 190, 0.34) 0%,
+				rgba(30, 52, 112, 0.14) 44%,
+				rgba(14, 24, 50, 0) 72%
+			),
+			linear-gradient(180deg, rgba(12, 19, 33, 0.58) 0%, rgba(8, 12, 23, 0.34) 44%, rgba(6, 10, 21, 0.5) 100%);
+		opacity: 0;
+	}
+	/* ── THE LIFT (P8.6 / D-77), WHAT REPLACES THE AIR STRATA, AND WHY THEY HAD TO GO ────────────────
+	   D-76 replaced this page's near-white cumulus "lumps" with wide, flat, blue BANDS, on the argument that
+	   wide+flat+blue reads as banded air while round+bright+white reads as cloud. The owner's verdict on the
+	   render is that it does not: "er zijn nog steeds achtergrondstructuren aanwezig ('wolkjes') … verwijder
+	   alle wolkachtige textures". They are right, and the reason is instructive, a band 74% wide and 4%
+	   tall still has a MIDDLE and two ENDS. Anything with ends is an object, and five of them drifting at two
+	   speeds is weather, whatever colour it is painted. Turning the alpha down would not have fixed that; it
+	   would have made a fainter object.
+
+	   So this is not a third attempt at a better-looking stratum. It is a layer with NO FEATURES AT ALL: one
+	   full-width vertical luminance ramp, taller than three viewports, whose only gradient runs along the
+	   axis it travels on. It has no horizontal variation to read as a shape, no core to find, and its own
+	   edges are hundreds of pixels of fade parked far outside the frame. What the reader sees is the sky
+	   getting slowly brighter and then slowly darker as they climb, which is what altitude actually looks
+	   like and is impossible to point at as a thing.
+
+	   The MOTION is kept whole, the layer still rides `alt` on the way up and `down` on the way back, so the
+	   back half of the page is still moving and §3.1.7's "the world is never a still photograph" survives.
+	   Only the material changes, exactly as D-76 did for the sunset. */
+	.stage > .stage__lift {
+		inset: -140% -6%;
+		background: linear-gradient(
+			180deg,
+			rgba(var(--p-atmos-cool), 0) 0%,
+			rgba(var(--p-atmos-cool), 0.07) 26%,
+			rgba(var(--p-atmos-cool), 0.15) 44%,
+			rgba(var(--p-atmos-cool), 0.15) 56%,
+			rgba(var(--p-atmos-cool), 0.06) 74%,
+			rgba(var(--p-atmos-cool), 0) 100%
+		);
+		mix-blend-mode: screen;
+		opacity: 0;
+	}
+	/* THE HORIZON, the ground haze you begin level with, which SINKS out of the frame as you climb. This
+	   is the clearest single tell of altitude, and the exact inverse of the homepage's horizon rising past
+	   a falling camera (§11.1: related, not copied). Its own gradient reaches zero inside its box, so the
+	   58vh of travel can never expose an edge. */
+	.stage > .stage__horizon {
+		inset: 34% -20% -70% -20%;
+		background: radial-gradient(
+			84% 62% at 50% 96%,
+			rgba(112, 140, 204, 0.3) 0%,
+			rgba(62, 84, 138, 0.12) 42%,
+			rgba(20, 30, 52, 0) 72%
+		);
+		mix-blend-mode: screen;
+		opacity: 0;
+	}
+	/* The corners let go as you rise, because there is simply more sky. */
+	.stage__vignette {
+		background:
+			radial-gradient(122% 96% at 50% 44%, transparent 30%, rgba(4, 6, 10, 0.62) 100%),
+			linear-gradient(180deg, transparent 62%, rgba(4, 6, 10, 0.42) 100%);
+		opacity: 0;
+	}
+
+	/* ============================================================= *
+	 * SKY HANDOFF (§5.6 / §3.1.2). Every surface yields its background to the world: a surface that paints
+	 * an opaque fill while the sky moves behind it does not fade in, it is UNCOVERED, as a slab of a colour
+	 * the page stopped using, which is the single defect class that survived three passes of forensics on
+	 * this project (D-45). So the intro's afterglow, the specification wall and its raked modelling, and the
+	 * three shared walls (header / CTA / footer) all go transparent under the runtime.
+	 *
+	 * Every selector is qualified by `html.motion-scene`, set only by this page's module, only under
+	 * `prefers-reduced-motion: no-preference`, so the DEFAULT no-JS / reduced-motion render keeps the D-28
+	 * static art direction exactly as it is. Page-scoped: this block ships in this route's own stylesheet,
+	 * so the `:global()` reaches for the shared header/CTA/footer cannot touch any other route (re-verified
+	 * in the built output, never assumed). ============================================================= */
+	:global(html.motion-scene) .svc-scope-sec {
+		background: transparent;
+		transition: background 900ms var(--ease-standard);
+	}
+	/* ── THE STREET (P8.2), the page's first beat, and the one that was breaking the film soonest.
+	 *
+	 * WHY IT EXISTS: it is the last moment at ground level, before the reader looks up. Its feeling is
+	 * standing still under a big sky with weather in it, so it is directed with NO movement whatsoever.
+	 * Its carriers are light and negative space, and its stillness is a choice, not an omission: the
+	 * beat immediately after it is the biggest camera move on the page, and that move only reads as a
+	 * move if the reader was standing still first.
+	 *
+	 * TWO CORRECTIONS, both found by looking at the rendered opening rather than at this file:
+	 *
+	 * 1. THE HERO EDGE WAS A HARD CUT. The D-29 afterglow that softened the hero→intro boundary was being
+	 *    stood down wholesale, `background: transparent`, as part of the sky handoff. But that rule
+	 *    exists to stop OPAQUE FILLS being uncovered as slabs while the world moves behind them, and this
+	 *    background is two things at once: an opaque `--color-bg` base (which genuinely must go) and a
+	 *    radial of additive light (which was never the problem, and was the only thing carrying the
+	 *    photograph's own light down into the page). Dropping both left Leo's Rotterdam frame ending on a
+	 *    straight full-width edge against flat ink, 320px into the page. The base goes; the light stays.
+	 *    Nothing is done to the photograph, the rule against feathering it is absolute, the light simply
+	 *    continues underneath it, which is what a photograph's light does in the room it is hung in.
+	 *
+	 * 2. THE COPY SAT HARD AGAINST THAT BOUNDARY. It now begins well below it, so the beat opens on lit
+	 *    sky. This is the OPPOSITE compositional move to the summit beat below, which drops its secondary
+	 *    column to build a diagonal: here the whole block is weighted DOWN in its frame, because you are
+	 *    standing at the bottom of something. Reusing the summit's move here would have made a formula out
+	 *    of two beats that are meant to feel unrelated. */
+	:global(html.motion-scene) .svc-intro-sec {
+		background: radial-gradient(
+			128% 175% at 50% -14%,
+			rgba(var(--p-atmos-cool), 0.16) 0%,
+			rgba(var(--p-atmos-cool), 0.05) 40%,
+			rgba(var(--p-atmos-cool), 0) 70%
+		);
+		transition: background 900ms var(--ease-standard);
+	}
+	@media (min-width: 52.0625rem) {
+		:global(html.motion-scene) .svc-intro-sec {
+			padding-top: clamp(4rem, 2rem + 7vw, 9rem);
+		}
+	}
+	:global(html.motion-scene) .svc-scope-sec::before {
+		opacity: 0;
+		transition: opacity 900ms var(--ease-standard);
+	}
+	/* The shared walls. `.rel` (RelatedProjects) is `section--deep` and was MEASURED painting an opaque
+	   rgb(9,11,15) across the full width at the werkwijze boundary, a hard horizontal cut through a lit sky,
+	   which is §3.1.5 and §3.1.2 in one element. It is not visible in the source of this page at all; it was
+	   found by enumerating every opaque box in the rendered viewport, which is the only way this class of
+	   defect has ever been found on this project. */
+	:global(html.motion-scene .site-header),
+	:global(html.motion-scene .rel),
+	:global(html.motion-scene .cta) {
+		background: transparent;
+	}
+	/* P8.6 (D-77): `.site-footer` is NO LONGER in this list. Making it transparent under the runtime is
+	   exactly what the owner reports as "de footer is geen zelfstandige sectie meer" on this route: a
+	   surface-less, line-less footer is not a closing chapter, it is the sky with words on it. The footer
+	   now carries its own transparent-to-material APPROACH (see SiteFooter.astro), which lets this page's
+	   world show through its opening and still lands the page on a real floor, so it needs no override
+	   here and gets none. */
+	/* P8.5 (D-76): the header's and footer's new chrome finish, the lit top arris (a box-shadow) and the
+	   champagne datum hairline (a pseudo-element), belong to the WALL, not to the world. Under the runtime
+	   the walls yield their surface to the sky, so their finish yields with them; otherwise two bright
+	   horizontal lines would be left drawn across a moving world with nothing under them (the D-45 defect
+	   class, arriving through a hairline instead of through a fill). */
+	:global(html.motion-scene .site-header) {
+		box-shadow: none;
+	}
+	:global(html.motion-scene .site-header::after) {
+		opacity: 0;
+	}
+	/* THE BOUNDARY HAIRLINE STANDS DOWN. `.rel`'s `border-top` is a plain full-width neutral rule with no
+	   narrative job at all, and against a sky that is now genuinely lit and moving through this stretch it
+	   reads as a hard horizontal cut straight across the world, §3.1.2/§5.6, the defect class this project
+	   has found by looking at rendered pixels rather than at source, three times now. The CTA's gold datum
+	   directly below it is deliberately NOT touched: that one carries meaning (D-28's architect's corner
+	   bracket) and it is the film's terminal mark, uncovered as the last of the page departs. One line goes
+	   because it says nothing; the other stays because it says the last thing. */
+	:global(html.motion-scene .rel) {
+		border-top-color: transparent;
+	}
+	/* ── ANDER WERK (P8.3), the beat whose carrier is SCALE, and stillness.
+	   Two equal cards side by side is a grid, and a grid is the most webpage-like object there is: the eye
+	   has no reason to go anywhere. So the two projects are set at deliberately different sizes and
+	   heights, a lead, and a second one smaller and dropped, with the air gathered above it. Nothing here
+	   is animated at all; after the descent this is where the film lets the composition breathe, and the
+	   only thing still moving is the world (the horizon comes back level exactly across this beat).
+	   Layout only, so the honest baseline gets the better composition too. */
+	@media (min-width: 52.0625rem) {
+		:global(.rel .rel__grid) {
+			grid-template-columns: 1.42fr 1fr;
+			gap: clamp(2rem, 1rem + 4vw, 5rem);
+			align-items: start;
+		}
+		:global(.rel .rel__item:nth-child(2)) {
+			margin-top: clamp(3rem, 1rem + 7vw, 8rem);
+		}
+		/* The head sits beside the lead rather than stacked above the pair, the beat opens on a diagonal
+		   instead of on a full-width banner rule. */
+		:global(.rel .rel__head) {
+			max-width: 34ch;
+		}
+	}
+	/* ── THE LAST MARK (P8.3). The CTA's gold datum is D-28's architect's dimension line and the only gold
+	   with meaning on this page. Under the runtime it is DRAWN, once, from the left, as the closing beat
+	   arrives, an architect finishing a drawing. `--datum` is scrubbed 1:1 with scroll by arch-cinema.js
+	   and is fully reversible: scroll back up and the line unmakes itself, so it is not a reveal that has
+	   "happened". Nothing else in the CTA moves at all; after a climb, a turn, a lit wall and a descent,
+	   the film ends on one line and then stillness.
+	   The default is 1, so the no-JS and reduced-motion renders keep the full static rule (D-28). */
+	:global(html.motion-scene .cta::before) {
+		transform: scaleX(var(--datum, 1));
+		transform-origin: 0 50%;
+	}
+	/* And the closing composition opens up: the actions drop BELOW the invitation rather than sitting
+	   beside it in a two-column block, and the whole beat is given the page's widest column of air. A
+	   side-by-side CTA is the single most webpage-like frame in the design system; the same words set as
+	   one calm descending column read as the end of a film. Layout only, the baseline gets it too. */
+	@media (min-width: 52.0625rem) {
+		:global(.cta .cta__inner) {
+			grid-template-columns: minmax(0, 1fr);
+			gap: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+		}
+		:global(.cta .cta__aside) {
+			justify-self: start;
+		}
+	}
+	/* ── THE STEPS BECOME MARKERS YOU DESCEND PAST (P8.4).
+	   The descent's two planes, numerals far and slow, words near and fast, were already in the runtime,
+	   but the render could not show them: at 3.6rem the numeral is the same visual weight as the heading
+	   beside it, so two planes moving at different rates just read as slightly untidy text. Depth has to
+	   exist in the COMPOSITION before a camera can reveal it.
+	   Under the runtime each numeral becomes what it actually is, a large architectural marker set into
+	   the wall BEHIND its step, at the weight of a drawing annotation rather than of a headline. The words
+	   then travel across a structure that is visibly further away. Nothing here animates; this is layout
+	   and hierarchy, and it is what makes the parallax legible as space rather than as jitter.
+	   The baseline keeps D-19's numbered list exactly. */
+	@media (min-width: 52.0625rem) {
+		:global(html.motion-scene) .svc-method__item {
+			position: relative;
+			isolation: isolate; /* keeps the marker's negative z inside its own step. */
+		}
+		:global(html.motion-scene) .svc-method__num {
+			position: absolute;
+			z-index: -1;
+			top: -0.3em;
+			left: -0.05em;
+			margin-bottom: 0;
+			font-size: clamp(5.5rem, 2.4rem + 7.4vw, 9.5rem);
+			color: rgba(var(--p-champagne-rgb), 0.17);
+			pointer-events: none;
+		}
+		/* The step's own words start below where the marker sits, so the marker reads as behind the
+		   structure rather than as a background image the text happens to overlap. */
+		:global(html.motion-scene) .svc-method__item h3 {
+			margin-top: clamp(2.2rem, 1rem + 3.4vw, 3.6rem);
+		}
+	}
+	/* THE STEPS ARE TRAVELLED PAST, NOT REVEALED. `.u-inview` is the site's one-shot assemble-on-arrival
+	   rise, content hidden at opacity 0 until a threshold fires, on an expo `--ease-out` that lands in
+	   ~300ms. That is precisely the generic template reveal this page's directing exists to replace, and
+	   left armed it would also fight the descent for the same transform. Under the runtime the steps are
+	   simply present, and the camera passes them. Scoped to `html.motion-scene`, so the no-JS and
+	   reduced-motion renders keep the shared reveal exactly as it was. */
+	:global(html.motion-scene) .svc-method__item.u-inview {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+	/* THE SAME DISARM FOR THE WORK. `.rel__item` carries the same one-shot reveal, and under the runtime it
+	   would fight the settle for the same transform, the shared reveal would win the opacity and the
+	   settle would win the y, which is how a beat ends up half-directed and flickering. Under the runtime
+	   the camera does the directing; the no-JS and reduced-motion renders keep the shared reveal exactly. */
+	:global(html.motion-scene .rel__item.u-inview) {
+		opacity: 1;
+		transform: none;
+		transition: none;
 	}
 </style>

@@ -1,12 +1,12 @@
-# Source mapping — fixture-architectuur-scaffold
+# Source mapping, fixture-architectuur-scaffold
 
 Non-production scaffold fixture (see `index.md` in this folder). Proves
 the image pipeline and dynamic project-route architecture (ARCH-07, PH-08) on real, authorized photography
-with real mixed aspect ratios. **Not final content curation** — full project selection/sequencing/alt-text
+with real mixed aspect ratios. **Not final content curation**, full project selection/sequencing/alt-text
 authoring happens in P6 (blueprint 8.159, CLAUDE §9.3/§12.3).
 
 These are byte-identical copies (verified via `md5`) of files in `/assets/img/portfolio/`. Originals were
-never modified. Copy, not move — CLAUDE §2.5/§9.3 (source assets stay in `/assets`, protected).
+never modified. Copy, not move, CLAUDE §2.5/§9.3 (source assets stay in `/assets`, protected).
 
 | Fixture file            | Source (`/assets/img/portfolio/…`)                                        | Dimensions  | Category (gallery.json) |
 |--------------------------|----------------------------------------------------------------------------|-------------|--------------------------|
@@ -21,11 +21,11 @@ pipeline and template do not assume a universal crop (blueprint 2.14/8.14).
 ## P3 status update (2026-07-10)
 
 This entry's `draft` flag was flipped to `true` in P3. Reason: its `index.md` copy is explicit placeholder
-text ("GEEN definitieve content") which must not remain live once real content exists (ID-06 — no
+text ("GEEN definitieve content") which must not remain live once real content exists (ID-06, no
 unauthorized placeholder in production). P3 independently selected the *same* underlying photography
 (this fixture's `cover.jpg`/`gallery-01-wide.jpg` are the identical Arnhem 7490/7562 files) as the strongest
-real-content candidate for the representative vertical slice — see the real
+real-content candidate for the representative vertical slice, see the real
 `src/content/projects/arnhem-stadsarchitectuur/` entry, which supersedes this fixture for all
 production/portfolio purposes. The fixture folder itself is kept (not deleted) because `styleguide.astro`
 still imports its files directly (bypassing the collection, so `draft` does not affect it) as its ratio-demo
-imagery — deleting it would break the P2 design-system showcase for no P3-scope reason.
+imagery, deleting it would break the P2 design-system showcase for no P3-scope reason.

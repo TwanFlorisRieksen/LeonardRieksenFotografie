@@ -1,18 +1,67 @@
 ---
+/*
+ * 404, a real not-found response, not a redirect to home (blueprint 2.49, 13.54–13.55, 13.97).
+ *
+ * P9 (D-80): it now uses the site's own layout primitives instead of three bare tags. It was the one route
+ * that rendered outside the design system, an unstyled full-width h1 and two unstyled paragraphs, which
+ * on a site of this finish reads as a broken page rather than a considered dead end. Nothing new is
+ * invented here: `Section`, the type scale and `link-arrow` are the existing system, used as every other
+ * page uses them. `noindex` is added because a not-found page has nothing to offer a search result; the
+ * 404 STATUS is what tells a crawler the URL is gone (Netlify serves dist/404.html with it), and the tag
+ * only prevents a soft-404 from being indexed if the page is ever reached another way.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import Icon from '../components/Icon.astro';
 ---
 
 <BaseLayout
 	title="Pagina niet gevonden"
-	description="Deze pagina bestaat niet (meer)."
+	description="Deze pagina bestaat niet (meer). Ga terug naar de homepagina, bekijk het portfolio of neem contact op."
+	noindex
 >
-	<h1>Pagina niet gevonden</h1>
-	<p>
-		De opgevraagde pagina bestaat niet of is verplaatst. Dit is een echte 404-respons, geen
-		automatische doorverwijzing naar home (blueprint 2.49, 13.54–13.55, 13.97).
-	</p>
-	<p>
-		<a href="/">Ga naar de homepagina</a> · <a href="/portfolio/">Bekijk het portfolio</a> ·
-		<a href="/contact/">Neem contact op</a>
-	</p>
+	<Section as="header" class="nf">
+		<div class="nf__inner">
+			<p class="t-eyebrow t-eyebrow--accent">404</p>
+			<h1 class="t-display nf__title">Deze pagina bestaat niet.</h1>
+			<p class="t-lead nf__lead">
+				De opgevraagde pagina is verplaatst of heeft nooit bestaan. Hieronder staan de plekken waar het
+				werk van Leo Rieksen wel te vinden is.
+			</p>
+			<ul class="nf__links">
+				<li>
+					<a class="link-arrow" href="/portfolio/">Bekijk het portfolio<Icon name="arrow-right" size={17} /></a>
+				</li>
+				<li>
+					<a class="link-arrow" href="/diensten/">Bekijk de diensten<Icon name="arrow-right" size={17} /></a>
+				</li>
+				<li>
+					<a class="link-arrow" href="/contact/">Neem contact op<Icon name="arrow-right" size={17} /></a>
+				</li>
+				<li>
+					<a class="link-arrow" href="/">Terug naar de homepagina<Icon name="arrow-right" size={17} /></a>
+				</li>
+			</ul>
+		</div>
+	</Section>
 </BaseLayout>
+
+<style>
+	.nf__inner {
+		max-width: 44rem;
+	}
+	.nf__title {
+		margin-top: var(--space-xs);
+	}
+	.nf__lead {
+		margin-top: var(--space-md);
+		color: var(--color-text-muted);
+	}
+	.nf__links {
+		display: grid;
+		gap: var(--space-sm);
+		margin: var(--space-xl) 0 0;
+		padding: 0;
+		list-style: none;
+	}
+</style>

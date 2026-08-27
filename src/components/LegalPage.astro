@@ -1,0 +1,367 @@
+---
+/*
+ * LegalPage — the shared shell for /privacy/, /cookies/ and /voorwaarden/ (P11 / D-82).
+ *
+ * WHY A SHELL. Three legal documents built page-by-page become three slightly different documents: one
+ * grows a card, one grows a wider measure, one forgets the version line. One shell means the legal layer
+ * reads as a deliberate part of this site rather than as three plugin pages — which is the whole point of
+ * blueprint 6.171 ("de homepagina kan visueel expressiever zijn dan de privacyverklaring": a legal page is
+ * allowed to be the quiet end of the same system, never a different system).
+ *
+ * ART DIRECTION. It inherits, it does not invent. The opening field is `--grad-sapphire-quiet` — the same
+ * lit surface the contact intro stands on, at the strength reserved for pages that are mostly text. The one
+ * gold moment is `--grad-datum`, the site's recurring hairline, drawn once above the title; gold never
+ * becomes a fill, a button or a heading colour (VIS-05 / 6.11–6.12). Section numbers are a CSS counter set
+ * in the accent, in the margin on wide viewports — an architect's index rather than decoration, and the one
+ * concession to the fact that a legal document is SCANNED before it is read.
+ *
+ * READABILITY IS THE BRIEF. Body copy sits at `--color-text-secondary` on a `--measure`-bounded column at
+ * the full 17px body size — no "tiny luxury" (6.24), no justified text, generous leading. Everything else
+ * on the page exists to keep that column comfortable.
+ *
+ * NO JAVASCRIPT. The shell is pure markup + CSS; the pages that need behaviour (the cookie-preference
+ * panel) bring their own and degrade to a plain document without it (§16 progressive enhancement).
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import { LEGAL_VERSION, LEGAL_UPDATED_ISO, LEGAL_UPDATED_NL } from '../lib/legal';
+
+interface Props {
+	/** Page title — used for <title>, the visible H1 and the breadcrumb tail. */
+	title: string;
+	/** Meta description (SEO-04: required per page, never shared). */
+	description: string;
+	/** Short eyebrow above the title. */
+	eyebrow: string;
+	/** One-paragraph orientation for the reader, in plain Dutch. */
+	lead: string;
+	/** In-page index: one entry per top-level <h2 id>. Rendered as a real nav, skipped when empty. */
+	sections?: { id: string; title: string }[];
+}
+
+const { title, description, eyebrow, lead, sections = [] } = Astro.props;
+---
+
+<BaseLayout
+	title={title}
+	description={description}
+	breadcrumb={[{ name: 'Home', path: '/' }]}
+>
+	<Section as="header" tight class="legal-head">
+		<div class="legal-head__inner u-reveal">
+			<span class="legal-head__datum" aria-hidden="true" style="--reveal-index: 0"></span>
+			<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 1">{eyebrow}</p>
+			<h1 class="t-h1 legal-head__title" style="--reveal-index: 2">{title}</h1>
+			<p class="t-lead legal-head__lead" style="--reveal-index: 3">{lead}</p>
+			<p class="t-caption legal-head__meta" style="--reveal-index: 4">
+				Versie {LEGAL_VERSION}, laatst bijgewerkt op{' '}
+				<time datetime={LEGAL_UPDATED_ISO}>{LEGAL_UPDATED_NL}</time>
+			</p>
+		</div>
+	</Section>
+
+	<Section as="div" class="legal-body">
+		<div class="legal-grid">
+			{
+				sections.length > 0 && (
+					<nav class="legal-toc" aria-labelledby="legal-toc-heading">
+						<h2 class="t-eyebrow legal-toc__heading" id="legal-toc-heading">
+							Op deze pagina
+						</h2>
+						<ol class="legal-toc__list">
+							{sections.map((s) => (
+								<li>
+									<a class="legal-toc__link" href={`#${s.id}`}>
+										{s.title}
+									</a>
+								</li>
+							))}
+						</ol>
+					</nav>
+				)
+			}
+			<article class="legal-doc">
+				<slot />
+			</article>
+		</div>
+	</Section>
+</BaseLayout>
+
+<style>
+	/* ============================================================= *
+	 * 1. THE OPENING — the same quiet lit field the contact page opens on
+	 * ============================================================= */
+	.legal-head {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+		background: var(--grad-sapphire-quiet);
+	}
+	.legal-head__inner {
+		max-width: 46rem;
+	}
+	/* The site's recurring gold hairline, once, above the title. */
+	.legal-head__datum {
+		display: block;
+		width: clamp(6rem, 4rem + 12vw, 13rem);
+		height: 1px;
+		margin-bottom: var(--space-lg);
+		background: var(--grad-datum);
+	}
+	.legal-head__title {
+		margin-top: var(--space-md);
+	}
+	.legal-head__lead {
+		margin-top: var(--space-lg);
+		color: var(--color-text-secondary);
+	}
+	.legal-head__meta {
+		margin-top: var(--space-lg);
+	}
+
+	/* ============================================================= *
+	 * 2. THE DOCUMENT — index beside the column on wide viewports, above it on narrow
+	 * ============================================================= */
+	.legal-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+		gap: var(--space-2xl) clamp(var(--space-2xl), 1rem + 5vw, var(--space-4xl));
+		align-items: start;
+	}
+	.legal-toc {
+		position: sticky;
+		/* Clears the fixed header plus a little air, so a jumped-to heading is never tucked under it. */
+		top: calc(var(--space-4xl) * 0.6);
+	}
+	.legal-toc__heading {
+		display: block;
+		margin-bottom: var(--space-md);
+		padding-bottom: var(--space-sm);
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+	.legal-toc__list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+		counter-reset: toc;
+	}
+	.legal-toc__link {
+		display: flex;
+		gap: var(--space-sm);
+		font-size: var(--fs-body-sm);
+		line-height: var(--lh-snug);
+		color: var(--color-text-muted);
+		transition: color var(--dur-interaction) var(--ease-standard);
+	}
+	.legal-toc__link::before {
+		counter-increment: toc;
+		content: counter(toc);
+		flex: none;
+		width: 1.4em;
+		font-variant-numeric: tabular-nums;
+		color: var(--color-accent-hairline);
+	}
+	.legal-toc__link:hover,
+	.legal-toc__link:focus-visible {
+		color: var(--color-text);
+	}
+
+	/* --- The reading column ------------------------------------------------------------------ */
+	.legal-doc {
+		max-width: var(--measure);
+		color: var(--color-text-secondary);
+		counter-reset: legal;
+	}
+	/* A jumped-to heading must not land under the fixed header. */
+	.legal-doc :global(h2),
+	.legal-doc :global(h3) {
+		scroll-margin-top: 6rem;
+	}
+
+	.legal-doc :global(h2) {
+		position: relative;
+		font-family: var(--font-display);
+		font-weight: var(--fw-display);
+		font-size: var(--fs-h3);
+		line-height: var(--lh-snug);
+		letter-spacing: var(--ls-heading);
+		color: var(--color-text);
+		margin-top: clamp(2.75rem, 2rem + 3vw, 4.25rem);
+		padding-top: var(--space-lg);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+	.legal-doc :global(h2:first-child) {
+		margin-top: 0;
+		padding-top: 0;
+		border-top: 0;
+	}
+	/* The section number: an index mark in the margin, in the deep gold hairline tone so it reads as
+	   structure rather than as emphasis. Falls inline above the heading when there is no margin to use. */
+	.legal-doc :global(h2)::before {
+		counter-increment: legal;
+		content: counter(legal);
+		position: absolute;
+		right: calc(100% + var(--space-lg));
+		top: var(--space-lg);
+		font-family: var(--font-sans);
+		font-size: var(--fs-eyebrow);
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+		letter-spacing: var(--ls-eyebrow);
+		line-height: 1.9;
+		color: var(--color-accent-hairline);
+	}
+
+	.legal-doc :global(h3) {
+		font-family: var(--font-sans);
+		font-weight: var(--fw-semibold);
+		font-size: var(--fs-h4);
+		line-height: var(--lh-snug);
+		color: var(--color-text);
+		margin-top: var(--space-xl);
+	}
+
+	.legal-doc :global(p),
+	.legal-doc :global(ul),
+	.legal-doc :global(ol),
+	.legal-doc :global(dl) {
+		margin-top: var(--space-md);
+		line-height: var(--lh-body);
+	}
+	.legal-doc :global(h2 + p),
+	.legal-doc :global(h3 + p) {
+		margin-top: var(--space-md);
+	}
+
+	.legal-doc :global(ul),
+	.legal-doc :global(ol) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+		padding-left: var(--space-lg);
+	}
+	.legal-doc :global(ul) {
+		list-style: none;
+		padding-left: var(--space-md);
+	}
+	.legal-doc :global(ul > li) {
+		position: relative;
+		padding-left: var(--space-md);
+	}
+	/* A hairline dash rather than a bullet — the same restraint as the rest of the system. */
+	.legal-doc :global(ul > li)::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0.78em;
+		width: 0.5rem;
+		height: 1px;
+		background: var(--color-accent-hairline);
+	}
+	.legal-doc :global(ol) {
+		list-style: decimal;
+	}
+	.legal-doc :global(ol > li)::marker {
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.legal-doc :global(strong) {
+		color: var(--color-text);
+		font-weight: var(--fw-semibold);
+	}
+
+	.legal-doc :global(a) {
+		color: var(--color-interactive);
+		text-decoration: underline;
+		text-decoration-color: color-mix(in srgb, var(--color-interactive) 45%, transparent);
+		text-underline-offset: 0.18em;
+		overflow-wrap: anywhere;
+		transition: color var(--dur-interaction) var(--ease-standard),
+			text-decoration-color var(--dur-interaction) var(--ease-standard);
+	}
+	.legal-doc :global(a:hover) {
+		color: var(--color-interactive-hover);
+		text-decoration-color: currentColor;
+	}
+
+	/* --- Definition rows: "term → plain explanation", used for the storage inventory --- */
+	.legal-doc :global(.legal-table) {
+		width: 100%;
+		margin-top: var(--space-lg);
+		border-collapse: collapse;
+		font-size: var(--fs-body-sm);
+		line-height: var(--lh-snug);
+		text-align: left;
+	}
+	.legal-doc :global(.legal-table th),
+	.legal-doc :global(.legal-table td) {
+		padding: var(--space-sm) var(--space-md) var(--space-sm) 0;
+		border-top: 1px solid var(--color-border-subtle);
+		vertical-align: top;
+	}
+	.legal-doc :global(.legal-table thead th) {
+		border-top: 0;
+		border-bottom: 1px solid var(--color-border);
+		padding-top: 0;
+		font-size: var(--fs-eyebrow);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-eyebrow);
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+	.legal-doc :global(.legal-table tbody th) {
+		font-weight: var(--fw-medium);
+		color: var(--color-text);
+	}
+	/* MEASURED, NOT ASSUMED (P11 / D-82). At 320px the privacy page overflowed the document by 86px, and the
+	   offender was one element: the 32-character token `allow_ad_personalization_signals` in a list item. A
+	   monospace identifier has no break opportunity, so it out-argued every container it sat in — the same
+	   failure class as the long compound headings (base.css) and the long e-mail address (SiteFooter). The
+	   rule therefore belongs to EVERY code token in a legal document, not to the two places it happened to
+	   be noticed. Tables keep their own sizing; this is the shared typography. */
+	.legal-doc :global(code) {
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.92em;
+		color: var(--color-text);
+		overflow-wrap: anywhere;
+	}
+	/* A wide table must scroll inside its own box, never widen the page (P10: 0 horizontal overflow). */
+	.legal-doc :global(.legal-scroll) {
+		margin-top: var(--space-lg);
+		overflow-x: auto;
+	}
+	.legal-doc :global(.legal-scroll .legal-table) {
+		margin-top: 0;
+		min-width: 34rem;
+	}
+
+	/* A quiet aside for "what this means in practice" — a surface step, never a card with a shadow. */
+	.legal-doc :global(.legal-note) {
+		margin-top: var(--space-lg);
+		padding: var(--space-lg);
+		border-left: 1px solid var(--color-accent-hairline);
+		background: rgba(var(--p-atmos-cool), 0.06);
+		font-size: var(--fs-body-sm);
+	}
+	.legal-doc :global(.legal-note > * + *) {
+		margin-top: var(--space-sm);
+	}
+
+	@media (max-width: 64rem) {
+		.legal-grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.legal-toc {
+			position: static;
+			max-width: var(--measure);
+		}
+		/* No margin to hang the number in — set it above the heading instead of over the text. */
+		.legal-doc :global(h2)::before {
+			position: static;
+			display: block;
+			margin-bottom: var(--space-2xs);
+			line-height: 1;
+		}
+	}
+</style>

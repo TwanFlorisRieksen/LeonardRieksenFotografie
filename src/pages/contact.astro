@@ -1,23 +1,24 @@
 ---
 /*
- * Contact — the low-friction conversion close of the site (13.47/2.22). Blueprint architecture 13.49
+ * Contact, the low-friction conversion close of the site (13.47/2.22). Blueprint architecture 13.49
  * (header · introductie · contactmogelijkheden · formulier · praktische informatie · privacycontext ·
  * footer). Not a generic "heading + card-with-form + details beside it": an integrated premium composition
  * where the blue-hour architecture (Radio Kootwijk) anchors the page as an architectural vertical DATUM.
  *
  * FORM (D-04 / SEC-05/06/11 / A11Y-08 / 11.63–11.90): Netlify Forms + honeypot, NO CAPTCHA by default,
  * native HTML5 client validation (UX) with server-side handled by Netlify (client validation is not a
- * security control — 11.64/11.65), permanent visible labels (2.23, never placeholder-as-label), realistic
- * maxlengths (11.70), no file uploads (11.71), only necessary fields (data minimisation — SEC-11/13.51),
+ * security control, 11.64/11.65), permanent visible labels (2.23, never placeholder-as-label), realistic
+ * maxlengths (11.70), no file uploads (11.71), only necessary fields (data minimisation, SEC-11/13.51),
  * success → /bedankt/ (migrated from the old site's proven flow). Progressive enhancement: the form is a
  * plain server-POST form that works with zero client JS.
  *
- * CONTENT AUTHORITY (CLAUDE §9.2): the contact facts (email / phone / KvK / region) are MIGRATED factual
- * data extracted from Leo's own contact page (OLD_WEBSITE_CONTENT_INVENTORY, A-02) — real, owner-confirm,
- * not invented. Consistent with the footer, which already ships the email.
+ * CONTENT AUTHORITY (CLAUDE §9.2): the contact facts (KvK / region) are MIGRATED factual data extracted
+ * from Leo's own contact page (OLD_WEBSITE_CONTENT_INVENTORY, A-02), real, owner-confirm, not invented.
+ * The e-mail address and the removal of the telephone number are current explicit OWNER instructions
+ * (D-76), which supersede the migrated values. Consistent with the footer, which ships the same email.
  *
  * ART DIRECTION (frozen D-28/D-29/D-30 grammar): cool blue-hour afterglow (matching the image), the deep
- * form field, and a genuine cross-boundary crossing that is an ARCHITECTURAL VERTICAL DATUM — the tall
+ * form field, and a genuine cross-boundary crossing that is an ARCHITECTURAL VERTICAL DATUM, the tall
  * symmetrical photograph rises to meet a champagne datum hairline that begins in the intro field and
  * resolves down the image in the form field, laterally paired with the form. Deliberately a DIFFERENT
  * mechanism from the site's three photo-vertical-rise crossings (D-31).
@@ -27,27 +28,32 @@ import Section from '../components/Section.astro';
 import Media from '../components/Media.astro';
 import Button from '../components/Button.astro';
 import Icon from '../components/Icon.astro';
+import SocialLinks from '../components/SocialLinks.astro';
 import contactImg from '../assets/static/contact.jpeg';
 
-const email = 'fotorieksen@hotmail.com';
-const phoneDisplay = '06 22 956 813';
-const phoneHref = 'tel:+31622956813';
+/* P8.5 (D-76): the telephone number is REMOVED from the entire site on the owner's explicit instruction,
+   and the e-mail address is replaced by the address below. Both are current explicit user instructions,
+   which outrank the migrated old-site facts they supersede (CLAUDE §3.1.1). Removing a fact is always
+   safe under §4.6, nothing is invented, a real contact route simply stops being published. The form's
+   OPTIONAL "telefoonnummer" field is deliberately kept: that is the VISITOR's own number, volunteered so
+   Leo can call back, not the business number this instruction removes. */
+const email = 'LeonardRFotografie@gmail.com';
 const region = 'Midden-Nederland';
 const kvk = '32169926';
 ---
 
 <BaseLayout
 	title="Contact"
-	description="Neem contact op met Leonard Rieksen Fotografie. Een vraag, opdracht of kort overleg over architectuur- of interieurfotografie in Midden-Nederland — stuur gerust een bericht."
+	description="Neem contact op met Leonard Rieksen Fotografie. Een vraag, opdracht of kort overleg over architectuur- of interieurfotografie in Midden-Nederland, stuur gerust een bericht."
 >
-	<!-- 1. INTRO (13.49) — a calm, low-friction opening. Cool blue-hour afterglow, matching the photograph
+	<!-- 1. INTRO (13.49), a calm, low-friction opening. Cool blue-hour afterglow, matching the photograph
 	     below. Deliberately restrained; reserves trailing space for the datum + image to rise into. -->
 	<Section as="header" tight class="contact-intro">
 		<div class="contact-intro__inner u-reveal">
 			<p class="t-eyebrow t-eyebrow--accent" style="--reveal-index: 0">Contact</p>
 			<h1 class="t-display contact-intro__title" style="--reveal-index: 1">Laten we uw project bespreken.</h1>
 			<p class="t-lead contact-intro__lead" style="--reveal-index: 2">
-				Heeft u een vraag, een opdracht of wilt u eerst kort overleggen? Stuur gerust een bericht — u
+				Heeft u een vraag, een opdracht of wilt u eerst kort overleggen? Stuur gerust een bericht, u
 				ontvangt zo snel mogelijk een persoonlijke reactie.
 			</p>
 		</div>
@@ -62,7 +68,7 @@ const kvk = '32169926';
 				<figure class="contact-media u-inview">
 					<Media
 						src={contactImg}
-						alt="Radio Kootwijk in het blauwe uur — het monumentale betonnen zendgebouw, symmetrisch weerspiegeld in een stille vijver, met een warm verlichte entree."
+						alt="Radio Kootwijk in het blauwe uur, het monumentale betonnen zendgebouw, symmetrisch weerspiegeld in een stille vijver, met een warm verlichte entree."
 						widths={[360, 560, 760]}
 						sizes="(min-width: 60rem) 30vw, 80vw"
 						ratio="2/3"
@@ -80,13 +86,8 @@ const kvk = '32169926';
 								<span>{email}</span>
 							</a>
 						</li>
-						<li class="contact-details__item">
-							<a class="contact-details__link" href={phoneHref}>
-								<Icon name="phone" size={18} />
-								<span>{phoneDisplay}</span>
-							</a>
-						</li>
 					</ul>
+					<SocialLinks class="contact-details__social" />
 					<dl class="contact-details__meta">
 						<div class="contact-details__row">
 							<dt>Regio</dt>
@@ -112,7 +113,7 @@ const kvk = '32169926';
 				>
 					<input type="hidden" name="form-name" value="contact" />
 					<!-- Honeypot: off-screen (naive bots still fill it) but removed from the a11y tree and tab
-					     order (11.78) — never announced to screenreaders or keyboard users. -->
+					     order (11.78), never announced to screenreaders or keyboard users. -->
 					<div class="cform__hp" aria-hidden="true">
 						<label>
 							Vul dit veld niet in
@@ -172,7 +173,7 @@ const kvk = '32169926';
 							rows="6"
 							aria-describedby="bericht-hint"></textarea>
 						<p class="field__hint" id="bericht-hint">
-							Vertel kort waar uw project over gaat — locatie, type en wat u zoekt.
+							Vertel kort waar uw project over gaat, locatie, type en wat u zoekt.
 						</p>
 					</div>
 
@@ -180,9 +181,18 @@ const kvk = '32169926';
 						<Button variant="primary" type="submit" trailingArrow>Verstuur bericht</Button>
 					</div>
 
+					<!-- P11 (D-82), THIS SENTENCE WAS CORRECTED, NOT RESTYLED. It read "…en niet met derden
+					     gedeeld", which the implementation does not support: the inzending is stored by Netlify
+					     and is automatically assessed by Akismet, both of which are third parties (processors,
+					     but third parties nonetheless). A privacy claim that the site's own architecture
+					     contradicts is worse than no claim. The promise that IS true, the data is used only to
+					     reply, and is never sold or used for advertising, is kept, and the detail moves to the
+					     privacy statement where it can be stated in full. -->
 					<p class="cform__privacy">
-						Uw gegevens worden uitsluitend gebruikt om op uw bericht te reageren en niet met derden
-						gedeeld. Lees de <a href="/privacy/">privacyverklaring</a>.
+						Uw gegevens worden uitsluitend gebruikt om op uw bericht te reageren. Ze worden niet
+						verkocht en niet voor reclame gebruikt. In de{' '}
+						<a href="/privacy/">privacyverklaring</a> leest u hoe uw bericht wordt verwerkt en hoe lang
+						het wordt bewaard.
 					</p>
 				</form>
 			</div>
@@ -192,7 +202,7 @@ const kvk = '32169926';
 
 <style>
 	/* ============================================================= *
-	 * 1. INTRO — calm opening with a cool blue-hour afterglow (matching the photograph)
+	 * 1. INTRO, calm opening with a cool blue-hour afterglow (matching the photograph)
 	 * ============================================================= */
 	.contact-intro {
 		position: relative;
@@ -205,7 +215,10 @@ const kvk = '32169926';
 				rgba(var(--p-atmos-cool), 0.06) 42%,
 				rgba(var(--p-atmos-cool), 0) 72%
 			),
-			var(--color-bg);
+			/* P8.6 (D-77): was the flat `--color-bg` fill under the afterglow. The radial peaks off the top
+			   edge, so everything below its 72% stop, most of the opening, was one flat near-neutral
+			   colour. The intro now stands on the sapphire page field, which is lit at BOTH ends. */
+				var(--grad-sapphire-quiet);
 		/* Reserve space so the datum + photograph below can rise across the seam into this field. */
 		padding-bottom: clamp(3.5rem, 2rem + 6vw, 8rem);
 	}
@@ -221,24 +234,24 @@ const kvk = '32169926';
 	}
 
 	/* ============================================================= *
-	 * 2. CONTACT BODY — the deep field, the datum crossing, the form
+	 * 2. CONTACT BODY, the deep field, the datum crossing, the form
 	 * ============================================================= */
 	.contact-body {
 		position: relative;
 		isolation: isolate;
 		overflow-x: clip;
 		--cross-rise: clamp(2.25rem, 0.5rem + 5.5vw, 6.5rem);
-		background:
-			radial-gradient(
-				88% 52% at 12% 6%,
-				rgba(var(--p-atmos-cool), 0.1) 0%,
-				rgba(var(--p-atmos-cool), 0.03) 44%,
-				rgba(var(--p-atmos-cool), 0) 70%
-			),
-			linear-gradient(180deg, #080b12 0%, #06090e 60%, #090c13 100%);
+		/* P8.5 (D-76) re-derived the field onto the sapphire scale; P8.6 (D-77) fixes what that still left
+		   flat. MEASURED on the render: the single light source sat at 12% 6% and reached zero by 70%, so the
+		   entire right-hand half of a 1400px-tall section, which is exactly where the form is, i.e. the one
+		   place on this site a visitor is asked to do something, was an unlit `--p-sapphire-975` fill. That
+		   is the "vlakke doffe blauwtint" of brief item 8, and it was not the colour's fault: a flat area has
+		   no light in it at any hue. `--grad-sapphire-page` lights it from a high-left source AND a low-right
+		   counter-light over the same descent, so the form side is modelled rather than filled. */
+		background: var(--grad-sapphire-page);
 	}
 	/* Reduced top padding so the photograph's negative margin actually lifts it ACROSS the seam into the
-	   intro field (rather than merely trimming a large default padding) — the D-30 robust-crossing pattern.
+	   intro field (rather than merely trimming a large default padding), the D-30 robust-crossing pattern.
 	   Element+class selector so it reliably outweighs `.section`'s `padding-block` regardless of CSS bundle
 	   source order (a plain `.contact-body` tie was order-dependent and fragile). */
 	section.contact-body {
@@ -251,12 +264,14 @@ const kvk = '32169926';
 		inset: 0;
 		z-index: -1;
 		pointer-events: none;
+		/* P8.6 (D-77): the foot no longer closes down to 0.5. The page now descends into the footer's own
+		   approach instead of ending on a dark band and then starting again, one continuous fall. */
 		background: linear-gradient(
 			180deg,
-			rgba(5, 7, 11, 0.5) 0%,
+			rgba(5, 7, 11, 0.42) 0%,
 			rgba(5, 7, 11, 0) 22%,
-			rgba(5, 7, 11, 0) 84%,
-			rgba(5, 7, 11, 0.5) 100%
+			rgba(5, 7, 11, 0) 88%,
+			rgba(5, 7, 11, 0.22) 100%
 		);
 	}
 	.contact-grid {
@@ -273,7 +288,7 @@ const kvk = '32169926';
 		margin-top: calc(-1 * var(--cross-rise));
 	}
 	/* The champagne DATUM hairline: a thin vertical gold line at the plate's left margin that BEGINS above
-	   the photograph (in the intro field) and RESOLVES downward alongside it (in the body field) — an
+	   the photograph (in the intro field) and RESOLVES downward alongside it (in the body field), an
 	   architect's datum connecting the two fields, and the "gold precision begins in one field, resolves in
 	   another" idiom. Gold stays a hairline, never a fill. aria-hidden decorative (pure ::before). */
 	.contact-media::before {
@@ -287,13 +302,13 @@ const kvk = '32169926';
 		pointer-events: none;
 		background: linear-gradient(
 			180deg,
-			rgba(224, 197, 140, 0) 0%,
-			rgba(224, 197, 140, 0.9) 18%,
-			rgba(199, 165, 106, 0.58) 58%,
-			rgba(199, 165, 106, 0) 100%
+			rgba(var(--p-champagne-rgb), 0) 0%,
+			rgba(var(--p-champagne-rgb), 0.9) 18%,
+			rgba(var(--p-gold-rgb), 0.58) 58%,
+			rgba(var(--p-gold-rgb), 0) 100%
 		);
 	}
-	/* Architect's dimension-line start-tick where the datum begins in the intro field — a short horizontal
+	/* Architect's dimension-line start-tick where the datum begins in the intro field, a short horizontal
 	   champagne hairline capping the top of the vertical datum, so it reads unmistakably as a datum/dimension
 	   line rather than a stray rule. aria-hidden decorative. */
 	.contact-media::after {
@@ -305,14 +320,14 @@ const kvk = '32169926';
 		height: 1px;
 		z-index: 1;
 		pointer-events: none;
-		background: linear-gradient(90deg, rgba(224, 197, 140, 0.85) 0%, rgba(199, 165, 106, 0) 100%);
+		background: linear-gradient(90deg, rgba(var(--p-champagne-rgb), 0.85) 0%, rgba(var(--p-gold-rgb), 0) 100%);
 	}
 	.contact-media__img {
 		width: 100%;
 	}
 
 	/* --- Practical contact details: a clean index (GEGEVENS in the selective gold eyebrow language; the
-	   page's gold moment is the datum, so the rows stay restrained hairline dividers — no gold ticks here). --- */
+	   page's gold moment is the datum, so the rows stay restrained hairline dividers, no gold ticks here). --- */
 	.contact-details {
 		margin-top: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
 	}

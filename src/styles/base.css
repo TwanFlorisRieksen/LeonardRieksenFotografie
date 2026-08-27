@@ -21,12 +21,41 @@ html {
 	-webkit-text-size-adjust: 100%;
 	text-size-adjust: 100%;
 	scroll-behavior: smooth;
+	/* Reserve the scrollbar track permanently. When an overlay locks scrolling (the portfolio's near plane)
+	   the scrollbar would otherwise disappear and reflow the whole page sideways — which visibly breaks the
+	   "you return to exactly where you were" guarantee the portfolio is built on. Reserving the gutter costs
+	   nothing on these long pages (the scrollbar is always present anyway) and makes the lock shift-free. */
+	scrollbar-gutter: stable;
 }
 
+/* P8.6 (D-77) — THE FLOOR OF THE WHOLE SITE IS LIT, NOT FILLED.
+   Brief item 8 names the contact page and the CTAs, and adds "overige pagina's". The general case is this
+   declaration: any surface no section paints falls through to `body`, and `body` was a single flat colour.
+   That is what a reader sees on /privacy/, on /404/, and in the gaps between sections everywhere else.
+   A very quiet sapphire field replaces the fill. It is `fixed`, so it is sized to the VIEWPORT rather than
+   to the document — on a 7000px page a scrolling gradient would stretch to invisibility, which is the trap
+   that makes body-level fields look like they "did nothing". Every page that paints its own surface still
+   covers this completely; it only ever shows where a flat colour used to. */
 body {
 	min-height: 100vh;
 	min-height: 100svh;
-	background-color: var(--color-bg);
+	/* THE FLOOR IS THE FOOTER'S OWN MATERIAL (P8.6 / D-77). It was `--color-bg` (#0f131a), while the footer
+	   and every deep section foot land on `--p-sapphire-950` (#070c18) — so wherever a section ended before
+	   the footer began, the exposed floor was ~2 L* LIGHTER and a different hue than both of its neighbours,
+	   and drew a horizontal edge across the page. MEASURED on /contact/: an edge at the foot of
+	   `.contact-body`, then a second tone, then the footer. Putting the floor on the same rung as the foot
+	   removes the boundary rather than disguising it. `--color-bg` itself is untouched — components that
+	   composite against it keep their tuned values, and every AA ratio on this site was computed against a
+	   background this change only makes darker. */
+	background-color: var(--p-sapphire-950);
+	background-image: radial-gradient(
+			116% 58% at 14% -6%,
+			rgba(var(--p-atmos-cool), 0.11) 0%,
+			rgba(var(--p-atmos-cool), 0.035) 44%,
+			rgba(var(--p-atmos-cool), 0) 74%
+		),
+		radial-gradient(88% 44% at 92% 106%, rgba(var(--p-atmos-cool), 0.07) 0%, rgba(var(--p-atmos-cool), 0) 62%);
+	background-attachment: fixed;
 	color: var(--color-text);
 	font-family: var(--font-sans);
 	font-size: var(--fs-body);
@@ -89,6 +118,18 @@ a {
 	border-radius: var(--radius-xs);
 }
 :focus:not(:focus-visible) {
+	outline: none;
+}
+/* PROGRAMMATIC FOCUS AT A POINTER VISITOR (P12 / D-84). Two controls move focus for real accessibility
+   reasons — back-to-top sends it to the wordmark, the near plane returns it to the photograph — and
+   Chromium paints `:focus-visible` on a script-driven focus regardless of how the visitor actually acted.
+   The result was a blue box around the logo after a MOUSE click on back-to-top, and around a photograph
+   after a mouse-closed lightbox. This suppresses the ring for exactly that one focus: the attribute is set
+   immediately before `.focus()` and removed on blur or on the next keydown anywhere, so a keyboard visitor
+   is never without an indicator (see scripts/quiet-focus.js). NOT a global outline reset — the ring is
+   fully intact for every focus this site did not move itself. */
+[data-focus-quiet]:focus,
+[data-focus-quiet]:focus-visible {
 	outline: none;
 }
 

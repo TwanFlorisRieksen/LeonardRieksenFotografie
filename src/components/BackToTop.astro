@@ -1,0 +1,280 @@
+---
+/*
+ * BackToTop — the shared "terug naar boven" control (P8.5 / D-76; blueprint 13.69 "nooit irritant",
+ * UX-11 no hover-dependency, A11Y-03 focus, MOT-08 honest baseline).
+ *
+ * WHY IT IS A BUTTON AND NOT A LINK. A `<a href="#top">` would work with zero JS, which is tempting — but
+ * it writes `#top` into the URL of every page a visitor ever scrolls up on, and those URLs get shared,
+ * bookmarked and indexed. A convenience control is not worth polluting the canonical URL space (SEO-05).
+ * So it is a real `<button>`, revealed by JS, and under no-JS it simply does not exist: nothing is lost,
+ * because scrolling up is something every browser and every assistive technology already does natively
+ * (Home, ⌘↑, the scrollbar, a two-finger flick). A control that cannot work must not be shown.
+ *
+ * SUBTLE, BY CONSTRUCTION (the brief: "subtiel, niet storend"):
+ *   · it is ABSENT until the reader is genuinely deep in a page (past ~1.6 viewports) and there is a real
+ *     distance to come back from — on a short page it never appears at all;
+ *   · P8.7 (D-78): it is a 44px GLASS DISC — the page shows through it and gives it its colour, so it
+ *     belongs to whatever it happens to be floating over rather than being a tile laid on top. It carries
+ *     no gold: gold on this site marks structural extent, and a closed trim around a widget is not that;
+ *   · no label, no pulse, no animation at rest, and absent entirely until the reader is deep in a page.
+ *
+ * ACCESSIBILITY, deliberately:
+ *   · a real `<button type="button">` with an accessible name ("Terug naar boven"), operable by Enter and
+ *     Space for free;
+ *   · while hidden it is `visibility: hidden`, which removes it from the tab order — a keyboard visitor
+ *     can never land on an invisible control (WCAG 2.4.7 / 2.4.11);
+ *   · the icon is `aria-hidden` and the name comes from a visually-hidden span, so the accessible name is
+ *     built from real text (the WCAG 2.5.3 lesson from ID-07);
+ *   · after the jump, focus MOVES to the wordmark at the top of the page. Without that, a keyboard visitor
+ *     presses the button, the viewport goes to the top, and their focus stays 8000px down the document —
+ *     the next Tab throws them straight back. Moving focus is what makes this control work at all for
+ *     keyboard and screen-reader users, rather than merely appear to.
+ *
+ * REDUCED MOTION: the jump becomes instant (`behavior: 'instant'` — 'auto' would inherit html{scroll-behavior:smooth} and animate), and the reveal transition is collapsed by
+ * the global reduced-motion guard. The control itself stays available — reduced motion means less
+ * movement, never less functionality.
+ */
+---
+
+<button type="button" class="to-top" id="to-top" data-to-top>
+	<svg
+		width="20"
+		height="20"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="1.35"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		aria-hidden="true"
+		focusable="false"
+	>
+		<path d="M12 19V6M6 12l6-6 6 6" />
+	</svg>
+	<span class="u-visually-hidden">Terug naar boven</span>
+</button>
+
+<style>
+	/* ── GLASS (P8.7 / D-78) ────────────────────────────────────────────────────────────────────────────
+	   The owner: "te grof, die gouden omlijning is lelijk, het past niet goed op de site … gebruik iets van
+	   glasmorphing, subtiel en chique, niet zo lomp."
+	   What made it lomp, itemised, because each one is a separate decision that was wrong:
+	     · A GOLD OUTLINE. Gold on this site is a 1px structural datum that marks extent — a header edge, a
+	       CTA rule, a reading position. Drawn as a closed border around a floating widget it stops being a
+	       datum and becomes a chip's trim, which also broke the one-meaning rule D-77 had just established.
+	       It is gone; nothing about this control is gold any more.
+	     · A NEARLY OPAQUE FILL (0.92) over a 6px blur. At that opacity the blur does nothing — it was a dark
+	       tile sitting ON the page rather than a surface the page shows through.
+	     · SQUARE CORNERS at 46px. A rectangle is a piece of ARCHITECTURE in this design language; every
+	       rectilinear element here frames content. A utility control that frames nothing reads as a stray
+	       block. A disc is quieter precisely because it cannot be mistaken for structure.
+	   What it is now: a 44px disc of real glass — a low-alpha specular gradient, one hairline of white at
+	   0.19 for the glass edge, a lit top arris inside it, a soft drop shadow so it floats rather than sits,
+	   and a genuine 16px blur with saturation so the photograph behind it stays visible and is what gives
+	   the disc its colour. It is the only backdrop-filter on the site and stays that way.
+	   NON-TEXT CONTRAST (WCAG 1.4.11) is carried by the GLYPH, and measured: the arrow reads 7.5–7.9:1
+	   against the disc's own composited surface over three deliberately different backdrops (a bright
+	   interior photograph, the deep footer, the portfolio coil). The rim is a finish, not the thing that
+	   identifies the control — which is exactly why it is allowed to stay this quiet. */
+	.to-top {
+		position: fixed;
+		right: clamp(1rem, 0.5rem + 1.4vw, 2rem);
+		/* `--consent-h` is 0 unless the cookie bar is up; while it is, this control clears it instead of
+		   sitting under it, unclickable (P12 / D-84 — see scripts/consent.js). */
+		bottom: calc(clamp(1rem, 0.5rem + 1.4vw, 2rem) + var(--consent-h, 0px));
+		z-index: var(--z-sticky);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.75rem; /* 44px — the touch-target floor exactly (A11Y / 6.44); no bulk beyond it */
+		height: 2.75rem;
+		padding: 0;
+		color: rgba(236, 238, 242, 0.78);
+		background: linear-gradient(
+			152deg,
+			rgba(236, 238, 242, 0.13) 0%,
+			rgba(236, 238, 242, 0.04) 44%,
+			rgba(12, 19, 33, 0.22) 100%
+		);
+		border: 1px solid rgba(236, 238, 242, 0.19);
+		border-radius: 999px;
+		box-shadow:
+			inset 0 1px 0 rgba(236, 238, 242, 0.24),
+			0 10px 26px -14px rgba(0, 0, 0, 0.7);
+		-webkit-backdrop-filter: blur(16px) saturate(150%);
+		backdrop-filter: blur(16px) saturate(150%);
+		cursor: pointer;
+		transition: color var(--dur-interaction) var(--ease-standard),
+			border-color var(--dur-interaction) var(--ease-standard),
+			background-color var(--dur-interaction) var(--ease-standard),
+			opacity var(--dur-component) var(--ease-standard),
+			transform var(--dur-component) var(--ease-out),
+			visibility var(--dur-component);
+	}
+	/* No backdrop-filter (older Firefox, or a browser with it disabled): the glass would otherwise be a
+	   near-invisible 4%-alpha wash over an arbitrary photograph. It falls back to a real, quiet surface. */
+	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.to-top {
+			background: linear-gradient(152deg, rgba(31, 42, 64, 0.9) 0%, rgba(10, 15, 26, 0.9) 100%);
+		}
+	}
+
+	/* THE RESTING STATE IS HIDDEN, AND HIDDEN MEANS UNFOCUSABLE. `visibility: hidden` (not opacity alone)
+	   is what takes it out of the tab order; the opacity/transform are only there so the appearance is a
+	   fade-and-rise rather than a pop. This is also the no-JS state: nothing ever sets `.is-visible`
+	   without JS, so a control that could not work is never shown. */
+	.to-top {
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(0.5rem);
+	}
+	.to-top.is-visible {
+		opacity: 1;
+		visibility: visible;
+		transform: none;
+	}
+
+	/* Hover brightens the GLASS, not a trim: the edge catches a little more light and the surface lifts.
+	   Deliberately not gold (see the block comment) and deliberately small — this control's whole job is to
+	   be there when wanted and invisible otherwise. */
+	.to-top:hover {
+		color: var(--color-text);
+		border-color: rgba(236, 238, 242, 0.3);
+		background-color: rgba(236, 238, 242, 0.05);
+	}
+	.to-top:hover svg {
+		transform: translateY(-1px);
+	}
+	.to-top svg {
+		transition: transform var(--dur-interaction) var(--ease-out);
+	}
+	.to-top:active {
+		transform: scale(0.96);
+	}
+
+	/* Print: chrome never prints. */
+	@media print {
+		.to-top {
+			display: none;
+		}
+	}
+</style>
+
+<script>
+	import { focusWithoutRing, isKeyboardActivation } from '../scripts/quiet-focus.js';
+
+	// Progressive enhancement only — see the component comment for why there is no no-JS fallback control.
+	(() => {
+		const btn = document.querySelector<HTMLButtonElement>('[data-to-top]');
+		if (!btn) return;
+
+		// The threshold is a multiple of the LIVE viewport height, recomputed on every check, so it stays
+		// correct through resize and mobile URL-bar changes without a resize listener of its own.
+		const isDeep = () => window.scrollY > window.innerHeight * 1.6;
+
+		let ticking = false;
+		const sync = () => {
+			btn.classList.toggle('is-visible', isDeep());
+			ticking = false;
+		};
+		const onScroll = () => {
+			if (!ticking) {
+				ticking = true;
+				requestAnimationFrame(sync);
+			}
+		};
+
+		sync(); // a reload at a scrolled position must not open with a missing control
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('resize', onScroll, { passive: true });
+
+		/* ── THE RETURN JOURNEY (P8.6 / D-77) ───────────────────────────────────────────────────────────
+		 * The owner: "de knop werkt functioneel, maar de beweging is te agressief … snel maar niet abrupt,
+		 * elegante easing, volledig vloeiende scroll."
+		 *
+		 * `behavior: 'smooth'` was never a design decision — it is the browser's, and Chrome's is a fixed
+		 * ~half-second ramp REGARDLESS of distance. From the foot of the portfolio that is roughly 9000px in
+		 * 500ms: about 18 screens a second, which is not a journey, it is a cut. It is also the wrong shape:
+		 * the UA curve accelerates hard out of rest, so the first thing the reader feels is a lurch.
+		 *
+		 * So the scroll is driven here instead, and the two things the brief asks for are two separate
+		 * properties of that drive:
+		 *   · "SNEL MAAR NIET ABRUPT" is a DURATION question, and duration has to scale with distance or one
+		 *     of the two ends of the site feels wrong. It scales with the SQUARE ROOT of the distance —
+		 *     doubling the travel costs only ~40% more time — clamped to 600–1400ms. A short page returns
+		 *     briskly; the portfolio's 9000px takes ~1.35s, which is a travelled distance rather than a jump,
+		 *     and still well under the two seconds at which a reader starts to wait.
+		 *   · "ELEGANTE EASING" is a CURVE question, and the first answer here was wrong in an instructive
+		 *     way. An expo-OUT (1 − (1−t)⁴) has its maximum velocity at t=0: measured from 5200px it moved
+		 *     3240px in the first 209ms — over 1300px in the opening frame. That is precisely the lurch the
+		 *     brief calls aggressive; "eases out" is not the same as "does not lurch". SMOOTHERSTEP
+		 *     (t³(6t²−15t+10)) has zero velocity at BOTH ends and a peak of only 1.875× the average in the
+		 *     middle, so the page accelerates out of rest, travels, and decelerates into it — one continuous
+		 *     move with no edge at either end.
+		 * The reader can always interrupt: any wheel, touch, or key cancels the run on the frame it arrives,
+		 * because a control that fights the person using it is worse than one that is merely fast.
+		 * Reduced motion keeps the instant jump — less movement, never less function. */
+		let raf = 0;
+		const cancel = () => {
+			if (raf) cancelAnimationFrame(raf);
+			raf = 0;
+		};
+
+		btn.addEventListener('click', (event) => {
+			const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			// Focus follows the viewport, or a keyboard visitor is left 8000px behind their own screen.
+			// The wordmark is the first visible focusable element in the document, which is exactly where
+			// "back to top" should land. `preventScroll` so focusing cannot fight the scroll that is running.
+			//
+			// P12 (D-84): the MOVE stays, the RING does not — for pointer visitors. A script-driven focus()
+			// matches :focus-visible in Chromium whatever the visitor actually did, so a mouse click on this
+			// disc painted the global blue ring around the logo (the owner's report). `detail === 0` is the
+			// standard "activated from the keyboard" discriminator: Enter/Space on a button synthesises a
+			// click with detail 0, a real pointer click reports 1+. Keyboard → an ordinary, fully indicated
+			// focus. Pointer → the same focus, quietly, released on the next key press.
+			const target = document.querySelector<HTMLElement>('.site-header a');
+			focusWithoutRing(target, !isKeyboardActivation(event));
+
+			const from = window.scrollY;
+			if (reduce || from < 8) {
+				cancel();
+				window.scrollTo({ top: 0, behavior: 'instant' });
+				return;
+			}
+
+			cancel();
+			const dur = Math.min(1400, Math.max(600, Math.sqrt(from) * 15));
+			const t0 = performance.now();
+			// Any real input from the reader wins immediately.
+			const stop = () => {
+				cancel();
+				window.removeEventListener('wheel', stop);
+				window.removeEventListener('touchstart', stop);
+				window.removeEventListener('keydown', stop);
+			};
+			window.addEventListener('wheel', stop, { passive: true, once: true });
+			window.addEventListener('touchstart', stop, { passive: true, once: true });
+			window.addEventListener('keydown', stop, { once: true });
+
+			const step = (now: number) => {
+				const t = Math.min(1, (now - t0) / dur);
+				const e = t * t * t * (t * (t * 6 - 15) + 10);
+				/* `behavior: 'instant'` is LOAD-BEARING, not a default spelled out. `html` carries
+				   `scroll-behavior: smooth` (base.css), and under it a bare `window.scrollTo(0, y)` starts
+				   the browser's OWN animation to y — so a per-frame drive becomes 60 competing animations a
+				   second. MEASURED before the fix, from 5200px: the page did not move for ~950ms, then
+				   plunged, then was still drifting at 2039ms and came to rest at 14.5px instead of 0. Every
+				   symptom the brief calls "abrupt" was this, and it is the same trap D-73 hit on the
+				   portfolio's scroll restore. */
+				window.scrollTo({ top: Math.round(from * (1 - e)), behavior: 'instant' });
+				if (t < 1) {
+					raf = requestAnimationFrame(step);
+				} else {
+					raf = 0;
+					stop();
+				}
+			};
+			raf = requestAnimationFrame(step);
+		});
+	})();
+</script>

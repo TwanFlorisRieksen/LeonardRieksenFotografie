@@ -107,6 +107,10 @@ const works = defineCollection({
 			alt: z.string(),
 			category: z.enum(['architectuur', 'interieur']),
 			scale: z.enum(['feature', 'standard', 'quiet']).default('standard'),
+			// The portfolio's opening photograph (Experience Architecture §3.1). Curator-designated; when no
+			// work carries it the overview falls back to the first feature-scale work in curatorial order, so
+			// the page always opens on a considered photograph rather than an accident of upload order.
+			overture: z.boolean().default(false),
 			caption: z.string().optional(),
 			location: z.string().optional(),
 			year: z.number().optional(),

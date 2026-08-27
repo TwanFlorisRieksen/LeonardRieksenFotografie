@@ -1,0 +1,226 @@
+---
+/*
+ * /voorwaarden/, the website's terms (P11 / D-82, LEG-01/02).
+ *
+ * WHAT THIS DOCUMENT IS, AND DELIBERATELY IS NOT. This website is a portfolio, an introduction and a
+ * contact route. It sells nothing, quotes no prices, takes no bookings and concludes no agreement online
+ * verified against the implementation: there is not a single price, tariff, offer or checkout anywhere in
+ * src/pages or src/content. Writing "algemene voorwaarden" here in the sense of assignment terms would
+ * therefore be inventing a contractual relationship the website does not create (CLAUDE §4.6, §17.1).
+ *
+ * The assignment terms already exist and are not mine to write: the old website stated on every page "Ik
+ * hanteer de algemene voorwaarden van DuPho" and linked to them (OLD_WEBSITE_CONTENT_INVENTORY, row
+ * "Terms"), and blueprint 3.16 requires that reference to be preserved in substance and given a logical
+ * place in the new site. This page is that place. So the document splits cleanly in two: terms that govern
+ * USING THIS WEBSITE, written here, and terms that govern A PHOTOGRAPHY ASSIGNMENT, which are DuPho's and
+ * are linked, not paraphrased.
+ *
+ * KNOWN GAP, NOT PAPERED OVER. Art. 3:15d BW obliges an information-society service to publish a
+ * geographic address and, where applicable, a VAT identification number. Neither exists in any project
+ * source and neither is invented here. See TERMS_GAPS in src/lib/legal.ts and the owner prerequisites in
+ * PROGRESS.md, this is a fact the owner must supply, not a sentence that can be written around.
+ */
+import LegalPage from '../components/LegalPage.astro';
+import {
+	SITE_NAME,
+	PERSON_NAME,
+	CONTACT_EMAIL,
+	KVK,
+	DUPHO_TERMS_URL,
+	DPA_NAME,
+	DPA_URL,
+} from '../lib/legal';
+
+const sections = [
+	{ id: 'toepasselijkheid', title: 'Waar deze voorwaarden over gaan' },
+	{ id: 'wie', title: 'Wie deze website aanbiedt' },
+	{ id: 'opdrachten', title: 'Fotografieopdrachten' },
+	{ id: 'auteursrecht', title: 'Auteursrecht op de fotografie' },
+	{ id: 'gebruik', title: 'Toegestaan gebruik van de website' },
+	{ id: 'inhoud', title: 'Inhoud, beschikbaarheid en juistheid' },
+	{ id: 'links', title: 'Links naar andere websites' },
+	{ id: 'aansprakelijkheid', title: 'Aansprakelijkheid' },
+	{ id: 'privacy', title: 'Privacy en cookies' },
+	{ id: 'klachten', title: 'Vragen en klachten' },
+	{ id: 'recht', title: 'Toepasselijk recht' },
+	{ id: 'wijzigingen', title: 'Wijzigingen' },
+];
+---
+
+<LegalPage
+	title="Algemene voorwaarden"
+	description="De voorwaarden voor het gebruik van de website van Leonard Rieksen Fotografie: auteursrecht op de fotografie, toegestaan gebruik, aansprakelijkheid en toepasselijk recht. Voor fotografieopdrachten gelden de Algemene Voorwaarden van DuPho."
+	eyebrow="Voorwaarden"
+	lead="Deze voorwaarden gelden voor het gebruik van deze website. Voor fotografieopdrachten gelden de Algemene Voorwaarden van DuPho; die staan hieronder apart beschreven. Er wordt via deze website niets verkocht en er komt via deze website geen opdracht tot stand."
+	sections={sections}
+>
+	<h2 id="toepasselijkheid">Waar deze voorwaarden over gaan</h2>
+	<p>
+		Deze voorwaarden gelden voor iedereen die deze website bezoekt en gebruikt. Door de website te
+		gebruiken gaat u ermee akkoord. Bent u het er niet mee eens, gebruik de website dan niet.
+	</p>
+	<p>
+		Deze website is een portfolio en een kennismaking. U kunt er werk bekijken, lezen wat {PERSON_NAME}
+		doet en contact opnemen. Er worden geen prijzen genoemd, er kan niets worden besteld of geboekt, en er
+		komt langs deze weg geen overeenkomst tot stand. Een aanvraag via het contactformulier is een verzoek
+		om contact, geen opdracht, en geen aanvaarding van een aanbod.
+	</p>
+
+	<h2 id="wie">Wie deze website aanbiedt</h2>
+	<ul>
+		<li>{SITE_NAME}, gedreven door fotograaf {PERSON_NAME}</li>
+		<li>E-mail: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>
+		<li>KvK-nummer: {KVK}</li>
+	</ul>
+	<p>
+		E-mail is de contactroute van deze onderneming. Vragen, verzoeken en klachten over de website en over
+		deze voorwaarden komen daar binnen en worden door {PERSON_NAME} zelf gelezen.
+	</p>
+
+	<h2 id="opdrachten">Fotografieopdrachten</h2>
+	<p>
+		Op fotografieopdrachten van {SITE_NAME} zijn de Algemene Voorwaarden van DuPho, de Nederlandse
+		beroepsorganisatie van fotografen, van toepassing. Die voorwaarden regelen de zaken die bij een
+		opdracht horen: offerte en opdrachtbevestiging, uitvoering, levering, gebruiksrecht en licentie,
+		betaling, annulering en aansprakelijkheid.
+	</p>
+	<p>
+		U vindt ze op{' '}
+		<a href={DUPHO_TERMS_URL} rel="noopener">dupho.nl: Algemene voorwaarden</a>. Op verzoek worden ze
+		vóór het sluiten van een overeenkomst ook rechtstreeks toegezonden.
+	</p>
+	<div class="legal-note">
+		<p>
+			De voorwaarden op deze pagina en die van DuPho hebben elk hun eigen bereik: deze pagina gaat over
+			het gebruik van de website, de DuPho-voorwaarden gaan over een opdracht. Gaat het over een opdracht,
+			dan gelden de DuPho-voorwaarden.
+		</p>
+	</div>
+
+	<h2 id="auteursrecht">Auteursrecht op de fotografie</h2>
+	<p>
+		Alle fotografie op deze website is gemaakt door {PERSON_NAME} en het auteursrecht erop berust bij
+		{SITE_NAME}. Dat geldt ook voor de teksten, de vormgeving, de broncode en de samenstelling van deze
+		website.
+	</p>
+	<p>Zonder voorafgaande schriftelijke toestemming is het niet toegestaan om deze fotografie:</p>
+	<ul>
+		<li>te kopiëren, te downloaden, op te slaan of te verveelvoudigen;</li>
+		<li>opnieuw te publiceren, door te sturen of openbaar te maken, ook niet op sociale media;</li>
+		<li>te bewerken, bij te snijden, van bijschrift of naamsvermelding te ontdoen, of te combineren;</li>
+		<li>commercieel te gebruiken, in welke vorm dan ook;</li>
+		<li>
+			geautomatiseerd te verzamelen, uit te lezen of te gebruiken voor het trainen van
+			computermodellen, waaronder systemen voor kunstmatige intelligentie. Dit is een uitdrukkelijk
+			voorbehoud van rechten in de zin van de regels over tekst- en datamining.
+		</li>
+	</ul>
+	<p>
+		Wilt u een foto gebruiken? Dat kan vaak, vraag het gewoon via{' '}
+		<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Bij gebruik zonder toestemming worden de
+		gebruikelijke maatregelen genomen die het auteursrecht daarvoor biedt.
+	</p>
+	<p>
+		De foto’s op deze website worden bewust getoond in een voor het web geoptimaliseerde versie, niet in
+		de oorspronkelijke bestandskwaliteit. Er wordt geen techniek toegepast die het bekijken, opslaan of
+		voorlezen van de pagina voor gewone bezoekers of voor hulpsoftware belemmert.
+	</p>
+
+	<h2 id="gebruik">Toegestaan gebruik van de website</h2>
+	<p>U mag deze website gebruiken om het werk te bekijken en contact op te nemen. Niet toegestaan is:</p>
+	<ul>
+		<li>de website of de infrastructuur erachter overbelasten, verstoren of proberen binnen te dringen;</li>
+		<li>beveiligingsmaatregelen omzeilen of proberen te omzeilen;</li>
+		<li>
+			de website geautomatiseerd en grootschalig uitlezen of kopiëren, anders dan door zoekmachines die
+			zich aan de instructies in het bestand <code>robots.txt</code> houden;
+		</li>
+		<li>
+			het contactformulier gebruiken voor ongevraagde reclame, kettingberichten of andere berichten die
+			niets met fotografie te maken hebben;
+		</li>
+		<li>
+			via het formulier onrechtmatige, beledigende of anderszins ontoelaatbare inhoud versturen.
+		</li>
+	</ul>
+	<p>
+		Bij misbruik kan de toegang tot de website worden geblokkeerd. Dat laat verdere maatregelen
+		onverlet.
+	</p>
+
+	<h2 id="inhoud">Inhoud, beschikbaarheid en juistheid</h2>
+	<p>
+		De inhoud van deze website wordt met zorg samengesteld en actueel gehouden. Toch kan niet worden
+		gegarandeerd dat alle informatie op elk moment volledig, juist en actueel is. Aan de teksten en
+		afbeeldingen op deze website kunnen dan ook geen rechten worden ontleend.
+	</p>
+	<p>
+		Het getoonde werk geeft een indruk van wat mogelijk is; het is geen toezegging over de uitkomst van
+		een specifieke opdracht. Wat voor een opdracht geldt, staat in de offerte en de opdrachtbevestiging.
+	</p>
+	<p>
+		Er wordt naar gestreefd de website beschikbaar te houden, maar onderbreking, onderhoud, storing of
+		beëindiging kan voorkomen. De website wordt aangeboden zoals hij is, zonder garantie op
+		ononderbroken beschikbaarheid of foutloze werking.
+	</p>
+
+	<h2 id="links">Links naar andere websites</h2>
+	<p>
+		Deze website verwijst op enkele plaatsen naar websites van anderen, zoals die van DuPho en van de{' '}
+		<a href={DPA_URL} rel="noopener">{DPA_NAME}</a>. Die websites hebben hun eigen inhoud, hun eigen
+		voorwaarden en hun eigen privacybeleid. {SITE_NAME} heeft daar geen zeggenschap over en is er niet
+		verantwoordelijk voor.
+	</p>
+
+	<h2 id="aansprakelijkheid">Aansprakelijkheid</h2>
+	<p>
+		{SITE_NAME} is niet aansprakelijk voor schade die ontstaat door het gebruik van deze website, door de
+		onbeschikbaarheid ervan, of door onjuistheden of onvolledigheden in de informatie erop, voor zover de
+		wet dat toestaat.
+	</p>
+	<p>
+		Die beperking geldt uitdrukkelijk <strong>niet</strong> bij opzet of bewuste roekeloosheid, en niet
+		voor zover dwingend recht, waaronder het consumentenrecht, aansprakelijkheid voorschrijft. Wat
+		dwingend recht u toekent, blijft onverkort gelden; deze voorwaarden doen daar niets aan af.
+	</p>
+	<p>
+		Voor aansprakelijkheid rond een fotografieopdracht gelden de Algemene Voorwaarden van DuPho.
+	</p>
+
+	<h2 id="privacy">Privacy en cookies</h2>
+	<p>
+		Hoe met uw persoonsgegevens wordt omgegaan staat in de{' '}
+		<a href="/privacy/">privacyverklaring</a>. Wat er op uw apparaat wordt opgeslagen en hoe u uw keuze
+		daarover wijzigt, staat in het <a href="/cookies/">cookiebeleid</a>. Die documenten gaan vóór op deze
+		voorwaarden waar het om de verwerking van persoonsgegevens gaat.
+	</p>
+
+	<h2 id="klachten">Vragen en klachten</h2>
+	<p>
+		Heeft u een vraag of een klacht over deze website of over deze voorwaarden, stuur dan een bericht naar{' '}
+		<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. U ontvangt zo snel mogelijk een persoonlijke
+		reactie, en er wordt gezocht naar een oplossing. Gaat de klacht over de verwerking van uw
+		persoonsgegevens, dan kunt u zich ook wenden tot de{' '}
+		<a href={DPA_URL} rel="noopener">{DPA_NAME}</a>.
+	</p>
+
+	<h2 id="recht">Toepasselijk recht</h2>
+	<p>
+		Op deze voorwaarden en op het gebruik van deze website is Nederlands recht van toepassing. Geschillen
+		worden voorgelegd aan de bevoegde rechter in Nederland. Wijst dwingend recht, bijvoorbeeld het
+		consumentenrecht, een andere bevoegde rechter aan, dan geldt die aanwijzing.
+	</p>
+
+	<h2 id="wijzigingen">Wijzigingen</h2>
+	<p>
+		Deze voorwaarden kunnen worden aangepast, bijvoorbeeld als de website verandert of als de wet daarom
+		vraagt. Bovenaan deze pagina staan het versienummer en de datum van de laatste wijziging. De versie
+		die op het moment van uw bezoek op deze pagina staat, is de versie die geldt; er wordt geen archief
+		van eerdere versies bijgehouden.
+	</p>
+	<p>
+		Blijkt een bepaling uit deze voorwaarden ongeldig te zijn, dan blijven de overige bepalingen gewoon
+		gelden en wordt de ongeldige bepaling vervangen door een geldige bepaling die er inhoudelijk zo dicht
+		mogelijk bij komt.
+	</p>
+</LegalPage>

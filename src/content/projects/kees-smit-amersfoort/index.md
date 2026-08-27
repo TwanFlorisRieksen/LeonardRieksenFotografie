@@ -4,7 +4,7 @@ category: "architectuur"
 location: "Amersfoort"
 year: 2015
 summary: "Een bedrijfsgebouw in Amersfoort, van de verlichte gevel in de avond tot de lichte, open
-  ruimtes binnen — architectuur en interieur als één geheel gefotografeerd."
+  ruimtes binnen, architectuur en interieur als één geheel gefotografeerd."
 coverImage: "./cover.jpg"
 coverImageAlt: "Een modern bedrijfsgebouw in de avond met een verlichte gevel, en lichtsporen van
   passerend verkeer op de weg ervoor."
@@ -17,7 +17,7 @@ gallery:
     alt: "Een zithoek in zwart-wit met moderne banken en fauteuils langs een hoge glazen gevel."
     caption: "Zithoek bij de gevel"
 featured: false
-order: 5
+order: 6
 leadLayout: "duo-lead"
 draft: false
 ---

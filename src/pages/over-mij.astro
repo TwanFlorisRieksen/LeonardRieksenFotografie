@@ -1,23 +1,23 @@
 ---
 /*
- * Over mij — the person behind Leonard Rieksen Fotografie (P5 — D-31). Builds trust and personal context
+ * Over mij, the person behind Leonard Rieksen Fotografie (P5, D-31). Builds trust and personal context
  * (13.42/2.21) without becoming an autobiography (13.45): who Leo is, his background, his photographic
- * vision, his working approach, the human component — each beat justified by the trust/expertise/identity
+ * vision, his working approach, the human component, each beat justified by the trust/expertise/identity
  * test (13.45). Blueprint flow 13.46 (header · introductie · portret · achtergrond · visie · werkwijze ·
  * portfolio-koppeling · contact-CTA · footer) is honoured but consolidated into fewer, stronger beats.
  *
  * CONTENT AUTHORITY (CLAUDE §9.2): every factual claim here is TRANSFORMED from Leo's OWN published bio
- * (reference/old-website/over-mij.html) — his own words about his training, specialisation and approach.
+ * (reference/old-website/over-mij.html), his own words about his training, specialisation and approach.
  * This is migration/transformation of his self-description, NOT invention. Naming: "Leo Rieksen" for the
  * personal register (2.21/3.8.2). The two named specialisations stay Architectuur + Interieur (D-07);
  * vastgoed/avondfotografie are mentioned as factual parts of his background, not elevated to services.
- * Bio facts remain owner-confirm (A-02) — Leo's own site copy, not independently re-validated.
+ * Bio facts remain owner-confirm (A-02), Leo's own site copy, not independently re-validated.
  *
  * ART DIRECTION (D-28/D-29/D-30 frozen grammar): this page carries the nocturne identity in its OWN
- * signature — a low-key studio portrait whose dark backdrop dissolves into the page (the figure emerges
+ * signature, a low-key studio portrait whose dark backdrop dissolves into the page (the figure emerges
  * from the nocturne rather than sitting in a hard frame), and a monumental VISIE statement that is the
  * page's premium non-photographic moment. Its genuine cross-boundary crossing is TYPOGRAPHIC (the vision
- * statement physically straddles the achtergrond→visie section seam) — deliberately a DIFFERENT mechanism
+ * statement physically straddles the achtergrond→visie section seam), deliberately a DIFFERENT mechanism
  * from the three existing photo-vertical-rise crossings (portfolio lead / diensten / interieur). Gold stays
  * a selective hairline/datum; photography (the portrait) is the dominant image.
  */
@@ -31,9 +31,9 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 
 <BaseLayout
 	title="Over mij"
-	description="Leo Rieksen — de fotograaf achter Leonard Rieksen Fotografie. Een rustige, precieze benadering van architectuur- en interieurfotografie, met een scherp oog voor licht, lijnen en sfeer."
+	description="Leo Rieksen, de fotograaf achter Leonard Rieksen Fotografie. Een rustige, precieze benadering van architectuur- en interieurfotografie, met een scherp oog voor licht, lijnen en sfeer."
 >
-	<!-- 1. HERO — editorial split (introductie + portret, 13.46). Deliberately NOT the full-bleed scrim hero
+	<!-- 1. HERO, editorial split (introductie + portret, 13.46). Deliberately NOT the full-bleed scrim hero
 	     of the home/service pages: an eyebrow + name + lead against the low-key portrait, whose dark studio
 	     backdrop dissolves into the page so Leo emerges from the nocturne. The portrait is this page's LCP
 	     candidate (priority-loaded). -->
@@ -44,14 +44,14 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 				<h1 class="t-display about-hero__name" style="--reveal-index: 1">Leo Rieksen</h1>
 				<p class="t-lead about-hero__lead" style="--reveal-index: 2">
 					Fotograaf met een rustige benadering en een scherp oog voor detail. Ik leg architectuur en
-					interieur vast met aandacht voor licht, lijnen en sfeer — vaak in het bijzondere licht van het
+					interieur vast met aandacht voor licht, lijnen en sfeer, vaak in het bijzondere licht van het
 					avond- en blauwe uur.
 				</p>
 			</div>
 			<div class="about-hero__portrait u-inview">
 				<Media
 					src={portretImg}
-					alt="Portret van fotograaf Leo Rieksen — grijzend haar en baard, rustige blik, in een donkere studio."
+					alt="Portret van fotograaf Leo Rieksen, grijzend haar en baard, rustige blik, in een donkere studio."
 					priority={true}
 					widths={[420, 640, 860]}
 					sizes="(min-width: 60rem) 34vw, 80vw"
@@ -79,7 +79,7 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 				<p>
 					Daarna volgde ik aanvullende opleidingen en verdiepte ik mij in boeken en in de technische
 					ontwikkelingen binnen het vak. Mijn specialisatie ligt bij architectuur- en interieurfotografie
-					— met daarnaast vastgoed — vaak aangevuld met avondfotografie.
+					  met daarnaast vastgoed, vaak aangevuld met avondfotografie.
 				</p>
 			</div>
 		</div>
@@ -87,8 +87,8 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 
 	<!-- 3. VISIE (visie op fotografie, 13.46). The page's premium NON-photographic moment AND its genuine
 	     cross-boundary crossing: Leo's own defining line, set at display scale, physically STRADDLES the
-	     achtergrond→visie section seam. A TYPOGRAPHIC crossing — a substantial content element crossing a
-	     boundary between two visibly-distinct fields (base ink-900 above, a modelled deep field here) — a
+	     achtergrond→visie section seam. A TYPOGRAPHIC crossing, a substantial content element crossing a
+	     boundary between two visibly-distinct fields (base ink-900 above, a modelled deep field here), a
 	     deliberately different mechanism from the site's three photo-vertical-rise crossings (D-30/D-31). -->
 	<Section as="section" class="about-visie">
 		<div class="about-visie__inner">
@@ -100,24 +100,24 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 				Ik hoor vaker dat mijn foto&rsquo;s mooier uitpakken dan de werkelijkheid.
 			</h2>
 			<p class="about-visie__support">
-				Voor mij is dat het teken dat techniek en gevoel samenvallen — dat lange sluitertijden en
+				Voor mij is dat het teken dat techniek en gevoel samenvallen, dat lange sluitertijden en
 				zorgvuldige belichting precies de sfeer opleveren die een ruimte of gebouw verdient. Ik let op
 				lijnen, op licht, en op alles wat kan afleiden van het beeld dat ik voor ogen heb.
 			</p>
 		</div>
-		<!-- P5.1 (D-32) — a single atmospheric photograph fills the visie section's previously-empty right field
+		<!-- P5.1 (D-32), a single atmospheric photograph fills the visie section's previously-empty right field
 		     (owner: the space beside the vision statement read as too empty on desktop). Chosen by VISUAL inspection,
-		     not filename: a long-exposure evening architecture frame (a church in Deventer) — warm-lit stone against a
-		     deep blue night with moon-glow and drifting cloud — the literal illustration of the statement ("lange
+		     not filename: a long-exposure evening architecture frame (a church in Deventer), warm-lit stone against a
+		     deep blue night with moon-glow and drifting cloud, the literal illustration of the statement ("lange
 		     sluitertijden en zorgvuldige belichting… de sfeer"; "mooier dan de werkelijkheid"). Architecture, so it
 		     does NOT compete with the portrait hero; nocturne palette. Its dark sky edges melt into the deep field
 		     via the same inward mask as the portrait (emerge-from-the-nocturne), so it reads as spatial depth, NOT a
-		     pasted rectangle — and it COMPLEMENTS the typographic crossing: the statement still straddles the seam,
+		     pasted rectangle, and it COMPLEMENTS the typographic crossing: the statement still straddles the seam,
 		     the photo stays anchored on the deep field (it does not cross), so the crossing mechanism is not duplicated. -->
 		<figure class="about-visie__figure u-inview">
 			<Media
 				src={visieImg}
-				alt="Een gotische kerk in Deventer bij avond — warm uitgelicht metselwerk en torenspitsen tegen een diepblauwe nachthemel met maanlicht."
+				alt="Een gotische kerk in Deventer bij avond, warm uitgelicht metselwerk en torenspitsen tegen een diepblauwe nachthemel met maanlicht."
 				widths={[420, 640, 900]}
 				sizes="(min-width: 60rem) 32vw, 82vw"
 				ratio="4/5"
@@ -127,10 +127,10 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 		</figure>
 	</Section>
 
-	<!-- 4. WERKWIJZE + persoonlijk + portfolio-koppeling (13.46). A first-person, reflective prose block —
+	<!-- 4. WERKWIJZE + persoonlijk + portfolio-koppeling (13.46). A first-person, reflective prose block
 	     deliberately NOT the third-person numbered 01/02/03 method used on the home/service pages, so Over
 	     mij stays compositionally distinct. Closes with the human note and a route into the work. This area
-	     is intentionally the RESTRAINED beat (no crossing, no added atmosphere) — calm before the CTA. -->
+	     is intentionally the RESTRAINED beat (no crossing, no added atmosphere), calm before the CTA. -->
 	<Section as="section" class="about-work">
 		<div class="about-work__grid">
 			<div class="about-work__head">
@@ -146,7 +146,7 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 					<p>
 						Ik woon in Midden-Nederland, hou van sport en haal veel voldoening uit het moment waarop alles
 						klopt: de sfeer, het licht en het beeld dat precies overbrengt wat bedoeld was. Als fotograaf
-						wil ik een betrouwbare partner zijn — iemand die met aandacht en vakmanschap helpt om iets
+						wil ik een betrouwbare partner zijn, iemand die met aandacht en vakmanschap helpt om iets
 						bijzonders vast te leggen.
 					</p>
 				</div>
@@ -162,7 +162,7 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 
 	<ContactCta
 		heading="Samen iets bijzonders vastleggen?"
-		text="Benieuwd wat ik voor uw project kan betekenen? Neem gerust vrijblijvend contact op — dan bespreken we kort wat u zoekt."
+		text="Benieuwd wat ik voor uw project kan betekenen? Neem gerust vrijblijvend contact op, dan bespreken we kort wat u zoekt."
 		primaryLabel="Neem contact op"
 		primaryHref="/contact/"
 		secondaryLabel="Bekijk het portfolio"
@@ -172,7 +172,7 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 
 <style>
 	/* ============================================================= *
-	 * 1. HERO — editorial split; the portrait dissolves into the nocturne
+	 * 1. HERO, editorial split; the portrait dissolves into the nocturne
 	 * ============================================================= */
 	.about-hero {
 		position: relative;
@@ -199,7 +199,7 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 	}
 	/* The source is a low-key studio portrait on a dark, vignetted backdrop that already fades to near-black
 	   at its edges. A soft inward mask on the inner (left) and lower edges lets the plate melt into the page
-	   so the figure "escapes its field" instead of reading as a hard rectangle — a premium, portrait-specific
+	   so the figure "escapes its field" instead of reading as a hard rectangle, a premium, portrait-specific
 	   treatment (the nocturne surround IS the studio backdrop). Decorative only; the <img> carries the alt. */
 	.about-hero__media {
 		-webkit-mask-image: radial-gradient(120% 108% at 68% 40%, #000 62%, transparent 100%);
@@ -219,7 +219,7 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 	}
 
 	/* ============================================================= *
-	 * 2. ACHTERGROND — base-dark prose; reserves trailing space for the crossing
+	 * 2. ACHTERGROND, base-dark prose; reserves trailing space for the crossing
 	 * ============================================================= */
 	.about-bg__grid {
 		display: grid;
@@ -250,14 +250,14 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 	}
 
 	/* ============================================================= *
-	 * 3. VISIE — the modelled deep field + the TYPOGRAPHIC boundary crossing (D-31)
+	 * 3. VISIE, the modelled deep field + the TYPOGRAPHIC boundary crossing (D-31)
 	 * ============================================================= *
 	 * This section is a deliberately DEEPER, modelled field than the ink-900 achtergrond above, so the two
 	 * fields read as visibly distinct (the precondition for a true crossing, D-30). Its own background starts
 	 * at the section box (the field seam is fixed there); the eyebrow + monumental statement lift via a single
 	 * spacing-token negative margin so they RISE ACROSS that seam into the achtergrond's reserved space, while
 	 * the support line settles below the seam on the deep field. The statement is a substantial content
-	 * element straddling two distinct fields — a genuine crossing, delivered by TYPE (not a photo rising).
+	 * element straddling two distinct fields, a genuine crossing, delivered by TYPE (not a photo rising).
 	 * Robust: additive negative margin only, painting-above is automatic (later DOM), disabled when stacked. */
 	.about-visie {
 		position: relative;
@@ -271,17 +271,24 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 				rgba(var(--p-atmos-cool), 0.04) 44%,
 				rgba(var(--p-atmos-cool), 0) 72%
 			),
-			linear-gradient(180deg, #0b0f17 0%, #070a10 54%, #090c14 100%);
+			/* P8.5 (D-76): re-derived onto the sapphire chrome scale, same construction and the same
+			   luminances, now the brand's blue rather than a near-neutral charcoal that only hinted at it. */
+			linear-gradient(
+				180deg,
+				var(--p-sapphire-900) 0%,
+				var(--p-sapphire-975) 54%,
+				var(--p-sapphire-950) 100%
+			);
 	}
 	/* Reduced top padding so the statement's negative margin lifts it ACROSS the seam into the achtergrond
-	   field above (rather than merely trimming a large default padding) — the D-30 robust-crossing pattern.
+	   field above (rather than merely trimming a large default padding), the D-30 robust-crossing pattern.
 	   Element+class selector (`section.about-visie`) so it reliably outweighs `.section`'s `padding-block`
 	   regardless of CSS bundle source order (a plain `.about-visie` tie was order-dependent and fragile). */
 	section.about-visie {
 		padding-top: clamp(1.5rem, 0.5rem + 2vw, 3rem);
 	}
 	/* A faint deep frame top+foot so the statement sits in a modelled space, not a flat fill (premium
-	   non-photographic zone — D-29 Limitation 4). aria-hidden decorative. */
+	   non-photographic zone, D-29 Limitation 4). aria-hidden decorative. */
 	.about-visie::before {
 		content: '';
 		position: absolute;
@@ -297,8 +304,8 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 		);
 	}
 	/* Flex column so the inner's negative margin reliably lifts it (a plain block container would collapse
-	   the negative top margin instead of crossing — the D-30 diensten crossing uses the same flex pattern). */
-	/* P5.1 (D-32) — two-column grid: statement/text (left) + the atmospheric photograph (right). Grid (like flex)
+	   the negative top margin instead of crossing, the D-30 diensten crossing uses the same flex pattern). */
+	/* P5.1 (D-32), two-column grid: statement/text (left) + the atmospheric photograph (right). Grid (like flex)
 	   does NOT collapse the inner's negative top margin, so the TYPOGRAPHIC crossing is fully preserved: the text
 	   column still rises across the seam; the figure column is anchored on the deep field (align-items:start, no
 	   lift) so it COMPLEMENTS the crossing rather than duplicating the photo-rise idiom. */
@@ -328,7 +335,7 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 		gap: var(--space-md);
 		margin-bottom: var(--space-lg);
 	}
-	/* Short champagne datum rule (the selective gold precision idiom — 6.11/6.12, D-28 family), marking the
+	/* Short champagne datum rule (the selective gold precision idiom, 6.11/6.12, D-28 family), marking the
 	   page's defining statement. Gold stays a hairline, never a fill. */
 	.about-visie__rule {
 		flex: none;
@@ -336,9 +343,9 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 		height: 1px;
 		background: linear-gradient(
 			90deg,
-			rgba(199, 165, 106, 0) 0%,
-			rgba(199, 165, 106, 0.5) 34%,
-			rgba(224, 197, 140, 0.92) 100%
+			rgba(var(--p-gold-rgb), 0) 0%,
+			rgba(var(--p-gold-rgb), 0.5) 34%,
+			rgba(var(--p-champagne-rgb), 0.92) 100%
 		);
 	}
 	.about-visie__statement {
@@ -368,7 +375,7 @@ import visieImg from '../assets/static/avond-deventer.jpg';
 	}
 
 	/* ============================================================= *
-	 * 4. WERKWIJZE + persoonlijk — the restrained beat (no crossing, no added atmosphere)
+	 * 4. WERKWIJZE + persoonlijk, the restrained beat (no crossing, no added atmosphere)
 	 * ============================================================= */
 	.about-work__grid {
 		display: grid;

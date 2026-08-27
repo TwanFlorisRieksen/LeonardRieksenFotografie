@@ -3,7 +3,7 @@ title: "Woonbeurs, RAI Amsterdam"
 category: "interieur"
 location: "Amsterdam"
 year: 2014
-summary: "Interieur- en stylingfotografie op de Woonbeurs in de RAI Amsterdam — ingerichte ruimtes waarin
+summary: "Interieur- en stylingfotografie op de Woonbeurs in de RAI Amsterdam, ingerichte ruimtes waarin
   materiaal, kleur en sfeer samenkomen tot complete woonbeelden."
 coverImage: "./cover.jpg"
 coverImageAlt: "Een ingerichte woonvignette op een beurs, met warme kleuren, planten en design-meubilair
@@ -18,7 +18,7 @@ gallery:
       toonbank."
     caption: "Horeca-inrichting"
 featured: false
-order: 4
+order: 5
 leadLayout: "editorial"
 draft: false
 ---
@@ -28,4 +28,4 @@ gebouwd en volledig op sfeer gericht. De opgave is om elke opstelling als een op
 vast te leggen, los van de drukte eromheen.
 
 Deze beelden zijn gemaakt op de Woonbeurs in de RAI Amsterdam, waar styling, materiaal en licht samen de
-sfeer bepalen — van een warme woonopstelling tot een strak, monochroom horeca-interieur.
+sfeer bepalen, van een warme woonopstelling tot een strak, monochroom horeca-interieur.

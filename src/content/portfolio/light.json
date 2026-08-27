@@ -1,0 +1,562 @@
+{
+	"glazen-paviljoen": {
+		"rgb": [
+			23,
+			139,
+			218
+		],
+		"hue": 204,
+		"sat": 0.894,
+		"val": 0.855
+	},
+	"industriele-oever-nacht": {
+		"rgb": [
+			62,
+			124,
+			171
+		],
+		"hue": 206,
+		"sat": 0.637,
+		"val": 0.671
+	},
+	"lichtkunst-groen": {
+		"rgb": [
+			76,
+			156,
+			91
+		],
+		"hue": 131,
+		"sat": 0.513,
+		"val": 0.612
+	},
+	"brug-avondrood": {
+		"rgb": [
+			255,
+			180,
+			0
+		],
+		"hue": 42,
+		"sat": 1,
+		"val": 1
+	},
+	"gebogen-lichtruimte": {
+		"rgb": [
+			125,
+			146,
+			169
+		],
+		"hue": 211,
+		"sat": 0.26,
+		"val": 0.663
+	},
+	"eemhuis-bibliotheek": {
+		"rgb": [
+			190,
+			131,
+			59
+		],
+		"hue": 33,
+		"sat": 0.689,
+		"val": 0.745
+	},
+	"olv-toren-amersfoort": {
+		"rgb": [
+			58,
+			106,
+			162
+		],
+		"hue": 212,
+		"sat": 0.642,
+		"val": 0.635
+	},
+	"westerveld-koepel": {
+		"rgb": [
+			49,
+			147,
+			225
+		],
+		"hue": 207,
+		"sat": 0.782,
+		"val": 0.882
+	},
+	"kerk-deventer-avond": {
+		"rgb": [
+			163,
+			122,
+			82
+		],
+		"hue": 30,
+		"sat": 0.497,
+		"val": 0.639
+	},
+	"nemo-amsterdam": {
+		"rgb": [
+			116,
+			145,
+			173
+		],
+		"hue": 209,
+		"sat": 0.329,
+		"val": 0.678
+	},
+	"baarnsche-bos-boog": {
+		"rgb": [
+			101,
+			101,
+			101
+		],
+		"hue": 0,
+		"sat": 0,
+		"val": 0.396
+	},
+	"lindenlaan-baarn": {
+		"rgb": [
+			102,
+			162,
+			193
+		],
+		"hue": 200,
+		"sat": 0.472,
+		"val": 0.757
+	},
+	"wintertuin-cantonspark": {
+		"rgb": [
+			50,
+			95,
+			143
+		],
+		"hue": 211,
+		"sat": 0.65,
+		"val": 0.561
+	},
+	"soestdijk-lichtshow": {
+		"rgb": [
+			115,
+			87,
+			102
+		],
+		"hue": 328,
+		"sat": 0.243,
+		"val": 0.451
+	},
+	"zonnepanelen-veld": {
+		"rgb": [
+			10,
+			128,
+			197
+		],
+		"hue": 202,
+		"sat": 0.949,
+		"val": 0.773
+	},
+	"stadsgezicht-nacht": {
+		"rgb": [
+			76,
+			135,
+			177
+		],
+		"hue": 205,
+		"sat": 0.571,
+		"val": 0.694
+	},
+	"gewelfde-hal-warm": {
+		"rgb": [
+			180,
+			155,
+			126
+		],
+		"hue": 32,
+		"sat": 0.3,
+		"val": 0.706
+	},
+	"interieurdetail-licht": {
+		"rgb": [
+			153,
+			144,
+			124
+		],
+		"hue": 41,
+		"sat": 0.19,
+		"val": 0.6
+	},
+	"tuibrug-blauwe-uur": {
+		"rgb": [
+			91,
+			70,
+			59
+		],
+		"hue": 21,
+		"sat": 0.352,
+		"val": 0.357
+	},
+	"witte-villa-park": {
+		"rgb": [
+			0,
+			80,
+			214
+		],
+		"hue": 218,
+		"sat": 1,
+		"val": 0.839
+	},
+	"tunnel-warm-eindpunt": {
+		"rgb": [
+			153,
+			122,
+			72
+		],
+		"hue": 37,
+		"sat": 0.529,
+		"val": 0.6
+	},
+	"witte-zaal-boog": {
+		"rgb": [
+			180,
+			179,
+			174
+		],
+		"hue": 50,
+		"sat": 0.033,
+		"val": 0.706
+	},
+	"gevel-warm-blauwe-uur": {
+		"rgb": [
+			2,
+			121,
+			210
+		],
+		"hue": 206,
+		"sat": 0.99,
+		"val": 0.824
+	},
+	"modern-gebouw-schemering": {
+		"rgb": [
+			0,
+			144,
+			255
+		],
+		"hue": 206,
+		"sat": 1,
+		"val": 1
+	},
+	"glasgevel-avondlicht": {
+		"rgb": [
+			61,
+			85,
+			109
+		],
+		"hue": 210,
+		"sat": 0.44,
+		"val": 0.427
+	},
+	"skyline-schemering": {
+		"rgb": [
+			75,
+			144,
+			173
+		],
+		"hue": 198,
+		"sat": 0.566,
+		"val": 0.678
+	},
+	"brug-skyline-blauwe-uur": {
+		"rgb": [
+			0,
+			149,
+			220
+		],
+		"hue": 199,
+		"sat": 1,
+		"val": 0.863
+	},
+	"lichtlijnen-roze": {
+		"rgb": [
+			195,
+			67,
+			190
+		],
+		"hue": 302,
+		"sat": 0.656,
+		"val": 0.765
+	},
+	"monumentale-zaal": {
+		"rgb": [
+			105,
+			148,
+			205
+		],
+		"hue": 214,
+		"sat": 0.488,
+		"val": 0.804
+	},
+	"lichtbol-studie": {
+		"rgb": [
+			251,
+			133,
+			3
+		],
+		"hue": 31,
+		"sat": 0.988,
+		"val": 0.984
+	},
+	"oranje-gevel-verticaal": {
+		"rgb": [
+			6,
+			86,
+			166
+		],
+		"hue": 210,
+		"sat": 0.964,
+		"val": 0.651
+	},
+	"witte-gang-lang": {
+		"rgb": [
+			197,
+			159,
+			114
+		],
+		"hue": 33,
+		"sat": 0.421,
+		"val": 0.773
+	},
+	"stadsstraat-schemering": {
+		"rgb": [
+			4,
+			106,
+			231
+		],
+		"hue": 213,
+		"sat": 0.983,
+		"val": 0.906
+	},
+	"interieurgang-warm": {
+		"rgb": [
+			222,
+			110,
+			43
+		],
+		"hue": 22,
+		"sat": 0.806,
+		"val": 0.871
+	},
+	"waterfront-panorama": {
+		"rgb": [
+			115,
+			121,
+			105
+		],
+		"hue": 82,
+		"sat": 0.132,
+		"val": 0.475
+	},
+	"gebouw-avond-vierkant": {
+		"rgb": [
+			16,
+			140,
+			191
+		],
+		"hue": 197,
+		"sat": 0.916,
+		"val": 0.749
+	},
+	"zeilboot-haven": {
+		"rgb": [
+			123,
+			147,
+			149
+		],
+		"hue": 185,
+		"sat": 0.174,
+		"val": 0.584
+	},
+	"parkboom-daglicht": {
+		"rgb": [
+			117,
+			138,
+			65
+		],
+		"hue": 77,
+		"sat": 0.529,
+		"val": 0.541
+	},
+	"gebouw-spiegeling-water": {
+		"rgb": [
+			3,
+			144,
+			230
+		],
+		"hue": 203,
+		"sat": 0.987,
+		"val": 0.902
+	},
+	"baksteen-woontoren": {
+		"rgb": [
+			26,
+			164,
+			220
+		],
+		"hue": 197,
+		"sat": 0.882,
+		"val": 0.863
+	},
+	"glasgevel-kleurvlakken": {
+		"rgb": [
+			243,
+			114,
+			22
+		],
+		"hue": 25,
+		"sat": 0.909,
+		"val": 0.953
+	},
+	"nachtbeeld-blauw-licht": {
+		"rgb": [
+			15,
+			41,
+			191
+		],
+		"hue": 231,
+		"sat": 0.921,
+		"val": 0.749
+	},
+	"skyline-woonbebouwing": {
+		"rgb": [
+			126,
+			155,
+			162
+		],
+		"hue": 192,
+		"sat": 0.222,
+		"val": 0.635
+	},
+	"baksteenarchitectuur-water": {
+		"rgb": [
+			190,
+			149,
+			98
+		],
+		"hue": 33,
+		"sat": 0.484,
+		"val": 0.745
+	},
+	"parkscene-bomen": {
+		"rgb": [
+			36,
+			105,
+			179
+		],
+		"hue": 211,
+		"sat": 0.799,
+		"val": 0.702
+	},
+	"parklaan-pad": {
+		"rgb": [
+			168,
+			164,
+			28
+		],
+		"hue": 58,
+		"sat": 0.833,
+		"val": 0.659
+	},
+	"modernistische-gevel-zw": {
+		"rgb": [
+			45,
+			45,
+			45
+		],
+		"hue": 0,
+		"sat": 0,
+		"val": 0.176
+	},
+	"project:amersfoort-stad": {
+		"rgb": [
+			80,
+			149,
+			216
+		],
+		"hue": 210,
+		"sat": 0.63,
+		"val": 0.847
+	},
+	"project:arnhem-stadsarchitectuur": {
+		"rgb": [
+			58,
+			162,
+			158
+		],
+		"hue": 178,
+		"sat": 0.642,
+		"val": 0.635
+	},
+	"project:avond-en-blauw-uur": {
+		"rgb": [
+			212,
+			159,
+			101
+		],
+		"hue": 31,
+		"sat": 0.524,
+		"val": 0.831
+	},
+	"project:fixture-architectuur-scaffold": {
+		"rgb": [
+			58,
+			162,
+			158
+		],
+		"hue": 178,
+		"sat": 0.642,
+		"val": 0.635
+	},
+	"project:interieur-ruimte-en-licht": {
+		"rgb": [
+			113,
+			132,
+			138
+		],
+		"hue": 194,
+		"sat": 0.181,
+		"val": 0.541
+	},
+	"project:kees-smit-amersfoort": {
+		"rgb": [
+			57,
+			119,
+			139
+		],
+		"hue": 195,
+		"sat": 0.59,
+		"val": 0.545
+	},
+	"project:kroller-muller-paviljoen": {
+		"rgb": [
+			144,
+			144,
+			144
+		],
+		"hue": 0,
+		"sat": 0,
+		"val": 0.565
+	},
+	"project:rotterdam-skyline-kubuswoningen": {
+		"rgb": [
+			152,
+			151,
+			80
+		],
+		"hue": 59,
+		"sat": 0.474,
+		"val": 0.596
+	},
+	"project:woonbeurs-rai-amsterdam": {
+		"rgb": [
+			188,
+			150,
+			83
+		],
+		"hue": 38,
+		"sat": 0.559,
+		"val": 0.737
+	}
+}

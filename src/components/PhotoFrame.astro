@@ -45,14 +45,20 @@ const {
 } = Astro.props;
 
 // One large derivative for the full viewer (and the no-JS anchor target). Capped to source width by
-// astro:assets, so no upscaling; WebP keeps the payload reasonable. Not fetched until the anchor is
-// activated (anchors don't preload), so this adds nothing to initial page weight.
-const full = await getImage({ src: image, width: Math.min(image.width, 1700), format: 'webp' });
+// astro:assets, so no upscaling. AVIF, not WebP (P9 / D-80): measured across this archive the 1700px WebP
+// derivatives average ~125 KB and run to 750 KB, the AVIF ones ~56 KB — the same photograph at the same
+// pixel dimensions for roughly a third of the bytes, which is precisely the difference between a viewer
+// that opens decisively and one that fills in. Every browser that can run the viewer decodes AVIF, and the
+// no-JS anchor target is the same file. Not fetched until the anchor is activated (anchors don't preload),
+// so this still adds nothing to initial page weight.
+const full = await getImage({ src: image, width: Math.min(image.width, 1700), format: 'avif' });
 ---
 
 <figure class:list={['pf', className]}>
 	<a
 		class="pf__open"
+		data-photo-protected
+		draggable="false"
 		href={full.src}
 		data-lightbox={group}
 		data-lb-full={full.src}
@@ -73,11 +79,6 @@ const full = await getImage({ src: image, width: Math.min(image.width, 1700), fo
 			position={position}
 			class={mediaClass}
 		/>
-		<span class="pf__hint" aria-hidden="true">
-			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
-				<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-			</svg>
-		</span>
 	</a>
 	{showCaption && caption && <figcaption class="t-caption pf__caption">{caption}</figcaption>}
 </figure>
@@ -92,54 +93,48 @@ const full = await getImage({ src: image, width: Math.min(image.width, 1700), fo
 		display: block;
 		cursor: zoom-in;
 		outline-offset: 3px;
+		transition: transform var(--dur-interaction) var(--ease-standard);
 	}
-	.pf__open :global(.media) {
-		/* a very quiet settle on hover — the photograph lifts a touch, never a spectacle (MOT priority). */
-		transition: filter var(--dur-interaction) var(--ease-standard);
+	/*
+	 * THE HOVER WHISPER (Experience Architecture §9.3, §12).
+	 *
+	 * The one pointer-only behaviour in the design: a whisper of the SAME forward step the near plane
+	 * performs in full. It exists to preview the mechanism before it is used — teaching the whole
+	 * interaction without a tooltip, a hint, or an onboarding overlay — and to confirm that a photograph is
+	 * interactive. It is CONFIRMATION, NEVER INFORMATION: it reveals no caption, no title, no category and
+	 * no control. If information appeared on hover, touch and keyboard visitors would be reading a poorer
+	 * page (§9.2, CLAUDE.md §12.1).
+	 *
+	 * The photograph steps forward in Z only — head-on, plane parallel to the screen, uniform scale, no
+	 * rotation or tilt ever (§2.1). It raises above its neighbours as it comes, which is what makes it read
+	 * as a step toward the viewer rather than a size change.
+	 */
+	@media (hover: hover) and (pointer: fine) {
+		.pf__open:hover,
+		.pf__open:focus-visible {
+			transform: scale(1.012);
+			z-index: 2;
+		}
 	}
-	.pf__open:hover :global(.media),
-	.pf__open:focus-visible :global(.media) {
-		filter: brightness(1.04);
+	/* Keyboard parity: focus receives the same step, on every input type. */
+	.pf__open:focus-visible {
+		transform: scale(1.012);
+		z-index: 2;
 	}
-	/* Zoom affordance (UX-05: visible, not hover-only in meaning — it only *appears* on hover but the
-	   whole image is a labelled link, so touch/keyboard users still get the action + aria-label). */
-	.pf__hint {
-		position: absolute;
-		top: var(--space-sm);
-		right: var(--space-sm);
-		display: grid;
-		place-items: center;
-		width: 2.25rem;
-		height: 2.25rem;
-		color: var(--p-paper-50);
-		background: rgba(6, 8, 11, 0.42);
-		backdrop-filter: blur(2px);
-		border: 1px solid var(--p-white-a14);
-		border-radius: var(--radius-sm);
-		opacity: 0;
-		transform: translateY(-2px);
-		transition: opacity var(--dur-interaction) var(--ease-standard),
-			transform var(--dur-interaction) var(--ease-standard);
-		pointer-events: none;
-	}
-	.pf__open:hover .pf__hint,
-	.pf__open:focus-visible .pf__hint {
-		opacity: 1;
+	/* …except the focus the near plane hands BACK to a pointer visitor on close (P12 / D-84): they did not
+	   navigate here, so the photograph must simply be where they left it, at rest. See quiet-focus.js. */
+	.pf__open[data-focus-quiet]:focus-visible {
 		transform: none;
 	}
 	.pf__caption {
 		margin-top: var(--space-sm);
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.pf__open :global(.media),
-		.pf__hint {
+		.pf__open {
 			transition: none;
 		}
-	}
-	/* Touch devices can't hover — reveal the affordance so the action is discoverable. */
-	@media (hover: none) {
-		.pf__hint {
-			opacity: 1;
+		.pf__open:hover,
+		.pf__open:focus-visible {
 			transform: none;
 		}
 	}

@@ -2,7 +2,7 @@
 title: "Amersfoort: monument en moderne stad"
 category: "architectuur"
 location: "Amersfoort"
-summary: "Amersfoort van middeleeuws monument tot hedendaagse architectuur — de Koppelpoort, het Eemhuis
+summary: "Amersfoort van middeleeuws monument tot hedendaagse architectuur, de Koppelpoort, het Eemhuis
   en de waterfront van Vathorst, elk met een eigen register van licht en lijn."
 coverImage: "./cover.jpg"
 coverImageAlt: "De middeleeuwse Koppelpoort in Amersfoort, weerspiegeld in het water onder een dramatische
@@ -17,12 +17,12 @@ gallery:
       blauwe lucht."
     caption: "Vathorst"
 featured: false
-order: 6
+order: 7
 leadLayout: "cinematic"
 draft: false
 ---
 
-Eén stad, drie tijdlagen. De reeks opent bij de Koppelpoort — de middeleeuwse waterpoort die zich spiegelt
+Eén stad, drie tijdlagen. De reeks opent bij de Koppelpoort, de middeleeuwse waterpoort die zich spiegelt
 in het Eem-water onder een opengebroken lucht. Van daaruit verschuift het beeld naar de hedendaagse stad:
 het Eemhuis met zijn strakke gevel en weidse plein, en de waterfront van Vathorst.
 

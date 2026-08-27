@@ -6,7 +6,7 @@ export const SITE_NAME = 'Leonard Rieksen Fotografie';
  * tag. Pages pass a specific title; this only supplies the consistent suffix.
  */
 export function pageTitle(title: string): string {
-	return `${title} — ${SITE_NAME}`;
+	return `${title} | ${SITE_NAME}`;
 }
 
 /**

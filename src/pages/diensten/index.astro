@@ -1,8 +1,8 @@
 ---
 /*
- * Diensten overzicht (P4 — D-19). The navigation hub that translates visual quality into business
+ * Diensten overzicht (P4, D-19). The navigation hub that translates visual quality into business
  * relevance (13.36) and lets a visitor tell the two disciplines apart and choose a path (13.39:
- * introductie · vergelijking · navigatiehub). NOT two equal cards — two alternating discipline "spreads"
+ * introductie · vergelijking · navigatiehub). NOT two equal cards, two alternating discipline "spreads"
  * with different photography, weight and emphasis. Copy transformed from Leo's own diensten page; no
  * invented facts, no commercial overstatement (13.41). Representative photography (real, PH-08 derivatives).
  */
@@ -11,20 +11,59 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import Media from '../../components/Media.astro';
 import ContactCta from '../../components/ContactCta.astro';
+/* MOVEMENT I, re-directed (P7.3 / D-51). The aperture engine is retired: its mechanism WAS a mask, and the
+   owner's standing rule is that the photograph is never masked, cropped or feathered at any scroll position.
+   The camera now moves; the photograph does not. See diensten-cinema.js and DECISIONS.md D-51. */
 
 const projects = await getCollection('projects', ({ data }) => !data.draft);
 const archImg = projects.find((p) => p.id === 'rotterdam-skyline-kubuswoningen');
-const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
+/* WINDOW II, the staircase, promoted from a RelatedProjects thumbnail (DIENSTEN_MOTION_BLUEPRINT §6.3,
+   owner-approved 2026-07-16). The mechanism requires a lamp: Kröller-Müller is B&W, and D-29's frozen rule
+   is "never spill colour from a black-and-white photograph", so it can cast no light, and the page's only
+   mechanism would die at beat 4 while the comparison (13.39) collapsed into "one shouts, one is quiet".
+   The staircase is chromatic, monumental, and its light source, the gold glow under each tread, is
+   visibly IN frame, which is precisely what §5.2 asks the warm window to say. Kröller-Müller is not
+   discarded: it stays the feature on the interieur detail page, where its B&W glass-threshold quality is
+   exactly right and nothing asks it to be a lamp. */
+const intImg = projects.find((p) => p.id === 'interieur-ruimte-en-licht');
 ---
 
 <BaseLayout
 	title="Diensten"
-	description="Architectuur- en interieurfotografie op locatie door Leo Rieksen. Twee disciplines, één rustige en nauwkeurige benadering — kies de dienst die bij uw project past."
+	description="Architectuur- en interieurfotografie op locatie door Leo Rieksen. Twee disciplines, één rustige en nauwkeurige benadering, kies de dienst die bij uw project past."
 >
-	<!-- OPENING (P4 correction #4 — D-23). The light "cover leaf" is retired. The overview keeps its distinct
-	     "editorial masthead" identity — but on dark: an eyebrow across the top, then a monumental display title
+	<!-- ============================================================================================= *
+	     THE ROOM (P7.2 / D-48). One continuous dark interior behind the whole page, the same fixed-world
+	     ARCHITECTURE the homepage uses (CINEMATIC_MOTION_LANGUAGE §11.2 lists it as shared "identical
+	     everywhere, no exceptions"), carrying this page's own hour: an interior night with no light of its
+	     own. diensten-cinema.js drives each layer's OPACITY + TRANSFORM continuously from scroll position
+	     compositor-only, no per-frame gradient repaint, CLS-safe, so the light is always exactly where the
+	     camera is.
+
+	     THE FUNCTION IS THIS PAGE'S, NOT THE HOMEPAGE'S, AND THAT IS THE POINT. The homepage's sky is
+	     monotonic: it cross-fades blue-hour → night → warm ONCE, because its camera falls through hours and
+	     never returns. This room is TWO HUMPS AND AN ABSENCE, dark, cool flood, dark, warm fill, dark
+	     because the light here comes from the two photographs and a window's light is a function of how far
+	     you are standing from it. Same world, different room (§11.1: related, never copied).
+
+	     Bold in the negative space, hidden behind the photographs, so the photographs stay the product.
+	     aria-hidden: purely atmospheric, never content. Off (opacity 0) until `html.motion-scene`; under
+	     no-JS / reduced motion it stays invisible and D-47's honest page renders instead.
+	     Layer order = paint order (back → front): interior-night base · cool window · warm window · shaft ·
+	     haze · vignette. -->
+	<div class="stage" aria-hidden="true">
+		<div class="stage__sky stage__sky--base"></div>
+		<div class="stage__sky stage__sky--cool"></div>
+		<div class="stage__sky stage__sky--warm"></div>
+		<div class="stage__shaft"></div>
+		<div class="stage__haze"></div>
+		<div class="stage__vignette"></div>
+	</div>
+
+	<!-- OPENING (P4 correction #4, D-23). The light "cover leaf" is retired. The overview keeps its distinct
+	     "editorial masthead" identity, but on dark: an eyebrow across the top, then a monumental display title
 	     baseline-aligned against the orientation text, opening with generous negative space (13.36/13.39). No
-	     photograph (that distinguishes it from the home hero and the service heroes), no light panel — the scale
+	     photograph (that distinguishes it from the home hero and the service heroes), no light panel, the scale
 	     contrast of the display title and the calm dark field carry the open; the discipline photography follows. -->
 	<Section as="header" class="dien-cover">
 		<div class="dien-cover__marker">
@@ -39,7 +78,7 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 					disciplines, één rustige en nauwkeurige benadering.
 				</p>
 				<p class="dien-cover__note">
-					Elk project wordt zorgvuldig voorbereid, met veel aandacht voor licht, lijnen en sfeer —
+					Elk project wordt zorgvuldig voorbereid, met veel aandacht voor licht, lijnen en sfeer
 					zodat de beelden de kwaliteit van het werk overtuigend laten zien. Kies hieronder de dienst
 					die bij uw project past.
 				</p>
@@ -47,75 +86,92 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		</div>
 	</Section>
 
-	<!-- Two disciplines as alternating spreads (13.37/13.39). Stepped onto the deepest surface (ink-950, 6.9) so
-	     the two large discipline PHOTOGRAPHS read as a gallery wall — the visual energy of the page — tonally
-	     separated from the dark masthead above and the base-dark CTA below (D-23 dark tonal rhythm, no light). -->
-	<Section as="div" surface="deep" width="wide" class="dien-spreads">
+	<!-- THE TWO ROOMS (P7.4 / D-52, the camera travels, photograph AND its words together as one scene).
+	     The owner's verdict on D-51 was that pinning the photograph ALONE and then delivering its words as a
+	     separate dark beat re-created the document feeling: "text ↓ photo ↓ text", never one place. D-52 keeps
+	     D-51's absolute rule (the photograph is COMPLETE at every scroll position, never cropped, masked,
+	     stretched or feathered) but rebuilds the layout: each discipline is one editorial SCENE, a complete
+	     photograph and its caption sharing the frame, that the camera travels toward on a diagonal and settles
+	     into. `.room__camera` is the single moving unit (photo + copy translate together = one place, not two);
+	     `.room__frame` carries a whisper of depth-scale on top; `.room__copy` resolves out of the room's dark on
+	     a timing directed per scene. The two spreads are MIRRORED (arch: caption left / photo right; interieur:
+	     photo left / caption right), which is both the discipline comparison (13.39) and the reason the camera's
+	     heading changes between them (down-left, then down-right). `data-w`/`data-h` carry the source dimensions
+	     so the runtime sizes each photograph to its largest honest (never upscaled) arrival without waiting on
+	     decode. The DOM is identical in both renders; diensten-cinema.js drives between the honest static spread
+	     (no-JS / reduced motion) and the travelled cinematic scene. -->
+	<div class="rooms">
 		{
 			archImg && (
-				<article class="spread spread--arch u-inview">
-					<a class="spread__media-link" href="/diensten/architectuurfotografie/" tabindex="-1" aria-hidden="true">
-						<Media
-							src={archImg.data.coverImage}
-							alt=""
-							widths={[480, 800, 1200]}
-							sizes="(min-width: 56rem) 55vw, 100vw"
-							class="spread__media"
-						/>
-					</a>
-					<div class="spread__text">
-						<p class="t-eyebrow t-eyebrow--accent">Architectuur</p>
-						<h2 class="t-h2 spread__name">Architectuurfotografie</h2>
-						<p class="spread__desc">
-							Gebouwen en exterieurs waarin structuur, proportie, licht en lijn samenkomen — van
-							monumenten en historische gevels tot moderne architectuur en stedelijke overzichten,
-							waar nodig ook op hoogte.
-						</p>
-						<p class="spread__for">
-							Voor architecten, makelaars, bedrijven en eigenaren die hun gebouw professioneel willen
-							presenteren.
-						</p>
-						<a class="link-arrow spread__link" href="/diensten/architectuurfotografie/">
-							Bekijk architectuurfotografie
-							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
-						</a>
+				<section class="room room--arch" data-dir="left">
+					<div class="room__camera">
+						<figure class="room__frame" data-w={archImg.data.coverImage.width} data-h={archImg.data.coverImage.height}>
+							<Media
+								src={archImg.data.coverImage}
+								alt="Kubuswoningen in Rotterdam, van onderaf gefotografeerd, gele kubussen die uitwaaieren rond een ster van heldere lucht."
+								widths={[480, 800, 1200, 1700]}
+								sizes="(min-width: 52rem) 58vw, 92vw"
+								class="room__photo"
+							/>
+							<div class="room__shade" aria-hidden="true" />
+						</figure>
+						<div class="room__copy">
+							<p class="t-eyebrow t-eyebrow--accent room__eyebrow">Architectuur</p>
+							<h2 class="t-h2 room__name">Architectuurfotografie</h2>
+							<p class="room__desc">
+								Gebouwen en exterieurs waarin structuur, proportie, licht en lijn samenkomen, van
+								monumenten en historische gevels tot moderne architectuur en stedelijke overzichten,
+								waar nodig ook op hoogte.
+							</p>
+							<p class="room__for">
+								Voor architecten, makelaars, bedrijven en eigenaren die hun gebouw professioneel willen
+								presenteren.
+							</p>
+							<a class="link-arrow room__link" href="/diensten/architectuurfotografie/">
+								Bekijk architectuurfotografie
+								<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+							</a>
+						</div>
 					</div>
-				</article>
+				</section>
 			)
 		}
 		{
 			intImg && (
-				<article class="spread spread--int u-inview">
-					<a class="spread__media-link" href="/diensten/interieurfotografie/" tabindex="-1" aria-hidden="true">
-						<Media
-							src={intImg.data.coverImage}
-							alt=""
-							widths={[480, 800, 1200]}
-							sizes="(min-width: 56rem) 55vw, 100vw"
-							class="spread__media"
-						/>
-					</a>
-					<div class="spread__text">
-						<p class="t-eyebrow t-eyebrow--accent">Interieur</p>
-						<h2 class="t-h2 spread__name">Interieurfotografie</h2>
-						<p class="spread__desc">
-							Ruimtes waarin sfeer, materiaal, licht en functie tot hun recht komen — van woningen en
-							kantoren tot horeca, zorginstellingen en publieke gebouwen, in bestaand en zorgvuldig
-							aangevuld licht.
-						</p>
-						<p class="spread__for">
-							Voor interieurontwerpers, makelaars en bedrijven die hun ruimtes op hun best willen
-							laten zien.
-						</p>
-						<a class="link-arrow spread__link" href="/diensten/interieurfotografie/">
-							Bekijk interieurfotografie
-							<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
-						</a>
+				<section class="room room--int" data-dir="right">
+					<div class="room__camera">
+						<figure class="room__frame" data-w={intImg.data.coverImage.width} data-h={intImg.data.coverImage.height}>
+							<Media
+								src={intImg.data.coverImage}
+								alt="Monumentale wenteltrap die naar beneden spiraalt richting een lichtpunt, met warm licht dat onder elke trede gloeit."
+								widths={[480, 800, 1200, 1700]}
+								sizes="(min-width: 52rem) 58vw, 92vw"
+								class="room__photo"
+							/>
+							<div class="room__shade" aria-hidden="true" />
+						</figure>
+						<div class="room__copy">
+							<p class="t-eyebrow t-eyebrow--accent room__eyebrow">Interieur</p>
+							<h2 class="t-h2 room__name">Interieurfotografie</h2>
+							<p class="room__desc">
+								Ruimtes waarin sfeer, materiaal, licht en functie tot hun recht komen, van woningen en
+								kantoren tot horeca, zorginstellingen en publieke gebouwen, in bestaand en zorgvuldig
+								aangevuld licht.
+							</p>
+							<p class="room__for">
+								Voor interieurontwerpers, makelaars en bedrijven die hun ruimtes op hun best willen
+								laten zien.
+							</p>
+							<a class="link-arrow room__link" href="/diensten/interieurfotografie/">
+								Bekijk interieurfotografie
+								<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+							</a>
+						</div>
 					</div>
-				</article>
+				</section>
 			)
 		}
-	</Section>
+	</div>
 
 	<ContactCta
 		heading="Een project in gedachten?"
@@ -125,22 +181,32 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		secondaryLabel="Bekijk het portfolio"
 		secondaryHref="/portfolio/"
 	/>
+
+	<!-- MOVEMENT I, the camera (P7.3 / D-51). A processed (bundled), deferred module, NOT is:inline, so
+	     GSAP is code-split and shared with the homepage's chunk. It arms ONLY under
+	     `prefers-reduced-motion: no-preference`; all content is fully visible before and without it, and the
+	     calm static composition of two complete photographs renders if this never lands. See
+	     diensten-cinema.js and DECISIONS.md D-51. -->
+	<script>
+		import { initDienstenCinema } from '../../scripts/diensten-cinema.js';
+		initDienstenCinema();
+	</script>
 </BaseLayout>
 
 <style>
-	/* --- Opening: a dark editorial masthead — eyebrow across the top, monumental display title baseline-aligned
+	/* --- Opening: a dark editorial masthead, eyebrow across the top, monumental display title baseline-aligned
 	   against the orientation text. Generous top space for a calm premium open (D-23).
 	 *
-	 * P4.8 CROSS-SITE (D-28) — this type-only masthead is the diensten page's signature NON-PHOTOGRAPHIC premium
+	 * P4.8 CROSS-SITE (D-28), this type-only masthead is the diensten page's signature NON-PHOTOGRAPHIC premium
 	 * moment (the owner's Limitation 3: quiet zones must still feel luxurious). Two mechanisms, neither a soft
 	 * radial bubble:
-	 *   1. TONAL WALL — a large-scale *linear* graded field (cool light raked from the top edge + a faint lift
+	 *   1. TONAL WALL, a large-scale *linear* graded field (cool light raked from the top edge + a faint lift
 	 *      into the empty upper-right negative space), so the monumental Archivo type sits against modelled
 	 *      architectural depth instead of dead flat black. Linear/directional = perceptually distinct from the
 	 *      homepage's afterglow *radial*.
-	 *   2. A GOLD DATUM RULE — a short champagne hairline that catches a highlight toward the eyebrow, like an
+	 *   2. A GOLD DATUM RULE, a short champagne hairline that catches a highlight toward the eyebrow, like an
 	 *      architect's dimension/datum marker (6.11 "belangrijke visuele lijnen", 6.12 controlled highlight). A
-	 *      selective structural line FRAGMENT — deliberately NOT the homepage's full-width `.work` seam. --- */
+	 *      selective structural line FRAGMENT, deliberately NOT the homepage's full-width `.work` seam. --- */
 	.dien-cover {
 		position: relative;
 		isolation: isolate;
@@ -163,9 +229,9 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		gap: var(--space-md);
 		margin-bottom: clamp(1.5rem, 1rem + 2.5vw, 3rem);
 	}
-	/* P4.9 (D-29) — the short horizontal datum rule is extended into an architect's L-bracket by a thin vertical
+	/* P4.9 (D-29), the short horizontal datum rule is extended into an architect's L-bracket by a thin vertical
 	   gold riser dropping from the same top-left corner into the negative space above the monumental title (owner
-	   Limitation 3: gold gains larger spatial extent while staying a 1px hairline — extent, not weight). A longer
+	   Limitation 3: gold gains larger spatial extent while staying a 1px hairline, extent, not weight). A longer
 	   structural trace, distinct from the homepage glow-seam and from the short project/CTA datum rules. Sits in
 	   the gap above the title, clear of the type; aria-hidden decorative (pure ::before, not announced). */
 	.dien-cover__marker::before {
@@ -179,9 +245,9 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		pointer-events: none;
 		background: linear-gradient(
 			180deg,
-			rgba(224, 197, 140, 0.7) 0%,
-			rgba(199, 165, 106, 0.22) 44%,
-			rgba(199, 165, 106, 0) 100%
+			rgba(var(--p-champagne-rgb), 0.7) 0%,
+			rgba(var(--p-gold-rgb), 0.22) 44%,
+			rgba(var(--p-gold-rgb), 0) 100%
 		);
 	}
 	.dien-cover__rule {
@@ -190,9 +256,9 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		height: 1px;
 		background: linear-gradient(
 			90deg,
-			rgba(199, 165, 106, 0) 0%,
-			rgba(199, 165, 106, 0.5) 34%,
-			rgba(224, 197, 140, 0.92) 100%
+			rgba(var(--p-gold-rgb), 0) 0%,
+			rgba(var(--p-gold-rgb), 0.5) 34%,
+			rgba(var(--p-champagne-rgb), 0.92) 100%
 		);
 	}
 	.dien-cover__grid {
@@ -228,108 +294,392 @@ const intImg = projects.find((p) => p.id === 'kroller-muller-paviljoen');
 		}
 	}
 
-	/* --- Alternating discipline spreads.
-	 * P4.8 (D-28): an ACHROMATIC depth field (no chroma, so it never tints the two discipline photographs — 6.16).
-	 * The already-deep surface (ink-950) is modelled toward the true abyss at its top and foot, so the two large
-	 * photographs read as emerging from architectural depth rather than sitting on a flat wall. Deliberately NOT a
-	 * colour pool (that is the homepage specialisaties mechanism — kept unique) and NOT a bubble; a vertical tonal
-	 * frame, the calm counterpart to the loud masthead above. --- */
-	.dien-spreads {
+	/* ── THE TWO ROOMS (P7.4 / D-52), one editorial SCENE per discipline: a complete photograph and its
+	 * caption sharing the frame, that the camera travels toward on a diagonal and settles into.
+	 *
+	 * The photograph is COMPLETE and rigid at every scroll position: only a UNIFORM transform ever touches
+	 * `.room__frame` (a whisper of depth-scale + the shared camera pan), never a non-uniform scale, never a
+	 * mask, never a crop. The runtime sizes it (via `--frame-w`) so it fits inside its half of the viewport
+	 * with margin to spare, the same margin the diagonal travel spends, so no edge ever clips it. The room's
+	 * light reveals it (`.room__shade` lifts); the photograph is never faded or feathered.
+	 *
+	 * Two renders, same DOM. BASELINE (no-JS / reduced motion): a calm complete editorial spread of each
+	 * discipline, fully readable, real link, honest first-class render (§P13). RUNTIME (desktop, motion-scene):
+	 * the pinned diagonal travel, driven by diensten-cinema.js. --- */
+	.rooms {
 		position: relative;
-		isolation: isolate;
-		/* P4.10 TRUE BOUNDARY CROSSING (D-30) — the masthead above is a type-only field (cool wall, rgb(15,19,26))
-		   with a large empty band below the title; the spreads below are the deeper gallery field (ink-950,
-		   rgb(9,11,15)). Rather than the two meeting at a clean horizontal cut, the FIRST discipline photograph
-		   physically rises ACROSS that boundary into the masthead's empty lower band — a real content crossing
-		   (owner's cited portfolio-lead model, varied: here a landscape photo straddling a TYPE masthead). The
-		   two fields stay clearly distinct (visibly different bg); the photo layers over the seam. Robust: the
-		   spreads keep their own bg start (boundary fixed), only the first spread's flow rises via a negative
-		   margin into reserved space; painting-above is automatic (later DOM + this section's `isolation`).
-		   ROBUSTNESS (P5.1 — D-32): the reduced top padding MUST be compounded onto `.section` (`.dien-spreads.section`,
-		   specificity 0,3,0) so it deterministically beats Section.astro's `.section { padding-block }` shorthand
-		   (0,2,0). Without this, production CSS source-order let the shorthand win — top padding resolved to the full
-		   `--section-gap` (~120px) and the photo dropped ~18px BELOW the seam, leaving the masthead's band empty
-		   (the crossing "no longer visibly crossed"). This is a specificity guarantee, not source-order luck. */
-		--cross-rise: clamp(3rem, 1rem + 6vw, 7rem);
 	}
-	.dien-spreads.section {
-		padding-top: clamp(1.5rem, 0.5rem + 2vw, 3rem);
+	/* Under the runtime the rooms sit above the CTA's terminal gold datum rule, so that mark is UNCOVERED as
+	   the last room departs (§7.5) rather than swept across a photograph, the depth order the scene implies. */
+	:global(html.motion-scene) .rooms {
+		z-index: 1;
 	}
-	.dien-spreads::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		pointer-events: none;
-		background: linear-gradient(
-			180deg,
-			rgba(6, 8, 12, 0.6) 0%,
-			rgba(6, 8, 12, 0) 20%,
-			rgba(6, 8, 12, 0) 80%,
-			rgba(6, 8, 12, 0.55) 100%
-		);
-	}
-	.dien-spreads :global(.u-container) {
+	.room {
+		position: relative;
+		min-height: 100svh;
 		display: flex;
 		flex-direction: column;
-		gap: clamp(3.5rem, 2rem + 7vw, 7rem);
+		justify-content: center;
+		padding-block: var(--section-gap);
 	}
-	.spread {
+	/* THE MOVING UNIT, photograph and caption together, one place. The whole thing is what the camera pans
+	   (translate); it is the difference between "one scene that travelled" and "an image beside a text block".
+	   Grid: on a wide viewport, caption column and photograph column side by side. MIRRORED per discipline via
+	   the modifiers below, which is both the compare and the reason the two headings differ. */
+	.room__camera {
+		width: min(94vw, 78rem);
+		margin-inline: auto;
 		display: grid;
-		grid-template-columns: 1.25fr 1fr;
-		gap: var(--space-2xl) var(--space-3xl);
+		grid-template-columns: 1fr;
+		gap: clamp(1.75rem, 1rem + 3vw, 3.5rem);
 		align-items: center;
+		will-change: transform;
 	}
-	/* The first spread rises across the masthead boundary (its photograph straddles the two fields). The
-	   whole first spread lifts so the photo leads into the masthead's empty band while its text settles just
-	   below the seam on the deep field — a coherent, layered open, not a decorative overlap. */
-	.spread--arch {
-		margin-top: calc(-1 * var(--cross-rise));
+	/* The rigid box holding the whole photograph, aspect ratio is the image's own (intrinsic, via Media), so
+	   the photograph is always complete. Baseline width; the runtime overrides with a no-upscale arrival width
+	   via `--frame-w`. `figure` resets: no default margins. */
+	.room__frame {
+		position: relative;
+		margin: 0;
+		width: 100%;
+		will-change: transform;
 	}
-	/* Interior spread reverses — text left, image right — so the page reads as a comparison, not a list. */
-	.spread--int {
-		grid-template-columns: 1fr 1.25fr;
-	}
-	.spread--int .spread__media-link {
-		order: 2;
-	}
-	.spread__media-link {
+	.room__photo {
 		display: block;
 	}
-	.spread__name {
+	.room__photo :global(img) {
+		display: block;
+		width: 100%;
+		height: auto; /* intrinsic ratio → the whole photograph, never cropped. */
+	}
+	/* The reveal, a uniform dark the ROOM lifts off the photograph. Inert in the baseline; the runtime drives
+	   its opacity down as the light comes up. Its edge coincides with the frame's, which meets the dark room,
+	   so there is no visible seam and nothing at all is done to the photograph itself. */
+	.room__shade {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: #06070b;
+		opacity: 0;
+	}
+	.room__copy {
+		max-width: 42ch;
+	}
+	.room__name {
 		margin-block: var(--space-xs) var(--space-md);
 	}
-	.spread__desc {
+	.room__desc {
 		color: var(--color-text-secondary);
 		max-width: 44ch;
 	}
-	.spread__for {
+	.room__for {
 		margin-top: var(--space-md);
 		color: var(--color-text-muted);
 		font-size: var(--fs-body-sm);
-		max-width: 40ch;
+		max-width: 42ch;
 	}
-	.spread__link {
+	.room__link {
 		margin-top: var(--space-lg);
 	}
-	@media (max-width: 56rem) {
-		.spread,
-		.spread--int {
-			grid-template-columns: 1fr;
-			gap: var(--space-lg);
+	/* THE MIRRORED SPREADS. Two columns; the photograph sits on the side its camera departs toward, so the
+	   caption always occupies the negative space the room's light blazes in (cool high-left for arch, warm
+	   low-right for interieur, see the stage layers). Ordering via grid-template-areas keeps the DOM order
+	   (caption first, for a sensible reading/tab order) while placing the photograph on either side. */
+	@media (min-width: 52.0625rem) {
+		/* arch, photograph LEFT, caption RIGHT. The camera pulls down-left, so it enters shifted UP-RIGHT;
+		   with the photograph on the left, that entering shift moves it toward centre (never toward the right
+		   edge), so the complete photograph is provably clear of every viewport edge for the whole travel. */
+		.room__camera {
+			grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.92fr);
+			grid-template-areas: 'photo copy';
+			gap: clamp(2rem, 1rem + 3.5vw, 4.5rem);
 		}
-		.spread--int .spread__media-link {
-			order: 0;
+		/* interieur mirrors, photograph RIGHT, caption LEFT. Pulls down-right → enters shifted up-left → the
+		   photograph moves toward centre from the right, again clear of every edge. */
+		.room--int .room__camera {
+			grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.35fr);
+			grid-template-areas: 'copy photo';
 		}
-		/* Mobile stacks the spread (photo over text); the boundary crossing is a desktop composition move only —
-		   restore normal top spacing so the masthead and the first photo don't collide in the single column.
-		   Compounded onto `.section` (0,3,0) so this reset still beats the desktop `.dien-spreads.section` override
-		   above (equal specificity → later source order wins) — mobile keeps full `--section-gap` breathing room. */
-		.dien-spreads.section {
-			padding-top: var(--section-gap);
+		.room__frame {
+			grid-area: photo;
+			width: var(--frame-w, 100%);
+			justify-self: center;
 		}
-		.spread--arch {
-			margin-top: 0;
+		.room__copy {
+			grid-area: copy;
 		}
+	}
+
+	/* THE RUNTIME LAYOUT (desktop, motion-scene). The section is the pinned stage; the camera (photograph AND
+	   caption together) travels inside it as one whole. `overflow: clip` on the pinned section so the diagonal
+	   travel can never expose a frame edge past the viewport. Below 52rem the runtime does not pin; mobile keeps
+	   the calm stacked baseline with a gentle scroll-linked reveal (§9.4). */
+	@media (min-width: 52.0625rem) {
+		:global(html.motion-scene) .room {
+			position: relative;
+			min-height: 100svh;
+			height: 100svh;
+			padding-block: 0;
+			display: flex;
+			align-items: center;
+			overflow: clip;
+		}
+		:global(html.motion-scene) .room__camera {
+			width: 100%;
+			max-width: none;
+			margin-inline: 0;
+			padding-inline: clamp(2rem, 5vw, 6rem);
+		}
+	}
+
+
+	/* ============================================================= *
+	 * THE ROOM (P7.2 / D-48), one fixed dark interior behind the whole page.
+	 *
+	 * Same ARCHITECTURE as the homepage's stage (CINEMATIC_MOTION_LANGUAGE §11.2: the world is shared,
+	 * "identical everywhere, no exceptions"); this page's own HOUR and its own FUNCTION. Each sub-layer is
+	 * painted ONCE (position and colour never change) and diensten-cinema.js drives only `opacity` and
+	 * `transform: translate3d()` from scroll position, every frame, so there is no per-frame gradient
+	 * repaint at all: pure compositor work, CLS-safe, and a genuinely visible evolving room costs nothing.
+	 *
+	 * THE HOUR IS READ OFF THIS PAGE'S OWN PHOTOGRAPHS, never inherited from the homepage (§11.2). The room
+	 * itself is at NO hour, it is a dark interior with no light of its own, in the site's shared nocturne
+	 * register. The only light that ever enters comes from the two windows, and it is theirs: the cube
+	 * houses' hard blue sky, seen from below and from beyond reach; the staircase's gold, glowing from under
+	 * each tread, in the room with you. This is the owner's standing 2026-07-16 ruling honoured to the
+	 * letter, "let the photographs carry the daylight, let the interface stay quiet", and it is why a page
+	 * full of daylight photography is still a nocturne.
+	 * ============================================================= */
+	.stage {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		opacity: 0;
+		isolation: isolate; /* contain the screen-blended shaft/haze to the stage's own sub-layers */
+	}
+	:global(html.motion-scene) .stage {
+		opacity: 1;
+		transition: opacity 1100ms var(--ease-standard);
+	}
+	.stage > * {
+		position: absolute;
+		inset: 0;
+		will-change: opacity, transform;
+	}
+
+	/* The room's own dark, the constant, always on under motion-scene, and what shows whenever no window
+	   is near. Deliberately tuned to the surfaces it replaces so the walls that stay opaque (the header at
+	   the crown, the footer at the foot) never read as slabs of a colour the page stopped using, the D-45
+	   defect class, avoided by matching rather than by luck. Crown ≈ the masthead's own cool-raked
+	   rgb(15,19,26); foot ≈ the spreads' rgb(9,11,15), with a whisper of warmth where the landing is. */
+	/* P8.5 (D-76), RE-MATCHED, not restyled. This gradient's job is unchanged: it must equal the opaque
+	   walls that stay put at the crown (the header) and at the foot (the footer), or those walls read as
+	   slabs of a colour the page stopped using (D-45). Those two walls are now the sapphire chrome, so this
+	   is re-derived onto the same scale, crown ≈ the header's lit top edge (--p-sapphire-850), foot ≈ the
+	   footer's own body (--p-sapphire-950). Same four-stop construction, same luminance ladder. */
+	.stage__sky--base {
+		background: linear-gradient(180deg, #101b33 0%, #0c142a 34%, #090f1e 68%, #070c18 100%);
+		opacity: 1;
+	}
+	/* WINDOW I's light, the room lit by sky. Cool, high, from BEYOND: unreachable, so it floods. The
+	   broadest, brightest state the room ever reaches, this is the page's peak (§8.3). JS raises it as the
+	   reader comes to the window and lets it fall behind as they leave; between windows it is 0 and the room
+	   is simply dark.
+
+	   THE LIGHT POOLS BESIDE THE WINDOW, NEVER BEHIND IT (P7.3 / D-49, a real film defect, and a STATIC
+	   one that predates the wall). D-48 put this core at `26% 24%`, i.e. upper-LEFT, which is where window I
+	   itself hangs, so the room's only light was painted BEHIND the photograph that is supposed to be
+	   throwing it. At rest that merely wasted it; once the wall gives way and the opening covers x 0→780,
+	   it is fatal: MEASURED at the peak, `cool` was at 0.93 and the room right of the window was **almost
+	   black**. A page whose entire mechanism is "the photographs are the only light in the room" was
+	   rendering a monumental window that lit nothing.
+	   The fix is not an amplitude and not a tween: it is WHERE THE LIGHT IS. A window on the left throws
+	   light RIGHTWARD, into the room, so the core now sits beside the opening rather than behind it. That
+	   is true at rest AND at the peak (the window is left of it in both states), which is why this needs no
+	   tracking, no translation and no per-frame cost: the pre-painted layer never moves, exactly as §12.1
+	   requires.
+
+	   AND IT BLAZES AT THE JAMB, HIGH, THEN RAKES AWAY, which is §5.4, and getting it wrong first is what
+	   proved it. A first cut put this core at `57% 40%`, i.e. squarely in front of the copy, and MEASURED it
+	   broke AA on the page's two tightest lines: `.spread__desc` 6.95 → **4.31:1** and `.spread__for` 4.85 →
+	   **3.45:1** (warm: 5.19 → 3.17). The lesson is not "the light is too bright", dimming it is §3.2's
+	   restraint trap and would throw the film away. It is that the light was in the WRONG PLACE: §5.4 says
+	   bold in the negative space, text columns stay dark, and a flat wash across a 490px paragraph obeys
+	   neither.
+	   So the core sits HIGH, level with window I's upper jamb, in the empty band above the copy, the light
+	   is at its most decisive exactly where there is nothing to read, and the copy sits far enough down the
+	   elliptical falloff to keep its margin. That is also simply what this photograph is: the cube houses
+	   are a star of hard sky ABOVE you, so their light enters from above and falls DOWN into the room. The
+	   room gains real modelling, blazing at the opening, dark at the far wall, where before it was an
+	   even tint, and modelling is what "the room changed" actually means. */
+	/* P7.4 / D-52, the core sits UPPER-LEFT, over the arch photograph (which now occupies the left column) and
+	   in the empty band above it, so the room blazes where the cube houses throw their sky-light and the RIGHT
+	   caption column stays dark enough to hold AA (verified on the rendered composite, never assumed). */
+	.stage__sky--cool {
+		background:
+			/* P8.5 (D-76): richer sapphire, at equal-or-lower luminance. Chroma is added by moving BLUE up and
+			   red/green down, so every measured AA margin on this page's copy (documented above, and tight)
+			   can only improve, never regress. Re-measured on the rendered composite after the change. */
+			radial-gradient(
+				52% 56% at 40% 16%,
+				rgba(84, 126, 220, 0.52) 0%,
+				rgba(52, 80, 158, 0.2) 44%,
+				rgba(20, 30, 60, 0) 76%
+			),
+			linear-gradient(170deg, rgba(70, 106, 198, 0.22) 0%, rgba(28, 42, 86, 0.04) 42%, transparent 68%);
+		opacity: 0;
+	}
+	/* WINDOW II's light, the room lit by the building's own lamps. Warm, low, from WITHIN: enclosed, so it
+	   pools rather than floods. Visibly the lesser arrival, the grammar is already learned by then, and a
+	   second arrival at equal intensity would make the first one generic (§8.3/§15). Gold occurring as a
+	   photograph's own light, which is the one place §5.3 permits it to be atmosphere rather than an
+	   instrument.
+	   Mirrored from window I for the same reason (see above): window II hangs on the RIGHT, so its light
+	   falls LEFTWARD into the room, the core sits beside the opening, never behind the staircase throwing
+	   it, and it pools on the FLOOR at the window's foot, in the empty band BELOW the copy, where window
+	   I's blazes at the ceiling in the empty band ABOVE it.
+	   That inversion is the whole comparison and it is read straight off the two photographs rather than
+	   assigned: the cube houses are a star of hard sky above you and unreachable, so their light comes from
+	   the top and floods; the staircase is a gold well glowing under every tread, low and in the room with
+	   you, so its light comes from below and pools. High-and-flooding vs low-and-pooling, cool vs warm, from
+	   the left vs from the right, three independent tells, none of them swappable, which is the comparison
+	   this page exists to make (13.39 / §5.2 / §14 #12). */
+	/* P7.4 / D-52, mirrored: the core sits LOWER-RIGHT, over the interieur photograph (now the right column)
+	   and pools on the floor at its foot, so the LEFT caption column stays dark. Low-and-pooling-and-warm vs
+	   cool-high-and-flooding is the comparison read straight off the two frames (§5.2). */
+	/* P8.6 (D-77): the four warm stops here measured hue 30.0–32.8°, 5–8° ORANGE of the reference gold the
+	   brief names (`--p-gold-500`, hue 38.1). They are re-derived onto that hue with their lightness and
+	   saturation untouched, so the staircase still pools warm light from below; it is simply the site's own
+	   gold doing it rather than a second, oranger one. */
+	.stage__sky--warm {
+		background:
+			radial-gradient(
+				52% 50% at 62% 86%,
+				rgba(206, 167, 100, 0.44) 0%,
+				rgba(146, 112, 54, 0.18) 44%,
+				rgba(38, 29, 14, 0) 74%
+			),
+			linear-gradient(8deg, rgba(178, 140, 74, 0.18) 0%, rgba(48, 36, 16, 0.03) 44%, transparent 70%);
+		opacity: 0;
+	}
+	/* THE SHAFT, this room's falling cue, and the honest interior equivalent of the homepage's horizon.
+	   The homepage's horizon rises UP past the camera because the camera is falling through hours. Nobody
+	   falls here: you are moving through a room, past two windows. So the shaft RAKES ACROSS, the angle of
+	   light on a wall changing as you pass its source, which is the thing that makes movement through an
+	   interior legible. Same device, this room's expression (§11.1: related, not copied). Hue cross-fades
+	   cool → warm via --warm. Screen-blended: only ever adds light. Oversized so the travel never exposes
+	   an edge. */
+	/* `.stage > .stage__shaft`, not `.stage__shaft`, A SPECIFICITY GUARANTEE, NOT SOURCE-ORDER LUCK (D-32).
+	   The oversize inset below is what keeps the band's travel from ever exposing its own edge, and it was
+	   silently losing: Astro compiles `.stage > *` to `.stage[cid] > *[cid]` (0,3,0), which beats a bare
+	   `.stage__shaft[cid]` (0,2,0), so `inset: 0` won and the layer was clipped to the viewport.
+	   MEASURED at 390×844: the shaft's box rendered 844px tall instead of 1216 (bottom edge at row 814),
+	   and because a raking band is still at full alpha where a radial would already be transparent, the
+	   clip was VISIBLE, a hard full-width step of 18.5 luminance in a single pixel row, over the lit room.
+	   Exactly the "box edge travelling over a lighter surface" defect (§3.1.4 / §13 #18), arriving through
+	   the cascade rather than through a background. Found only by A/B'ing the layer out (step 18.5 → 3.1).
+	   NOTE, out of scope and unfixed: `index.astro` carries the same `.stage > *` pattern, so the
+	   homepage's `.stage__horizon` (`inset: -45% 0`) and `.stage__haze` are almost certainly clipped the
+	   same way. It is invisible there because both are soft radials that reach zero alpha well inside their
+	   own box, a latent trap, not a live defect. The homepage is frozen; flagged, not touched. */
+	.stage > .stage__shaft {
+		inset: -22% -46%;
+		--sh: color-mix(
+			in srgb,
+			rgb(var(--p-atmos-cool)) calc((1 - var(--warm, 0)) * 100%),
+			rgb(var(--p-atmos-warm))
+		);
+		background: linear-gradient(
+			102deg,
+			transparent 26%,
+			color-mix(in srgb, var(--sh) 13%, transparent) 42%,
+			color-mix(in srgb, var(--sh) 30%, transparent) 52%,
+			color-mix(in srgb, var(--sh) 10%, transparent) 62%,
+			transparent 78%
+		);
+		mix-blend-mode: screen;
+		opacity: 0;
+	}
+	/* Air, a soft depth plane that drifts laterally and rises slower than the reader scrolls (parallax
+	   depth), so the room has atmosphere instead of flat ink. Low alpha; screen-blended. */
+	.stage > .stage__haze {
+		inset: -30% -12%;
+		background:
+			radial-gradient(58% 44% at 30% 26%, rgba(var(--p-atmos-cool), 0.07) 0%, transparent 60%),
+			radial-gradient(52% 38% at 78% 62%, rgba(var(--p-atmos-warm), 0.05) 0%, transparent 56%);
+		mix-blend-mode: screen;
+		opacity: 0.5;
+	}
+	/* THE DARK BETWEEN, made structural. JS drives this as the INVERSE of the light, so the passage between
+	   the two windows does not merely lack light, it visibly closes in as you cross it, and opens again as
+	   you reach the next window. This is the blueprint's beat 3 ("the dark between"), which D-47 could not
+	   deliver at any amplitude because at 1440×900 its two windows sat 112px apart and both pools were lit
+	   at once (its own self-critique (a): "there is no scroll position at which neither window is near").
+	   The pins are what make the room for it. */
+	.stage__vignette {
+		background:
+			radial-gradient(128% 100% at 50% 42%, transparent 28%, rgba(3, 4, 7, 0.66) 100%),
+			linear-gradient(180deg, transparent 56%, rgba(3, 4, 7, 0.5) 100%);
+		opacity: 0;
+	}
+
+	/* ============================================================= *
+	 * ROOM HANDOFF (P7.3 / D-51, carried from D-48). Every surface yields its background to the world (§5.6):
+	 * a surface that paints an opaque fill while the world moves behind it does not fade in, it is UNCOVERED,
+	 * as a slab of a colour the page stopped using (the D-45 black-bar defect class). So the masthead's tonal
+	 * wall and the three shared walls (header / CTA / footer) all go transparent under the runtime and hand
+	 * their background to the stage.
+	 *
+	 * Every selector is qualified by `html.motion-scene`, set only by this page's module, only under
+	 * `prefers-reduced-motion: no-preference`, so the DEFAULT no-JS / reduced-motion render is the calm
+	 * static composition, untouched. Page-scoped: this block ships in this route's own stylesheet, never the
+	 * shared BaseLayout bundle, so the `:global()` reaches for the shared header/footer/CTA cannot touch any
+	 * other route. (The homepage does the same for its header; scoping is re-verified in the built output,
+	 * never assumed.) --- */
+	:global(html.motion-scene) .dien-cover {
+		background: transparent;
+		transition: background 900ms var(--ease-standard);
+	}
+	/* The three shared walls. The header is `position: relative` and in-flow on this route (never the
+	   homepage's fixed overlay, and it never receives `is-solid` here), so it is a wall at the crown that
+	   scrolls away. The CTA's own gold datum rule is handled by the depth order above (`.rooms { z-index: 1 }`)
+	  , it slides UNDER the last room and is uncovered as that room departs (§7.5). The footer's opaque fill
+	   is closed here on this route so the warm landing has no hard edge under it (§14.9). */
+	:global(html.motion-scene .site-header),
+	:global(html.motion-scene .cta) {
+		background: transparent;
+	}
+	/* P8.6 (D-77): `.site-footer` is NO LONGER in this list. Making it transparent under the runtime is
+	   exactly what the owner reports as "de footer is geen zelfstandige sectie meer" on this route: a
+	   surface-less, line-less footer is not a closing chapter, it is the sky with words on it. The footer
+	   now carries its own transparent-to-material APPROACH (see SiteFooter.astro), which lets this page's
+	   world show through its opening and still lands the page on a real floor, so it needs no override
+	   here and gets none. */
+	/* P8.5 (D-76): the header's and footer's new chrome finish, the lit top arris (a box-shadow) and the
+	   champagne datum hairline (a pseudo-element), belong to the WALL, not to the world. Under the runtime
+	   the walls yield their surface to the sky, so their finish yields with them; otherwise two bright
+	   horizontal lines would be left drawn across a moving world with nothing under them (the D-45 defect
+	   class, arriving through a hairline instead of through a fill). */
+	:global(html.motion-scene .site-header) {
+		box-shadow: none;
+	}
+	:global(html.motion-scene .site-header::after) {
+		opacity: 0;
+	}
+
+	/* THE ROOM EYEBROWS STAY (P7.4 / D-52, reversing D-51's hide). The owner's D-52 brief asks for the
+	   opposite of D-41's homepage descent: each discipline must again read as ONE CLEARLY READABLE SECTION
+	   the visitor must never wonder which words belong to which photograph. So the caption (eyebrow → title →
+	   description) is kept whole and is the scene's identity, arriving as PART of the journey rather than being
+	   stripped. This is not the homepage's document-avoiding hide (§3.1.1): here the eyebrow is not a repetitive
+	   per-block drumbeat down a single descent, it is one of exactly two labels that carry the architectuur ⇄
+	   interieur comparison (13.39), exactly as the owner-approved homepage work-plate keeps its own eyebrow.
+	   The caption's cinematic quality comes from HOW it arrives (diensten-cinema.js resolves it out of the room's
+	   dark on a timing directed per scene), not from removing it. Only the CTA's eyebrow is still handed to the
+	   dark under the runtime, so the film's landing is a clean statement, not a fourth labelled block. */
+	:global(html.motion-scene .cta .t-eyebrow) {
+		opacity: 0;
+		visibility: hidden;
 	}
 </style>

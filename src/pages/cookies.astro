@@ -1,0 +1,376 @@
+---
+/*
+ * /cookies/, the cookie policy AND the place a choice is changed (P11 / D-82, CONS-04/05).
+ *
+ * ONE PAGE, NOT TWO. A separate "cookie settings" route would be a page whose only content is a control,
+ * and a policy page a visitor has to leave to act on what they just read. Art. 7(3) AVG asks that
+ * withdrawing be as easy as giving; the shortest honest form of that is: the explanation and the switch in
+ * the same place, linked from the footer of every page and from the banner itself.
+ *
+ * THE INVENTORY IS MEASURED, NOT ASSUMED. Every row in the table below was taken from the code that writes
+ * it: `lrf-consent` from src/scripts/consent.js, `pf-overture-seen` from src/scripts/portfolio-intro.js,
+ * `tv-return-y` from src/scripts/traverse.js, and the two `_ga*` cookies from Google's own documentation.
+ * There is nothing else, the public site loads no external script, font, embed or pixel of any kind before
+ * consent, so the list is complete rather than representative.
+ *
+ * THE PANEL DEGRADES HONESTLY. It ships `hidden` and is revealed by its own script. Without JavaScript
+ * there is nothing to configure, because without JavaScript no analytics can ever load, so a <noscript>
+ * says exactly that instead of showing a control that could not work.
+ */
+import LegalPage from '../components/LegalPage.astro';
+import {
+	SITE_NAME,
+	CONTACT_EMAIL,
+	GA_MEASUREMENT_ID,
+	GA_RETENTION_MONTHS,
+	CONSENT_STORAGE_KEY,
+} from '../lib/legal';
+
+/** GA4's session cookie is named after the measurement ID with the "G-" prefix removed. */
+const GA_SESSION_COOKIE = `_ga_${GA_MEASUREMENT_ID.replace(/^G-/, '')}`;
+
+const sections = [
+	{ id: 'regels', title: 'De regel in het kort' },
+	{ id: 'noodzakelijk', title: 'Wat er altijd wordt opgeslagen' },
+	{ id: 'statistieken', title: 'Statistieken, alleen met toestemming' },
+	{ id: 'niet', title: 'Wat deze website níét doet' },
+	{ id: 'voorkeuren', title: 'Uw voorkeuren' },
+	{ id: 'verwijderen', title: 'Zelf cookies verwijderen' },
+	{ id: 'beheer', title: 'De beheeromgeving' },
+];
+---
+
+<LegalPage
+	title="Cookiebeleid"
+	description="Wat Leonard Rieksen Fotografie op uw apparaat opslaat en waarom: alleen noodzakelijke opslag, en statistieken via Google Analytics uitsluitend na uw toestemming. Hier wijzigt u uw keuze."
+	eyebrow="Cookies"
+	lead="Deze website werkt zonder cookies. Alleen als u daar toestemming voor geeft komen daar de twee cookies van Google Analytics bij. Hieronder staat per onderdeel wat er precies wordt opgeslagen, waarom, en hoe lang, en kunt u uw keuze wijzigen."
+	sections={sections}
+>
+	<h2 id="regels">De regel in het kort</h2>
+	<p>
+		Volgens artikel 11.7a van de Telecommunicatiewet mag een website alleen iets op uw apparaat opslaan of
+		uitlezen als u daar vooraf toestemming voor heeft gegeven. Daar zijn twee uitzonderingen op: opslag
+		die uitsluitend dient om de communicatie tot stand te brengen, en opslag die strikt noodzakelijk is om
+		de dienst te leveren waar u zelf om heeft gevraagd. Voor al het overige, en statistieken vallen daar
+		nadrukkelijk onder, is toestemming nodig.
+	</p>
+	<p>
+		Die regel geldt voor cookies, maar niet alleen daarvoor: ook andere manieren om iets op uw apparaat te
+		bewaren, zoals <em>local storage</em> en <em>session storage</em>, vallen eronder. Daarom staat
+		hieronder alles wat deze website opslaat, ongeacht de techniek.
+	</p>
+
+	<h2 id="noodzakelijk">Wat er altijd wordt opgeslagen</h2>
+	<p>
+		Deze drie items zijn noodzakelijk of functioneel. Ze bevatten geen persoonsgegevens, geen
+		identificatienummer en niets waarmee u herkend kunt worden, ze worden nergens naartoe verstuurd, en ze
+		vallen onder de uitzondering hierboven. Er wordt daarom geen toestemming voor gevraagd, vragen om
+		toestemming die u niet kunt weigeren zonder de website te breken, zou geen echte keuze zijn.
+	</p>
+	<div class="legal-scroll">
+		<table class="legal-table">
+			<thead>
+				<tr>
+					<th scope="col">Naam</th>
+					<th scope="col">Techniek</th>
+					<th scope="col">Waarvoor</th>
+					<th scope="col">Hoe lang</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th scope="row"><code>{CONSENT_STORAGE_KEY}</code></th>
+					<td>Local storage</td>
+					<td>
+						Onthoudt uw eigen keuze over statistieken, zodat u die niet bij ieder bezoek opnieuw hoeft
+						te maken. Bevat een versienummer, een ja of nee, en het moment van uw keuze.
+					</td>
+					<td>Tot u de keuze wijzigt of de opslag van deze website wist.</td>
+				</tr>
+				<tr>
+					<th scope="row"><code>pf-overture-seen</code></th>
+					<td>Session storage</td>
+					<td>
+						Onthoudt dat u de openingsanimatie van het portfolio al heeft gezien, zodat die zich niet
+						bij iedere terugkeer herhaalt. Bevat alleen het cijfer 1.
+					</td>
+					<td>Tot u het tabblad sluit.</td>
+				</tr>
+				<tr>
+					<th scope="row"><code>tv-return-y</code></th>
+					<td>Session storage</td>
+					<td>
+						Onthoudt waar u in het portfolio was toen u een project opende, zodat u terugkeert op
+						precies dezelfde plek. Bevat alleen een positie in beeldpunten.
+					</td>
+					<td>Tot u het tabblad sluit; wordt gewist zodra u bent teruggekeerd.</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<h2 id="statistieken">Statistieken, alleen met toestemming</h2>
+	<p>
+		Geeft u toestemming voor statistieken, dan wordt Google Analytics 4 geladen (meet-ID{' '}
+		<code>{GA_MEASUREMENT_ID}</code>) en worden deze twee cookies geplaatst:
+	</p>
+	<div class="legal-scroll">
+		<table class="legal-table">
+			<thead>
+				<tr>
+					<th scope="col">Naam</th>
+					<th scope="col">Van</th>
+					<th scope="col">Waarvoor</th>
+					<th scope="col">Hoe lang</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th scope="row"><code>_ga</code></th>
+					<td>Google Analytics (first-party)</td>
+					<td>Onderscheidt bezoekers van elkaar met een willekeurig identificatienummer.</td>
+					<td>2 jaar</td>
+				</tr>
+				<tr>
+					<th scope="row"><code>{GA_SESSION_COOKIE}</code></th>
+					<td>Google Analytics (first-party)</td>
+					<td>Houdt de status van uw huidige bezoeksessie bij.</td>
+					<td>2 jaar</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<p>
+		Deze cookies zijn geen strikt noodzakelijke cookies en worden dan ook pas geplaatst nádat u erop heeft
+		geklikt. Weigert u, dan wordt het script van Google niet eens opgehaald. De bewaartermijn in Google
+		Analytics zelf staat op {GA_RETENTION_MONTHS} maanden. Wat er precies wordt gemeten, hoe de meting is
+		ingesteld en wat dat voor uw gegevens betekent, staat in de{' '}
+		<a href="/privacy/#analytics">privacyverklaring</a>.
+	</p>
+
+	<h2 id="niet">Wat deze website níét doet</h2>
+	<p>
+		Deze lijst is even belangrijk als de vorige. Op deze website staan geen:
+	</p>
+	<ul>
+		<li>advertentiecookies, advertentiepixels of remarketing;</li>
+		<li>knoppen, pixels of insluitingen van sociale media;</li>
+		<li>ingesloten video’s, kaarten of andere inhoud van externe partijen;</li>
+		<li>lettertypen of scripts die van een externe server worden geladen;</li>
+		<li>sessieopnames, muisbewegingsregistratie of heatmaps;</li>
+		<li>cookies of trackers waarmee u over andere websites heen gevolgd wordt;</li>
+		<li>cookiemuur: weigert u statistieken, dan blijft de hele website gewoon toegankelijk.</li>
+	</ul>
+
+	<h2 id="voorkeuren">Uw voorkeuren</h2>
+	<p>
+		Hier wijzigt u uw keuze. Intrekken werkt vanaf het moment dat u opslaat: er wordt dan niets meer
+		gemeten en de cookies van Google Analytics worden van uw apparaat verwijderd.
+	</p>
+
+	<div class="prefs" data-consent-prefs hidden>
+		<form class="prefs__form" data-prefs-form>
+			<fieldset class="prefs__set">
+				<legend class="prefs__legend">Statistieken (Google Analytics)</legend>
+				<p class="prefs__help" id="prefs-help">
+					Anonieme bezoekstatistieken om te zien welke pagina’s worden gelezen. Optioneel.
+				</p>
+				<div class="prefs__choices">
+					<label class="prefs__choice">
+						<input type="radio" name="analytics" value="off" aria-describedby="prefs-help" />
+						<span>Niet toestaan</span>
+					</label>
+					<label class="prefs__choice">
+						<input type="radio" name="analytics" value="on" aria-describedby="prefs-help" />
+						<span>Toestaan</span>
+					</label>
+				</div>
+			</fieldset>
+			<div class="prefs__foot">
+				<button type="submit" class="prefs__save">Keuze opslaan</button>
+				<p class="prefs__status" role="status" data-prefs-status></p>
+			</div>
+		</form>
+	</div>
+
+	<noscript>
+		<div class="legal-note">
+			<p>
+				JavaScript staat uit in uw browser. Google Analytics kan dan sowieso niet worden geladen, dus er
+				worden geen statistiekcookies geplaatst en er valt hier niets in te stellen. De website werkt
+				verder gewoon.
+			</p>
+		</div>
+	</noscript>
+
+	<h2 id="verwijderen">Zelf cookies verwijderen</h2>
+	<p>
+		U kunt cookies en opgeslagen gegevens ook zelf verwijderen via de instellingen van uw browser, meestal
+		onder “Privacy en beveiliging”. Dat wist ook de keuze die deze website van u heeft onthouden; bij een
+		volgend bezoek wordt de vraag dan opnieuw gesteld. U kunt uw browser daarnaast zo instellen dat
+		cookies helemaal worden geweigerd, deze website blijft dan volledig werken.
+	</p>
+
+	<h2 id="beheer">De beheeromgeving</h2>
+	<p>
+		Op <code>/admin/</code> staat de contentbeheeromgeving waarmee {SITE_NAME} de eigen teksten en
+		fotografie beheert. Die omgeving is niet voor bezoekers bedoeld, wordt niet geïndexeerd door
+		zoekmachines en wordt vanaf de website nergens naartoe gelinkt. Ze laadt haar programmatuur van een
+		externe distributiedienst en bewaart lokaal de inloggegevens van de beheerder. Bezoekt u die pagina
+		niet, dan gebeurt daar niets, u komt er alleen door het adres zelf in te typen.
+	</p>
+	<p>
+		Vragen over dit cookiebeleid? Stuur een bericht naar{' '}
+		<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Zie ook de{' '}
+		<a href="/privacy/">privacyverklaring</a> en de <a href="/voorwaarden/">algemene voorwaarden</a>.
+	</p>
+</LegalPage>
+
+<script>
+	/*
+	 * The preference panel. It owns no state of its own: it reads and writes through the same module the
+	 * banner uses, so "changed here" and "changed there" can never mean two different things.
+	 */
+	import { getConsent, setConsent } from '../scripts/consent.js';
+
+	const panel = document.querySelector('[data-consent-prefs]');
+	const form = document.querySelector('[data-prefs-form]');
+	const status = document.querySelector('[data-prefs-status]');
+
+	if (panel instanceof HTMLElement && form instanceof HTMLFormElement) {
+		// Aliased after the guard: the narrowing above does not survive into the closures below.
+		const formEl = form;
+		panel.removeAttribute('hidden');
+
+		/** Reflects the stored decision in the radios. A visitor who has not chosen yet gets neither
+		 *  preselected, a pre-ticked "allow" would be exactly the invalid consent the law rules out. */
+		function sync() {
+			const stored = getConsent();
+			const value = stored ? (stored.analytics ? 'on' : 'off') : null;
+			for (const input of formEl.querySelectorAll('input[name="analytics"]')) {
+				if (input instanceof HTMLInputElement) input.checked = value !== null && input.value === value;
+			}
+			if (status instanceof HTMLElement && !status.dataset.saved) {
+				status.textContent = stored
+					? stored.analytics
+						? 'Huidige keuze: statistieken toegestaan.'
+						: 'Huidige keuze: alleen noodzakelijke opslag.'
+					: 'U heeft nog geen keuze gemaakt. Statistieken staan uit.';
+			}
+		}
+
+		form.addEventListener('submit', (event) => {
+			event.preventDefault();
+			const chosen = formEl.querySelector('input[name="analytics"]:checked');
+			if (!(chosen instanceof HTMLInputElement)) {
+				if (status instanceof HTMLElement) {
+					status.dataset.saved = '';
+					status.textContent = 'Kies eerst een van beide opties.';
+				}
+				return;
+			}
+			const allow = chosen.value === 'on';
+			setConsent(allow);
+			if (status instanceof HTMLElement) {
+				status.dataset.saved = '1';
+				status.textContent = allow
+					? 'Opgeslagen. Statistieken zijn toegestaan.'
+					: 'Opgeslagen. Statistieken staan uit en de bijbehorende cookies zijn verwijderd.';
+			}
+		});
+
+		// Keeps the panel correct if the choice is made elsewhere on the page (the banner is on this page too).
+		document.addEventListener('lrf:consent', () => {
+			if (status instanceof HTMLElement) delete status.dataset.saved;
+			sync();
+		});
+
+		sync();
+	}
+</script>
+
+<style>
+	/* The panel is a quiet field on the page, not a card: one hairline frame, the site's own surface step,
+	   no shadow, no radius theatre. It has to read as part of the document it sits in. */
+	.prefs {
+		margin-top: var(--space-lg);
+		max-width: var(--measure);
+		padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		background: rgba(var(--p-atmos-cool), 0.06);
+	}
+	.prefs[hidden] {
+		display: none;
+	}
+	.prefs__set {
+		border: 0;
+		padding: 0;
+		margin: 0;
+		min-width: 0;
+	}
+	.prefs__legend {
+		padding: 0;
+		font-size: var(--fs-h4);
+		font-weight: var(--fw-semibold);
+		color: var(--color-text);
+	}
+	.prefs__help {
+		margin-top: var(--space-2xs);
+		font-size: var(--fs-body-sm);
+		color: var(--color-text-muted);
+	}
+	.prefs__choices {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm) var(--space-xl);
+		margin-top: var(--space-md);
+	}
+	/* Both options are one style, deliberately, see ConsentBanner.astro for why. */
+	.prefs__choice {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		min-height: 2.75rem;
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-medium);
+		color: var(--color-text);
+		cursor: pointer;
+	}
+	.prefs__choice input {
+		width: 1.15rem;
+		height: 1.15rem;
+		accent-color: var(--color-interactive);
+		cursor: pointer;
+	}
+	.prefs__foot {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-sm) var(--space-lg);
+		margin-top: var(--space-lg);
+		padding-top: var(--space-lg);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+	.prefs__save {
+		min-height: 2.875rem;
+		padding: 0.6rem 1.4rem;
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--color-text);
+		font-size: var(--fs-body-sm);
+		font-weight: var(--fw-semibold);
+		transition: border-color var(--dur-interaction) var(--ease-standard),
+			background-color var(--dur-interaction) var(--ease-standard);
+	}
+	.prefs__save:hover {
+		border-color: var(--color-accent);
+		background: rgba(var(--p-atmos-cool), 0.1);
+	}
+	.prefs__status {
+		font-size: var(--fs-body-sm);
+		color: var(--color-text-muted);
+	}
+</style>
