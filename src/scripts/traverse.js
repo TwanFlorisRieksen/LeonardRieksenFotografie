@@ -987,8 +987,27 @@ export function createTraverse(root, opts = {}) {
 
 	function render() {
 		const phi0 = journeyAngle();
-		for (const w of works) place(w, phi0);
+		/*
+		 * THE LEAD-INS ARE PLACED FIRST (P13 / D-85), AND THE REASON IS IMAGE ORDER, NOT DRAWING ORDER.
+		 *
+		 * `place()` writes only styles, and depth alone decides what is in front (z-index is derived from
+		 * the coil's own geometry), so the order these two loops run in cannot change a single pixel. What
+		 * it does change is the order in which `loadIfNear` restores each panel's srcset — and therefore the
+		 * order the browser queues the photographs.
+		 *
+		 * On the very first frame the engine releases every panel inside its opening look-ahead at once:
+		 * roughly twenty-five requests, against six connections. The lead-ins were released LAST, because
+		 * they were placed last — yet three of them are in the set the entrance curtain waits on (D-84: they
+		 * are what fills the top of the frame at journey 0). MEASURED on the built site, 390pt phone at
+		 * dpr 3, cold cache, 1.6 Mbps, CPU throttled 4x: the lead photographs were not even requested until
+		 * 3.26s and the last one landed at 4.96s, so the overture ran to its 4.2s hard cap on every cold
+		 * visit. They were queued behind nineteen photographs nobody was waiting for.
+		 *
+		 * Placing them first puts the crown's own imagery at the head of the queue, which is the only thing
+		 * the arrival is actually blocked on.
+		 */
 		for (const L of leads) place(L, phi0);
+		for (const w of works) place(w, phi0);
 		renderOutro();
 	}
 

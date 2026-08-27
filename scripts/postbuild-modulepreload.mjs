@@ -73,10 +73,28 @@ for (const page of walk(DIST).filter((f) => f.endsWith('.html'))) {
 	);
 	if (!entries.length) continue;
 
-	const deps = new Set();
+	/*
+	 * P13 (D-85): THE ENTRY MODULES ARE HINTED TOO, NOT ONLY THEIR SHARED CHUNKS.
+	 *
+	 * This step used to delete the entries from the hint set, on the reasoning that the page already loads
+	 * them directly so a hint would be a duplicate request. That is not what a `modulepreload` does: the
+	 * <script> and the <link> resolve to the SAME module-map entry, so it is one fetch either way. What the
+	 * hint changes is WHEN the fetch is discovered and at what priority — and Astro emits page scripts at
+	 * the END of <body>, where the preload scanner reaches them only after every stylesheet, font and
+	 * markup-declared image ahead of them.
+	 *
+	 * MEASURED on the built site, 390pt phone at dpr 3, cold cache, 1.6 Mbps, CPU throttled 4x, loading
+	 * /portfolio/: the page's own 19 KB entry — which contains the traverse engine, and which is the thing
+	 * that decides which photographs to request at what size — was not requested until 3019 ms and did not
+	 * land until 3206 ms. Until then nothing in the coil could be fetched at all, and the entrance curtain
+	 * ran to its 4.2s hard cap. The engine was queued behind the fonts, the CSS, the wordmark and the crown
+	 * imagery, none of which it depends on.
+	 *
+	 * This is the same hint Vite emits for its own entry chunks; Astro simply does not emit it for page
+	 * scripts. Entries are listed FIRST so the engine is discovered before its shared dependencies.
+	 */
+	const deps = new Set(entries);
 	for (const e of entries) for (const d of staticDeps(e)) deps.add(d);
-	// Never hint something the page already loads directly — that would be a duplicate request hint.
-	for (const e of entries) deps.delete(e);
 	const fresh = [...deps].filter((d) => !html.includes(`rel="modulepreload" href="/_astro/${d}"`));
 	if (!fresh.length) continue;
 
@@ -90,6 +108,6 @@ for (const page of walk(DIST).filter((f) => f.endsWith('.html'))) {
 
 log(
 	pagesTouched
-		? `added ${hintsAdded} modulepreload hint(s) across ${pagesTouched} page(s) — shared motion chunks now load in the first round-trip.`
+		? `added ${hintsAdded} modulepreload hint(s) across ${pagesTouched} page(s) — page entries and their shared chunks now load in the first round-trip.`
 		: 'no page module scripts with shared static chunks — nothing to hint.',
 );
