@@ -5,12 +5,160 @@
  *   1. THE ACCESSIBLE DOCUMENT (baseline / no-JS / reduced motion): the three worlds are real, headed
  *      <section> chapters — the categories, fully present, as wall text (§4.2). This is the wayfinding when
  *      the coil is not running.
- *   2. THE ENHANCED CHROME (only under [data-tv-active]): the persistent wayfinding marker, the world-title
- *      beats, the scroll hint and the ambient per-world tint — a 2D layer OVER the coil. None of it is ever
- *      an object inside the world (the coil's one rule), and none of it is present until the coil is live.
+ *   2. THE ENHANCED CHROME: the boot state (§0, from the first paint), and under [data-tv-active] the
+ *      corner brand mark, the world mark, the world-crossing beat and the ambient per-world sky — a 2D
+ *      layer OVER the coil. None of it is ever an object inside the world (the coil's one rule).
  *
  * The coil itself is styled entirely in traverse.css and is not touched here.
  */
+
+/* ============================================================================================
+ * 0. THE BOOT STATE — the portfolio arriving, instead of a portfolio that is about to be replaced
+ * ============================================================================================
+ *
+ * `data-tv-boot` is DECLARED IN THE MARKUP (see pages/portfolio/index.astro), so it is true from the first
+ * byte the parser reads and there is no window in which the wrong layout can paint. Read that file's note
+ * for the diagnosis; in short, the "old portfolio concept" the owner sees for a beat on entry is the
+ * accessible chaptered column this page is required to ship, painted while the coil is still on its way.
+ *
+ * THE TWO GATES ARE THE ENGINE'S OWN. `html.js` (set by BaseLayout's render-blocking head script) and
+ * `prefers-reduced-motion: no-preference` are exactly the conditions under which traverse.js mounts. Under
+ * either negative the whole block below simply does not apply and the accessible document is untouched —
+ * which is why the gate is a media query around the state rather than a script that has to remove an
+ * attribute in time.
+ *
+ * SO THIS IS NOT A LOADING SCREEN, AND IT MUST NOT BEHAVE LIKE ONE. Nothing is gated: the document is
+ * complete, the engine is mounting, the scroll is real. All this does is choose WHICH of the page's two
+ * true layouts is on screen during the handover — and it chooses the one the visitor is about to be in.
+ * There is no spinner, no message, no artificial delay, no state machine and nothing to dismiss. It ends
+ * on `[data-tv-active]`, which on a warm load is the next frame.
+ *
+ * WHAT IS ON SCREEN WHILE IT LASTS. The world's own modelled blue-hour ground (the same `.tv-sky` the coil
+ * lives in, so the ground the visitor lands on is already the right one and never changes) and the corner
+ * brand mark — one line of type in the top-left, at chrome scale, with a hairline of light under it drawing
+ * to full. That is the whole "premium, rustig, kort" reveal the brief asks for, built from the design
+ * system's own tokens and costing one pseudo-element and two compositor properties.
+ *
+ * The baseline column keeps its boxes — nothing is removed from the document and nothing changes the layout
+ * the engine is about to measure — it is simply not painted, and neither are the chapter headings.
+ */
+@media (prefers-reduced-motion: no-preference) {
+	html.js .tv[data-tv-boot]:not([data-tv-active]) .tv-viewport {
+		position: fixed;
+		inset: 0;
+		overflow: clip;
+		pointer-events: none;
+		z-index: 1;
+		background-color: var(--color-bg-abyss);
+	}
+
+	html.js .tv[data-tv-boot]:not([data-tv-active]) .tv-field {
+		position: absolute;
+		inset: 0;
+		display: block;
+		padding: 0;
+		gap: 0;
+		/* Not `display:none`: the works keep their boxes, so nothing about the document the engine is about
+		   to measure depends on this state having ended. */
+		visibility: hidden;
+	}
+
+	html.js .tv[data-tv-boot]:not([data-tv-active]) .tv-world__intro {
+		display: none;
+	}
+
+	/* The ground is the coil's own world, lit at the crown's altitude, so the visitor never sees it change. */
+	html.js .tv[data-tv-boot]:not([data-tv-active]) .tv-sky {
+		display: block;
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		isolation: isolate;
+	}
+
+	/* THE CORNER MARK, from the first frame. These are the same declarations §3a gives it under the active
+	   coil (deliberately duplicated rather than merged into one selector list, so that the active state
+	   stays reachable under reduced motion while this one cannot be). */
+	html.js .tv[data-tv-boot]:not([data-tv-active]) .pf-intro {
+		position: fixed;
+		top: calc(4.75rem + clamp(0.85rem, 2.5vh, 1.6rem));
+		left: clamp(1rem, 3vw, 2.25rem);
+		right: auto;
+		transform: none;
+		margin: 0;
+		padding: 0;
+		max-width: min(20rem, 62vw);
+		width: auto;
+		text-align: left;
+		z-index: var(--z-sticky);
+		pointer-events: none;
+		background: none;
+	}
+
+	html.js .tv[data-tv-boot]:not([data-tv-active]) .pf-intro__eyebrow {
+		font-size: var(--fs-eyebrow);
+		letter-spacing: 0.16em;
+		color: var(--color-text-muted);
+		margin: 0 0 0.25rem;
+		text-shadow: 0 1px 10px rgb(0 0 0 / 0.8);
+	}
+
+	html.js .tv[data-tv-boot]:not([data-tv-active]) .pf-intro__title {
+		font-family: var(--font-display);
+		font-size: var(--fs-body);
+		font-weight: var(--fw-display-soft);
+		text-transform: uppercase;
+		letter-spacing: 0.22em;
+		color: var(--color-text);
+		margin: 0;
+		text-shadow: 0 1px 12px rgb(0 0 0 / 0.85);
+	}
+
+	/* The lede belongs to the document, not to the corner (see §3a). */
+	html.js .tv[data-tv-boot]:not([data-tv-active]) .pf-intro__lead {
+		display: none;
+	}
+
+	/* THE HAIRLINE OF LIGHT. One gold rule under the corner mark, drawing left to right — the site's own
+	   language (the header datum, the footer datum, a series caption's rule) rather than a new device. It
+	   is declared on the corner mark in BOTH states and only ANIMATED here, so there is no change at the
+	   handover: whatever it has drawn when the coil arrives is where it stays. `transform` and `opacity`
+	   only — no layout, no paint. */
+	html.js .tv[data-tv-boot]:not([data-tv-active]) .pf-intro::after {
+		animation: pf-boot-rule 1100ms var(--ease-standard) both;
+	}
+}
+
+html.js .tv[data-tv-boot] .pf-intro::after,
+.tv[data-tv-active] .pf-intro::after {
+	content: '';
+	display: block;
+	height: 1px;
+	width: 5.5rem;
+	margin-top: 0.55rem;
+	background: linear-gradient(90deg, var(--color-accent-strong), rgb(199 165 106 / 0));
+	transform-origin: left center;
+}
+
+/* Under reduced motion the boot state does not exist, so this hairline must not either — the `.pf-intro`
+   there is the document's own centred page header and a gold rule under it is not part of that design. */
+@media (prefers-reduced-motion: reduce) {
+	html.js .tv[data-tv-boot] .pf-intro::after {
+		display: none;
+	}
+}
+
+@keyframes pf-boot-rule {
+	from {
+		transform: scaleX(0);
+		opacity: 0;
+	}
+	to {
+		transform: scaleX(1);
+		opacity: 1;
+	}
+}
 
 /* ============================================================================================
  * 1. THE WORLDS AS CHAPTERS — baseline document (no JS / reduced motion)
@@ -331,48 +479,79 @@
 	transform: translateY(-8px);
 }
 
-/* ---- 3b. THE WORLD RAIL (P14) — the portfolio's navigation ------------------------------------
+/* ---- 3b. THE WORLD MARK (P15) — the portfolio's navigation, at chrome scale --------------------
  *
- * WHAT IT REPLACES. A collapsed corner marker ("PORTFOLIO / • Projecten 1/3") that opened, on click, into
- * a panel holding a proportional journey map and a three-item jump list. Owner verdict: it did not read as
- * a control, it was too text-heavy for what it said, and the three destinations — the only thing anyone
- * comes to that corner for — were behind a click nobody had a reason to make.
+ * WHAT IT REPLACES, AND WHY. P14's rail was the right INFORMATION — all three worlds present, current one
+ * marked, one tap to travel — inside the wrong object. It was a bordered, near-opaque, backdrop-blurred
+ * panel carrying three labels AND three counts in two lines each, spanning the full width of a phone. The
+ * owner's verdict is a list of size complaints ("te groot, te tekstueel, vooral op telefoon te dominant,
+ * visueel te aanwezig") and they are all one complaint: it was built as a WIDGET on a page whose entire
+ * subject is photographs, and it competed with them.
  *
- * WHAT IT IS. One rail with all three worlds visible at once, the current one lit and marked, the other two
- * plainly available. It absorbs the panel rather than deleting it: each segment's flex-grow is its work
- * COUNT, so the rail is the proportional map, and the fill + node give exact position along the whole coil.
- * Current world, all worlds, relative size, overall progress — one object, no state, one tap.
+ * WHAT IT IS NOW. The same three destinations, as three words. One line of uppercase micro-type in the
+ * bottom-left corner, hairline-separated, the current world lit and marked with the site's single gold
+ * tick, over an edgeless corner wash. No box, no border, no fill, no radius, no backdrop-filter, no counts.
+ * It reads as a mark on the world in the same language as the corner brand mark opposite it and the
+ * photographs' own captions — not as a control panel laid over the collection.
  *
- * It stays chrome, not a dashboard (§7.2/§7.4, and the brief's own list): a hairline-bounded bar of the
- * site's own deep sapphire, uppercase micro-labels at reading weight, one gold tick on the current world,
- * one gold node on the progress line. No pills, no tabs, no glass, no shadow stack, no gold fills — gold
- * only ever appears as a mark or a hairline (6.11/6.12), and blue carries interaction and focus. */
+ * THE COUNTS MOVE, THEY ARE NOT LOST. "9 / 40 / 7" is genuinely useful and genuinely not worth a second
+ * line of type in the corner of a photography page; it stays in each anchor's `aria-label` (where it also
+ * fixes the "Interieur7" concatenation WCAG 2.5.3 problem the visible number used to create), and the
+ * relative sizes are still SHOWN — by the boundary ticks on the progress hairline, which is what that
+ * hairline has always been for.
+ *
+ * THE HIT AREA IS NOT THE INK. Each word is 12px of type; each anchor pads to >=44px tall and has real
+ * horizontal padding, so the target is comfortable on touch while the mark stays small (WCAG 2.5.8).
+ *
+ * PERFORMANCE. The `backdrop-filter: blur(10px)` goes with the panel, and it is the single most expensive
+ * thing that was on this page after the coil's own depth of field: a backdrop filter over a fixed element
+ * forces the compositor to re-sample and re-blur the content behind it on every frame the coil moves, i.e.
+ * on every frame of every scroll. Legibility is carried instead by an edgeless corner wash plus the same
+ * dark text-halo the captions use — no surface, no edge, no per-frame raster.
+ *
+ * THE MARKUP IS STILL THE FALLBACK. Three real anchors to real `#work-<id>` targets, in the document, in
+ * tab order, working without JavaScript and without the engine. Unchanged from P14. */
 
 .pf-worlds {
 	display: none;
 	position: fixed;
-	left: clamp(1rem, 3vw, 2.25rem);
-	right: auto;
+	/* Spans the viewport, so the box can never be wider than the screen (a shrink-to-fit fixed box whose
+	   padding exceeds the viewport is horizontal overflow — measured 369px inside a 320px screen). Nothing
+	   of it is visible or clickable beyond the mark itself: the wash fades to nothing well before the right
+	   edge and the box is `pointer-events: none` except for the three anchors. */
+	left: 0;
+	right: 0;
 	/* `--consent-h` is 0 unless the cookie bar is up. While it is, it is a fixed strip at the bottom edge on
-	   a HIGHER layer, so the rail — the portfolio's whole wayfinding affordance — would sit underneath it,
+	   a HIGHER layer, so the mark — the portfolio's whole wayfinding affordance — would sit underneath it,
 	   invisible and unclickable, for every first-time visitor (P12 / D-84; see scripts/consent.js). */
-	bottom: calc(clamp(1rem, 3vw, 2.25rem) + var(--consent-h, 0px));
-	/* Sized by its own labels, not by an arbitrary fraction: three Dutch world names at chrome scale need
-	   what they need, and the cap only stops it growing into the photography on a very wide screen. */
-	width: max-content;
-	max-width: min(34rem, 56vw);
+	bottom: var(--consent-h, 0px);
+	padding: 2.5rem clamp(1rem, 3vw, 2.25rem) clamp(0.9rem, 2.4vw, 1.5rem);
+	/* Room for the back-to-top disc in the opposite corner (`position: fixed`, 2.75rem across at
+	   `right: clamp(1rem, .5rem + 1.4vw, 2rem)` — BackToTop.astro), so the mark and the disc can never
+	   collide however long the three world names get. */
+	padding-right: calc(2.75rem + clamp(1rem, 0.5rem + 1.4vw, 2rem) + 0.75rem);
 	z-index: var(--z-sticky);
+	/* THE ONLY SURFACE IT HAS: an edgeless wash anchored off the bottom-left corner, so the type has a
+	   darker ground under it and the wash itself has no boundary anywhere to read as a rectangle. It is the
+	   same instrument the hero's scrim and the world's own vignette use, at a fraction of the strength. */
+	background: radial-gradient(
+		112% 128% at 0% 100%,
+		rgba(4, 6, 10, 0.72) 0%,
+		rgba(4, 6, 10, 0.5) 34%,
+		rgba(4, 6, 10, 0.22) 62%,
+		rgba(4, 6, 10, 0) 88%
+	);
+	pointer-events: none; /* the wash is not a target; the anchors below turn this back on */
 }
 
 .tv[data-tv-active] .pf-worlds {
 	display: block;
 }
 
-/* HELD BACK UNTIL THE COIL HAS ARRIVED, and no longer than that (P14). It used to be held until the visitor
-   TRAVELLED (D-78) — correct while the opening was a brand panel that needed the screen to itself, and wrong
-   now: with the panel gone, a navigation control that is invisible until you have already started moving is
-   a control you have to discover by accident. It arrives with the world instead, on the same 900 ms beat the
-   coil emerges on, so the first complete screen the visitor sees already contains the way around.
+/* HELD BACK UNTIL THE COIL HAS ARRIVED, and no longer than that (P14). A navigation control that is
+   invisible until you have already started moving is a control you have to discover by accident, so it
+   arrives with the world, on the same 900 ms beat the coil emerges on, and the first complete screen the
+   visitor sees already contains the way around.
    `visibility` rather than opacity alone, so while held it is also out of the tab order — a control nobody
    can see must not be reachable by keyboard either (WCAG 2.4.7/2.4.11). */
 .tv[data-tv-active] .pf-worlds {
@@ -399,23 +578,32 @@
 	transition: opacity 450ms var(--ease-standard);
 }
 
-/* The world's descriptor, shown for a beat when you cross a boundary. This is all that remains of the
-   full-viewport world-title BEAT: a world change is navigation, so its feedback lives with the navigation. */
+/* ---- 3c. CROSSING INTO A WORLD (§6) ------------------------------------------------------------
+ * The owner's note is that a world change is currently not marked clearly enough — and the note above it
+ * in the P14 code explains why the previous answer (a full-viewport scrim under a display-size heading)
+ * was removed: it was an interruption. Both are true, and the way through the middle is to make the
+ * announcement BIGGER IN THE NAVIGATION rather than bigger on the page.
+ *
+ * So crossing a boundary now lights a two-line beat directly above the mark: the world's NAME, at reading
+ * size, and its one-line descriptor under it, with a gold hairline drawing in beside them. It occupies the
+ * same corner the mark already owns, covers no photograph, dims nothing, blocks nothing and needs no
+ * dismissal — and it is unmistakable, because a name appearing where there was no name is the clearest
+ * signal a corner can give. It holds for a beat and releases; the active segment's own lit state is what
+ * remains. Together with the ambient light shift the sky already makes at the same moment (D-75), the
+ * boundary is felt before it is read (§4.2).
+ * aria-hidden — the anchors' own `aria-current` carries the state for assistive technology, so this is
+ * never announced twice. */
 .pf-worlds__note {
-	margin: 0 0 0.55rem;
-	padding-left: 0.16em;
-	font-size: var(--fs-eyebrow);
-	text-transform: uppercase;
-	letter-spacing: 0.18em;
-	color: var(--color-accent);
-	text-shadow: 0 1px 10px rgb(0 0 0 / 0.85);
+	margin: 0 0 0.7rem;
+	padding-left: 0.9rem;
+	border-left: 1px solid var(--color-accent-hairline);
 	opacity: 0;
-	transform: translateY(4px);
+	transform: translateY(6px);
 	transition:
-		opacity 420ms var(--ease-standard),
-		transform 420ms var(--ease-standard);
+		opacity 520ms var(--ease-standard),
+		transform 520ms var(--ease-standard);
 	pointer-events: none;
-	min-height: 1em;
+	max-width: min(20rem, 62vw);
 }
 
 .pf-worlds__note.is-visible {
@@ -423,124 +611,150 @@
 	transform: none;
 }
 
+.pf-worlds__note-name {
+	display: block;
+	font-family: var(--font-display);
+	font-weight: var(--fw-display-soft);
+	font-size: var(--fs-body);
+	line-height: 1.2;
+	letter-spacing: 0.02em;
+	color: var(--color-text);
+	text-shadow:
+		0 1px 2px rgb(0 0 0 / 0.9),
+		0 0 10px rgb(0 0 0 / 0.7);
+}
+
+.pf-worlds__note-sub {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: var(--fs-eyebrow);
+	text-transform: uppercase;
+	letter-spacing: 0.16em;
+	color: var(--color-accent);
+	text-shadow:
+		0 1px 2px rgb(0 0 0 / 0.9),
+		0 0 10px rgb(0 0 0 / 0.7);
+}
+
+/* ---- 3d. THE MARK ITSELF ------------------------------------------------------------------------ */
+
 .pf-worlds__rail {
 	position: relative;
 	display: flex;
 	align-items: stretch;
-	/* Near-opaque, not merely tinted: the rail can sit over a bright photograph (notably on mobile, where
-	   the coil fills the width), and blur is not a contrast guarantee. The blur still softens the last
-	   sliver that shows through. */
-	background: rgb(8 11 16 / 0.86);
-	border: 1px solid var(--color-border);
-	border-radius: var(--radius-md);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	overflow: hidden;
+	pointer-events: auto;
+	width: max-content;
+	max-width: min(30rem, 92vw);
 }
 
-/* One world. A real anchor to a real #work-<id>, so this works with the engine off and with JS off.
-   `flex: 1 1 auto` with an intrinsic basis: the three segments share the rail evenly and none of them is
-   ever narrower than its own name (see the note in the markup about why the counts do NOT size these). */
+/* One world. A real anchor to a real #work-<id>, so this works with the engine off and with JS off. */
 .pf-world {
 	position: relative;
-	flex: 1 1 auto;
-	min-width: 0;
 	display: flex;
-	flex-direction: column;
-	gap: 0.1rem;
-	/* ≥44px tall including the border, so every segment is a comfortable touch target at every width
-	   (WCAG 2.5.8 / the brief's "no tiny text-only hit areas"). */
-	padding: 0.62rem 0.5rem 0.68rem;
+	align-items: center;
+	/* The ink is 12px of type; the TARGET is >=44px tall and comfortably wide (WCAG 2.5.8). This is the
+	   whole reason the mark can be this small without being fiddly. */
+	min-height: 2.75rem;
+	padding: 0.4rem clamp(0.6rem, 2vw, 0.95rem);
 	text-decoration: none;
 	color: var(--color-text-muted);
-	text-align: left;
-	transition:
-		background var(--dur-feedback) var(--ease-standard),
-		color var(--dur-feedback) var(--ease-standard);
+	transition: color var(--dur-feedback) var(--ease-standard);
 }
 
-/* A hairline between segments — the rail reads as one divided object rather than three loose labels. */
+.pf-world:first-child {
+	padding-left: 0;
+}
+
+/* A hairline between words — three destinations reading as one control, with no box around them. */
 .pf-world + .pf-world {
 	box-shadow: inset 1px 0 0 var(--color-border);
 }
 
 .pf-world:hover,
 .pf-world:focus-visible {
-	background: var(--p-white-a08);
-	color: var(--color-text-secondary);
+	color: var(--color-text);
 }
 
 .pf-world:focus-visible {
 	outline: 2px solid var(--color-focus);
-	outline-offset: -2px;
+	outline-offset: 2px;
+	border-radius: 2px;
 }
 
 .pf-world__label {
 	font-family: var(--font-display);
 	font-weight: var(--fw-display-soft);
-	font-size: var(--fs-caption);
+	font-size: var(--fs-eyebrow);
 	text-transform: uppercase;
-	/* The tracking is what makes three uppercase words read as an architectural rail rather than as tabs.
-	   It is spent carefully: at 320px the three Dutch labels have to share ~250px, so it eases down with
+	/* The tracking is what makes three uppercase words read as an architectural mark rather than as tabs.
+	   It is spent carefully: at 320px the three Dutch labels have to share the width, so it eases down with
 	   the viewport rather than being one fixed value that either crowds or under-sets. */
-	letter-spacing: clamp(0.04em, 0.2vw, 0.13em);
+	letter-spacing: clamp(0.05em, 0.22vw, 0.14em);
 	line-height: 1.15;
 	color: inherit;
 	white-space: nowrap;
+	/* No plate, no scrim, no chip — the same tight dark halo the photographs' own captions use, which is
+	   how this world is allowed to make type legible over a picture (see traverse.css `.tv-cap`). */
+	text-shadow:
+		0 1px 2px rgb(0 0 0 / 0.92),
+		0 0 8px rgb(0 0 0 / 0.72);
 }
 
+/* THE COUNT IS NOT PAINTED. It stays in the accessible name (see the markup), where it is more use and
+   costs the corner nothing. */
 .pf-world__count {
-	font-size: var(--fs-eyebrow);
-	color: var(--color-text-muted);
-	font-variant-numeric: tabular-nums;
-	letter-spacing: 0.06em;
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
 }
 
 /* THE CURRENT WORLD. Lit type, and one gold tick — the site's single selective accent, as a MARK, never a
-   fill (6.11/6.12). State is carried by three separate signals (weight, brightness and the tick), so it is
+   fill (6.11/6.12). State is carried by two independent visual signals (brightness and the tick), so it is
    never colour alone (A11Y-09), and `aria-current` carries it for assistive technology. */
 .pf-world[aria-current='true'] {
-	background: var(--p-white-a08);
 	color: var(--color-text);
 }
 
-.pf-world[aria-current='true'] .pf-world__label {
-	color: var(--color-text);
-}
-
-.pf-world[aria-current='true'] .pf-world__count {
-	color: var(--color-text-secondary);
-}
-
+/* THE TICK SITS ABOVE THE WORD, not under it. Under it, it lands a hairline away from the progress fill —
+   two gold rules within 6px of each other, saying two different things, which is how a single-meaning
+   accent stops being one (D-76/D-77). Above the word the two are unmistakably separate marks: the tick
+   says WHICH world, the hairline below says HOW FAR. */
 .pf-world[aria-current='true']::before {
 	content: '';
 	position: absolute;
+	left: clamp(0.6rem, 2vw, 0.95rem);
+	right: clamp(0.6rem, 2vw, 0.95rem);
 	top: 0;
-	left: 0;
-	right: 0;
-	height: 2px;
-	background: var(--color-accent);
+	height: 1px;
+	background: var(--color-accent-strong);
 }
 
-/* OVERALL PROGRESS along the WHOLE coil, on the rail's own foot: the hairline fills and the node marks the
-   exact position, so the rail answers "how far am I" continuously and not only "which world" (D-74). */
+.pf-world[aria-current='true']:first-child::before {
+	left: 0;
+}
+
+/* OVERALL PROGRESS along the WHOLE coil, on a hairline under the three words: the fill and the node give
+   the exact position, and the boundary ticks show how the collection actually divides — which is where the
+   proportional information the P14 rail carried in its segment widths now lives (D-74). */
 .pf-worlds__track {
 	position: absolute;
 	left: 0;
 	right: 0;
 	bottom: 0;
 	height: 1px;
-	background: var(--color-border);
+	background: var(--color-border-subtle);
 	pointer-events: none;
 }
 
-/* Where the collection actually divides — one hairline tick per world boundary, on the map. */
 .pf-worlds__tick {
 	position: absolute;
 	top: -2px;
 	width: 1px;
 	height: 5px;
-	background: var(--color-border-strong);
+	background: var(--color-border);
 }
 
 .pf-worlds__fill {
@@ -549,7 +763,7 @@
 	width: 100%;
 	transform: scaleX(0);
 	transform-origin: left center;
-	background: linear-gradient(90deg, rgb(199 165 106 / 0.5), var(--color-accent-strong));
+	background: linear-gradient(90deg, rgb(199 165 106 / 0.35), var(--color-accent-strong));
 	transition: transform 220ms var(--ease-standard);
 }
 
@@ -644,35 +858,50 @@
  * 4. RESPONSIVE + REDUCED MOTION
  * ============================================================================================ */
 
-/* MOBILE IS WHERE THE NAVIGATION MATTERS MOST. A phone shows the same coil at a third of the width, so the
-   rail has to be unmistakable on the busiest screen of the site — the owner's test is "één duidelijke tap".
-   It spans the width between the gutters instead of sitting in a corner, which makes each of the three
-   segments a full-height, comfortably wide target, and it keeps the labels on one line down to 320px. */
+/* MOBILE (P15). The P14 rail spanned the full width between the gutters, because it was a panel and a
+   panel had to be big to be obvious. The mark does not: three words at 12px fit inside a 320px screen with
+   room to spare, and being small is now the point — a phone shows the same coil at a third of the width, so
+   the corner is where the navigation belongs and the middle is where the work belongs.
+   The one thing that does not change on a phone is the target size: the anchors keep their >=44px height
+   and their padding, so "één duidelijke tap" is still true of ink that takes almost no room. */
 @media (max-width: 40rem) {
 	.pf-worlds {
-		left: 0.75rem;
-		/* Clear of the back-to-top disc, which is `position: fixed` in the opposite corner at
-		   `right: clamp(1rem, .5rem + 1.4vw, 2rem)` and 2.75rem across (BackToTop.astro). At full width the
-		   rail ran underneath it and the disc sat on top of the "Interieur" segment — a control covering a
-		   third of another control, and only once the visitor had scrolled far enough for the disc to appear.
-		   Measured on the render, not read off the source. */
-		right: calc(0.75rem + 2.75rem + clamp(1rem, 0.5rem + 1.4vw, 2rem));
-		width: auto;
-		/* The desktop cap is a fraction of the viewport, which on a phone is smaller than the gutters the
-		   rail is being asked to span — so it has to be released here or the control shrinks back into a
-		   corner on exactly the screen where it most needs to be obvious. */
-		max-width: none;
+		padding-left: 0.9rem;
 	}
 	.pf-world {
-		padding-inline: 0.35rem;
-		align-items: center;
-		text-align: center;
+		padding-inline: 0.55rem;
+	}
+	.pf-world[aria-current='true']::before {
+		left: 0.55rem;
+		right: 0.55rem;
+	}
+	.pf-world[aria-current='true']:first-child::before {
+		left: 0;
 	}
 	.pf-worlds__note {
-		text-align: center;
-		padding-left: 0.18em;
+		padding-left: 0.75rem;
+		max-width: min(18rem, 74vw);
 	}
 }
+
+/* ...AND ON A REALLY NARROW SCREEN THEY CANNOT SHARE A ROW, so they stop trying (P15).
+   ARITHMETIC, measured on the render: the three Dutch world names at 12px with their tracking and touch
+   padding need 294px. At 320px, after the left gutter and the reserve the back-to-top disc needs on the
+   right, 230px is free — so the mark ran UNDER the disc and "INTERIEUR" sat behind it. (Found on the
+   screenshot; the document reported zero horizontal overflow throughout, because both are fixed elements.)
+   Shrinking the type below 12px or tightening the tracking further would buy ~30px and cost legibility,
+   which is the wrong trade on the screen where this control matters most. So below 26rem the mark takes the
+   whole width between the gutters and sits ABOVE the disc instead of beside it. The disc only appears once
+   the visitor has scrolled; the mark is there from the first frame, and it is the more important of the two.
+   `--consent-h` is still added, so the cookie bar is cleared as well (P12 / D-84). */
+@media (max-width: 26rem) {
+	.pf-worlds {
+		padding-right: 0.9rem;
+		/* clear of the disc: its own 2.75rem plus the gutter it sits in, plus a hair of air */
+		bottom: calc(var(--consent-h, 0px) + 2.75rem + clamp(1rem, 0.5rem + 1.4vw, 2rem) * 0.5);
+	}
+}
+
 
 @media (prefers-reduced-motion: reduce) {
 	/* The coil never activates under reduced motion, so none of the enhanced chrome shows. These are the

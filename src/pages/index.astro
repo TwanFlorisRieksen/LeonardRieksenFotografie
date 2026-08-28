@@ -1040,6 +1040,40 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		isolation: isolate;
 	}
 
+	/* ── P15: THE MOBILE BROWSER'S RETRACTING CHROME MUST NOT EXPOSE THE NEXT SECTION ────────────────────
+	   THE COMPLAINT (owner screenshots 3 and 5): on a phone and on an iPad, a strip of the section BELOW
+	   the hero is visible under it — "de hero wordt niet als één complete viewport-sectie behandeld".
+
+	   THE MECHANISM, and it is arithmetic rather than a bug in this page. `svh` is the SMALL viewport: the
+	   height the screen has while the browser's URL bar is EXPANDED. It is deliberately the conservative
+	   unit — with it, a 100svh block is guaranteed to fit whatever the chrome is doing, which is exactly why
+	   D-44 moved this hero onto it. But the browser retracts that bar the moment the reader scrolls, and the
+	   viewport then GROWS to `lvh` — 60-100px taller on a current iPhone, more on an iPad — while this box
+	   is still exactly `svh` tall. The difference is a band at the foot of the screen that the hero does not
+	   cover, and what is behind it is `.pos-sec`. Nothing is wrong with the hero; it is simply the wrong
+	   size for a viewport that has two sizes.
+
+	   THE FIX, and why it is not `dvh`. `100dvh` is the obvious swap and it is the wrong one: `dvh` changes
+	   continuously as the bar animates, so every frame of that animation relayouts a full-viewport section
+	   and the page visibly jumps while the reader is scrolling — a worse defect than the one being fixed,
+	   and a CLS liability. Instead the BOX is grown to the large viewport, so it can never be under-sized,
+	   and the CONTENT keeps its `svh` composition exactly by paying the difference back as bottom padding.
+	   The card is bottom-aligned (`align-items: flex-end`), so its distance from the foot of the SMALL
+	   viewport — which is what the whole D-77 composition is measured against — is unchanged to the pixel.
+	   The photograph, the scrim, the water-light and the night band are all `inset: 0` inside this box, so
+	   they grow with it and the extra strip is more photograph, never a seam.
+
+	   ZERO CHANGE ON DESKTOP, by construction: there `lvh == svh`, so the added height and the added padding
+	   are both exactly 0 and the computed style is identical to what it was. The `@supports` guard means a
+	   browser without `lvh` keeps the previous behaviour rather than losing the hero. */
+	@supports (height: 100lvh) {
+		.home-hero {
+			--hero-chrome: calc(100lvh - 100svh);
+			min-height: 100lvh;
+			padding-block-end: calc(clamp(2.75rem, 1.9rem + 3.2vw, 4.25rem) + var(--hero-chrome));
+		}
+	}
+
 	/* ARRIVAL EASING (P6.2 refinement). The site's `--ease-out` is cubic-bezier(0.16, 1, 0.3, 1), an
 		   expressive expo curve tuned for ~200ms UI reveals, where its snap reads as crispness. On a
 		   multi-second cinematic move it is the wrong instrument: it spends ~80% of its travel in the first
@@ -1175,14 +1209,42 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		height: 260%;
 		z-index: -1;
 		pointer-events: none;
+		/* ── P15: THE NIGHT THAT RISES IS THE SKY'S NIGHT, NOT A BLACK PANEL ──────────────────────────────
+		   THE COMPLAINT: "de overgang tussen hero en volgende sectie bevat nog steeds een vreemde
+		   donkere/zwarte strook", on desktop and on tablet.
+
+		   MEASURED at 1440x900, mean frame luminance sampled on a grid across the whole viewport, scrolling
+		   the hero scene:
+
+		       scroll     0    the photograph                          58.9
+		       scroll   300    the band arriving   rgb(  8, 12, 22)    22.2
+		       scroll   400    full occlusion      rgb(  8, 12, 22)    11.7
+		       scroll   500    full occlusion      rgb(  8, 12, 22)    11.9
+		       scroll   700    the band clearing   rgb( 18, 41, 69)    38.6
+		       scroll   780    the open stage sky  rgb( 19, 41, 70)    40.2
+
+		   The band was doing its job perfectly and doing it in the WRONG COLOUR. rgb(8,12,22) is 3.4x darker
+		   than the blue-hour sky it hands off to, so what the reader crosses between the photograph and the
+		   world is not the world's night at all — it is a near-black rectangle, for ~200px of scroll, with
+		   its own soft edges sweeping the frame. That is the strook, and no amount of shortening it would
+		   have removed it: a shorter black panel is still a black panel.
+
+		   THE FIX IS ONE COLOUR, and it is the one the render already names. The band becomes rgb(19,41,70),
+		   which is EXACTLY the composited stage sky it uncovers (skyA over skyB at this altitude, measured
+		   above). Full occlusion is therefore visually indistinguishable from the sky: the photograph is
+		   consumed by a deep blue night that then simply opens, rather than by a hole that then fills in.
+		   Nothing else changes — same height, same stops, same travel, same exchange at progress 0.56, so
+		   every geometric guarantee documented above still holds to the pixel and the photograph can still
+		   never flash back. The comment above about "the stage's own deep night" was the right intention;
+		   the value under it was the sky WITHOUT skyA on top of it, which is a different colour. */
 		background: linear-gradient(
 			to top,
-			rgba(8, 12, 22, 0) 0%,
-			rgba(8, 12, 22, 0.72) 8%,
-			rgb(8, 12, 22) 15%,
-			rgb(8, 12, 22) 66%,
-			rgba(8, 12, 22, 0.5) 82%,
-			rgba(8, 12, 22, 0) 100%
+			rgba(19, 41, 70, 0) 0%,
+			rgba(19, 41, 70, 0.72) 8%,
+			rgb(19, 41, 70) 15%,
+			rgb(19, 41, 70) 66%,
+			rgba(19, 41, 70, 0.5) 82%,
+			rgba(19, 41, 70, 0) 100%
 		);
 		transform: translateY(100%);
 		will-change: transform;

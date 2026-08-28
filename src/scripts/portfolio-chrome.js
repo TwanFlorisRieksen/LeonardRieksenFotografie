@@ -3,8 +3,9 @@
  *
  * WHAT THIS IS, AND WHAT IT IS NOT. This is the 2D layer that gives the coil the structure, identity and
  * wayfinding of a finished portfolio: the world rail, the corner orientation mark and the ambient per-world
- * light (P14 replaced the collapsed marker + dropdown and the full-viewport world-title beat with the rail;
- * the entrance curtain and its veil are deleted outright). It NEVER touches the Interaction Engine's geometry, camera or
+ * light. (P14 replaced the collapsed marker + dropdown and the full-viewport world-title beat with a rail and
+ * deleted the entrance curtain outright; P15 reduced the rail to a corner MARK — three words, no panel — and
+ * moved the world-crossing announcement onto it.) It NEVER touches the Interaction Engine's geometry, camera or
  * physics (traverse.js is the frozen foundation). It reads the world from the SAME journey the coil is drawn
  * from — via the engine's `onFrame` seam — so the two can never disagree, and it drives the coil's camera
  * only through the engine's own public `focusWork()`.
@@ -34,12 +35,14 @@ export function mountChrome(root) {
 	}
 	if (!worlds.length) return { onFrame() {} };
 
-	/* P14: the collapsed marker + its dropdown panel + the journey map inside it are replaced by ONE rail
-	   carrying all three worlds at once (see the note in the page markup and in portfolio-chrome.css §3b).
-	   There is no open/closed state left to hold, no outside-click handler and no Escape handler, because
-	   there is nothing to close. */
+	/* P14 replaced the collapsed marker + its dropdown panel + the journey map with one rail carrying all
+	   three worlds at once; P15 reduced that rail to a corner MARK — three words, no box (see the note in
+	   the page markup and in portfolio-chrome.css §3b). Either way there is no open/closed state to hold, no
+	   outside-click handler and no Escape handler, because there is nothing to close. */
 	const jumps = Array.from(root.querySelectorAll('[data-pf-jump]'));
 	const note = root.querySelector('[data-pf-note]');
+	const noteName = root.querySelector('[data-pf-note-name]');
+	const noteSub = root.querySelector('[data-pf-note-sub]');
 	const intro = root.querySelector('[data-pf-intro]');
 	const progressFill = root.querySelector('[data-pf-progress-fill]');
 	const node = root.querySelector('[data-pf-node]');
@@ -198,12 +201,18 @@ export function mountChrome(root) {
 	let noteTimer = 0;
 	const fireNote = (w) => {
 		if (!note) return;
-		note.textContent = w.sub;
+		if (noteName) noteName.textContent = w.label;
+		if (noteSub) noteSub.textContent = w.sub;
 		note.classList.remove('is-visible');
 		void note.offsetWidth; // restart the transition even on a rapid re-entry
 		note.classList.add('is-visible');
 		clearTimeout(noteTimer);
-		noteTimer = window.setTimeout(() => note.classList.remove('is-visible'), 1800);
+		/* 2600ms, up from 1800 (P15). The beat now carries the world's NAME as well as its descriptor, and
+		   a name the reader has to catch inside 1.8s while a coil is moving is a name most readers miss —
+		   which is a large part of why the boundary was reported as not clearly marked. It is still a beat:
+		   it releases on its own, it never blocks anything, and the active word's own lit state is what
+		   remains afterwards. */
+		noteTimer = window.setTimeout(() => note.classList.remove('is-visible'), 2600);
 	};
 
 	/* Which world holds the reading work — the last world whose start index the journey has reached. */

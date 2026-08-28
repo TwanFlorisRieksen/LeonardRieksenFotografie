@@ -119,6 +119,22 @@
 		}
 	}
 
+	/* ...AND NOT ON THE PORTFOLIO (P15). A backdrop-filter costs what is BEHIND it, re-sampled and
+	   re-blurred, on every frame that content changes. On every other page of this site the content behind
+	   this disc is a document that only moves when the visitor scrolls, so the glass is nearly free. On
+	   `/portfolio/` it sits over the coil — a surface where every visible photograph is re-transformed on
+	   every frame — so the disc was quietly asking the compositor to re-blur a moving 3D scene 60 times a
+	   second, for a 44px circle, on the one page the owner reports as heavy.
+	   It falls back to the SAME surface the `@supports` branch above already designs for a browser without
+	   backdrop-filter, so this is a state the control was built for rather than a new one: a real, quiet
+	   disc instead of glass. The glyph carries the non-text contrast either way (measured 7.5–7.9:1), and
+	   every other page keeps the glass exactly as D-78 specified. */
+	:global(body.is-portfolio) .to-top {
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+		background: linear-gradient(152deg, rgba(31, 42, 64, 0.9) 0%, rgba(10, 15, 26, 0.9) 100%);
+	}
+
 	/* THE RESTING STATE IS HIDDEN, AND HIDDEN MEANS UNFOCUSABLE. `visibility: hidden` (not opacity alone)
 	   is what takes it out of the tab order; the opacity/transform are only there so the appearance is a
 	   fade-and-rise rather than a pop. This is also the no-JS state: nothing ever sets `.is-visible`

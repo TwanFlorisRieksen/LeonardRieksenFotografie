@@ -90,22 +90,24 @@
 	transform-style: preserve-3d;
 }
 
-/* ---- entrance emergence (Phase 4, D-74) --------------------------------------------------------
-   The world resolves out of a soft, dark, slightly-scaled blur into its resting focus — a designed
-   ARRIVAL, in place of the pre-Phase-4 pop where empty frames filled in one by one. It is a one-shot on
-   the field CONTAINER only, so the engine's per-work transforms are never touched (it owns those). At the
-   crown the outro is dormant, so the runtime writes no inline transform/opacity on the field and this
-   animation is unobstructed; the intro controller removes the class once it has played. Depth-of-field is
-   the coil's own language, so a blur→sharp settle reads as the world coming into being, not as a CSS trick.
-   Reduced motion never mounts the coil, so this can never run there. */
-/* P14: THE EMERGENCE IS THE ENTRANCE NOW, and it belongs to the engine's own "I am running" flag rather
-   than to a controller that had to remember to take it off again. It plays once, the instant the coil
-   mounts, over a world the visitor can already scroll and touch — there is nothing to wait for and nothing
-   to dismiss. Shortened 1500ms → 900ms because it no longer follows a curtain: it IS the arrival.
-   `backwards`, NOT `both`: `both` retains the 100% keyframe (`transform: none; filter: none`) for the life
-   of the page, and a retained animation value beats an inline style — which would silently disable the
-   engine's own transform/opacity writes on this element during the ending outro. `backwards` applies only
-   the start state and releases the element completely when it finishes. */
+/* ---- entrance emergence (Phase 4, D-74; re-cut at P15) ----------------------------------------
+   The world resolves into its resting frame — a designed ARRIVAL, in place of the pre-Phase-4 pop where
+   empty frames filled in one by one. It is a one-shot on the field CONTAINER only, so the engine's per-work
+   transforms are never touched (it owns those). At the crown the outro is dormant, so the runtime writes no
+   inline transform/opacity on the field and this animation is unobstructed.
+   P14: it belongs to the engine's own "I am running" flag rather than to a controller that had to remember
+   to take it off again. It plays once, the instant the coil mounts, over a world the visitor can already
+   scroll and touch — there is nothing to wait for and nothing to dismiss.
+   P15: THE BLUR IS GONE FROM IT. It opened on `filter: blur(18px)`, which is a full-viewport render surface
+   over the entire coil for the whole of the animation — the single most expensive frame on the page, spent
+   on the first frame, on the slowest device, while the photographs are still decoding. The arrival is now
+   carried by the two properties that cost nothing: it settles from a hair of overscan into rest as it fades
+   up, which is the same camera gesture the rest of the site opens with (`--ease-camera` on the homepage
+   hero). Nothing about the choreography changes — same one shot, same duration, same curve.
+   `backwards`, NOT `both`: `both` retains the 100% keyframe (`transform: none`) for the life of the page,
+   and a retained animation value beats an inline style — which would silently disable the engine's own
+   transform/opacity writes on this element during the ending outro. `backwards` applies only the start state
+   and releases the element completely when it finishes. */
 .tv[data-tv-active] .tv-field {
 	animation: tv-emerge 900ms cubic-bezier(0.22, 0.61, 0.16, 1) backwards;
 }
@@ -113,16 +115,14 @@
 @keyframes tv-emerge {
 	0% {
 		opacity: 0;
-		transform: scale(1.045);
-		filter: blur(18px) brightness(0.62) saturate(0.82);
+		transform: scale(1.035);
 	}
-	55% {
+	60% {
 		opacity: 1;
 	}
 	100% {
 		opacity: 1;
 		transform: none;
-		filter: none;
 	}
 }
 
@@ -134,7 +134,9 @@
 	/* Centring lives inside the runtime's single transform chain (translate(-50%,-50%) is its first term),
 	   so the runtime owns exactly one animated property and the compositor gets one clean layer per work. */
 	transform-origin: 50% 50%;
-	will-change: transform, opacity;
+	/* `will-change` is NOT declared here (P15). Stating it on `.tv-work` asks the compositor for a layer for
+	   every panel in the archive for the life of the page, including the ~50 of 63 that are culled at any
+	   moment. The engine knows exactly which works are live and hints only those — see the cull in place(). */
 	pointer-events: auto;
 	visibility: hidden;
 	/* THE FAR SIDE OF THE COIL IS DRAWN — the coil is a solid round object (owner correction, supersedes

@@ -142,44 +142,72 @@ const CFG = {
 	   back is pushed dark and the falloff is shaped (depthGamma) so the front third of the coil holds full
 	   brightness and the plunge into shadow happens across the far half — the reference's own near/far
 	   contrast. Freeze both to see the geometry raw; neither is where the spatial illusion comes from. */
-	farDim: 0.34, // opacity at the very back of the coil; 1 at the front. Low enough that the back reads as
-	// shadow, high enough that it reads as PRESENT — the owner's correction was that the back is missing, so
-	// it must be visibly there, not merely less-black. The blur below is what keeps it from competing. Raised
-	// back to 0.34 (D-72, "iets minder darkening"): the D-71 push to 0.28 leaned on darkness to separate the
-	// planes, but the owner wants the photography to carry more light, not less — the near/far contrast now
-	// comes mostly from the depth-of-field and the light hierarchy, so the mid-coil can stay livelier.
-	depthGamma: 1.8, // >1 keeps the near face bright longer and darkens the turn into the back faster. Eased
-	// 2.0→1.8 (D-72) so the front strand of the coil stays brighter and the darkening is gentler — the owner
-	// asked the hero to be highlighted with LIGHT rather than the surround being pushed into shadow.
-	farBlur: 7, // px of defocus at the very back of the coil, 0 across the whole FRONT hemisphere. THE
-	// DEPTH-OF-FIELD, and the answer to "don't just mirror the photographs": a plane turned past 90° shows its
-	// image reversed, but by then it is on the BACK of the coil and softened out of legibility, so the far side
-	// reads as the out-of-focus back of the ribbon — real distance, a solid object — never as a second copy.
-	// Applied only where z < 0 (the far hemisphere), shaped by backGamma, so a front-facing OR side work is
-	// razor sharp and only the genuine back softens (D-72 rev.2, owner: "de foto's aan de voorkant niet
-	// geblurt"). Quantised in place() so a stationary card caches one raster instead of re-rasterising.
-	backGamma: 1.9, // >1 keeps the near-back gentle and deepens the blur toward the very back. `blur =
-	// max(0, -z/R)^backGamma · farBlur` — 0 across the entire front hemisphere (z ≥ 0), ramping in only once a
-	// work has turned past the side onto the back. This is what makes "front sharp, back soft" literal. Raised
-	// 1.5→1.9 (D-72 rev.2, owner: "er is te veel blur") so the softness concentrates on the DEEPEST works: the
-	// near/mid-back reads mostly sharp (more photography legible), while the fully-turned ~180° works still get
-	// 6–7px — enough to keep their MIRRORED back-faces from ever reading as a backwards photograph (the D-68
-	// constraint; measured: works past 150° facing stay ≥6px).
+	farDim: 0.20, // opacity at the very back of the coil; 1 at the front. P15: lowered 0.34 -> 0.20. The
+	// depth-of-field that used to keep the far half of the ribbon from reading as a second, mirrored gallery
+	// is gone (see `backDim` below and PERFORMANCE, P15), so the separation between the near face and the
+	// back has to be carried entirely by LIGHT — which is what the owner asked for in the first place
+	// ("de foto's die niet gecentreerd zijn moeten donkerder lijken, terugvallen"). At 0.20 over the site's
+	// near-black ground the back of the coil reads as shadow with structure in it, not as a black void and
+	// not as a picture.
+	depthGamma: 1.9, // >1 keeps the near face bright longer and darkens the turn into the back faster. Nudged
+	// 1.8 -> 1.9 with `farDim`, so the FRONT strand keeps essentially all of its light and the plunge into
+	// shadow is concentrated on the genuine back — the front of the coil must not get darker than it was.
+	/* ============================================================================================
+	 * P15: THERE IS NO BLUR IN THIS WORLD ANY MORE.
+	 *
+	 * WHAT WENT. `farBlur` (7px of defocus on the back hemisphere, shaped by `backGamma`) and with it the
+	 * whole `filter: blur()` write path — the `grade` element, `lastFilter`, `blurPx`, `angleBlur` and
+	 * `edgeBlurMax`. `neighborBlur` and `edgeBlurMax` were already 0 (D-72 rev.2); `farBlur` was the last
+	 * one left, and it was the expensive one.
+	 *
+	 * WHY. A CSS `filter` forces Chrome to allocate a render surface for the element it is on. D-81 proved
+	 * that the cost is the SURFACE and not the effect (a STATIC blur measured the same as a dynamic one) and
+	 * moved the blur one level in, onto `.media`, which bought the median frame back. But a render surface
+	 * inside a 3D-transformed subtree still has to be rasterised at device resolution, and on a Retina phone
+	 * there are a dozen of them at once. The owner's instruction is unambiguous and it is the right call:
+	 * no CSS blur anywhere in the active portfolio rendering.
+	 *
+	 * WHAT REPLACES IT — and it is a REPLACEMENT, not a deletion. The back of the coil had two jobs to do
+	 * and the blur was doing both:
+	 *   1. keep the far half from competing with the near face. Now carried by `farDim` + `depthGamma`
+	 *      (opacity) and by `backDim` (brightness), both of which are compositor/colour-matrix work with no
+	 *      render surface at all.
+	 *   2. keep a BACKFACE — a photograph turned past 90°, which presents its image mirrored — from ever
+	 *      reading as a backwards photograph (the D-68 constraint). That is what `backDim` is for: a work
+	 *      past the side of the coil loses most of its light, so what the eye gets is the shadowed verso of
+	 *      a card that has turned away. Measured on the render at 1440x900: a fully-turned work sits at
+	 *      opacity 0.20 and brightness 0.42, i.e. ~8% of the luminance of the reading work. It is present
+	 *      as depth and it is unreadable as a picture, which is exactly the trade the blur was making.
+	 * ============================================================================================ */
+	backDim: 0.58, // brightness a fully-turned-away (180°) work loses. 0 across the whole FRONT hemisphere,
+	// ramping in only once a work has passed the side of the coil, shaped by `backGamma` — so a front-facing
+	// OR side work keeps its light and only the genuine back falls into shadow.
+	backGamma: 1.6, // >1 keeps the near-back gentle and deepens the shadow toward the very back. `back =
+	// max(0, -z/R)^backGamma` — 0 across the entire front hemisphere (z >= 0). Eased 1.9 -> 1.6 because this
+	// now shapes a luminance ramp rather than a blur radius: light needs to start falling a little earlier
+	// than defocus did, or the turn into the back reads as a switch rather than as a rotation into shadow.
 
 	/* --- feel --------------------------------------------------------------------------------------- */
 	scrollPerWork: 720, // document pixels of scroll per work. Raised from 640 (D-70) so each work lingers
 	// longer at its reading moment — the owner asked for "meer rust, meer luxe", and a slower cadence per
 	// work is the temporal half of that (the pitch is the spatial half). Geometry is untouched; this only
 	// scales scroll↔journey, so the reading moment still lands exactly on an integer journey.
-	damp: 0.15, // spring coefficient toward the scroll-derived target, expressed PER 60Hz FRAME and normalised
-	// to real time in tick() (see there). Kept crisp so the reading moment SETTLES square-on quickly — the
-	// "world stops dead when scroll stops" that the owner flagged is answered by the ambient life layer below,
-	// not by a mushy spring that would soften the read.
-	// P10 (D-81): 0.082 → 0.15. At 0.082 the world covered only 8% of a new scroll target in the first frame
-	// and needed ~600ms to arrive — a time constant of 203ms sitting between every input and its answer, which
-	// is precisely the "pas iets later scrolt het daadwerkelijk" the owner reported. 0.15 gives a 103ms time
-	// constant: the coil still has visible weight and still glides into its reading angle, but it starts moving
-	// WITH the wheel instead of behind it. The adaptive term below is unchanged.
+	damp: 0.26, // spring coefficient toward the scroll-derived target, expressed PER 60Hz FRAME and normalised
+	// to real time in tick() (see there). The reading moment must SETTLE square-on rather than snap, so this is
+	// a spring and not a follow — but it is a fast one.
+	//
+	// P15: 0.15 -> 0.26, and the number is arithmetic rather than taste. A per-frame coefficient k has time
+	// constant -16.7ms / ln(1 - k), so:
+	//     0.082 (pre-D-81)  203 ms   ~470 ms to 90% of a new target
+	//     0.15  (D-81)      103 ms   ~237 ms          MEASURED on the built page: 280 ms, wheel to settle
+	//     0.26  (P15)        55 ms   ~127 ms
+	// D-81 fixed the GAIN (the world travels exactly as far as the scrollbar) and cut the lag by half, and
+	// the owner still reports "het reageert met vertraging / alsof het achter je aan komt". 237 ms is a
+	// quarter of a second between a wheel notch and the world arriving, which is well above the ~100–150 ms
+	// at which a delay stops being weight and becomes lag. 127 ms sits under it: the coil still glides into
+	// its reading angle and still carries visible mass, but it starts and finishes WITH the gesture.
+	// The touch profile (TOUCH_CFG) is unchanged at 0.42 — under a finger there is no staircase to smooth.
+	// The adaptive term in tick() (larger jumps damp harder, so a teleport arrives) is unchanged.
 	margin: 0.055, // safe-box inset as a fraction of the smaller viewport axis
 	edge: 1.15, // cull once a work is this many half-viewport-heights from centre
 
@@ -207,44 +235,41 @@ const CFG = {
 	   in with the same `life` envelope as the camera sway, is bounded so the world and the scrollbar never
 	   diverge by more than a couple of works, and UNWINDS the moment the visitor scrolls again so the scrollbar
 	   stays honest whenever they are in control. Reduced motion never mounts the runtime, so this is off there. */
-	autoSpeed: 0.08, // works per second the coil drifts forward at full idle (≈ 2.8°/s of coil rotation — a
-	// slow cinematic turn, gently perceptible but "heel langzaam, rustgevend"). Scaled by `life`, so it eases
-	// in and out rather than switching on. Bounded by autoMax so it is never "continuously distracting" motion.
-	autoMax: 0.9, // works the coil may turn on its own before it rests — the D-72 budget, and now a budget
-	// per REST rather than a ceiling on a debt (see `driftSpent`): the coil keeps turning for about eleven
-	// seconds after you stop, then holds. A calm settle, never an auto-tour that carries the visitor away.
-	// It no longer decides anything about responsiveness. Under D-81 it doubled as the size of the debt the
-	// visitor had to scroll off, which is why it was cut to 0.9 there; with the debt gone (P12 / D-84) this
-	// number means only what its name says.
+	autoSpeed: 0.04, // works per second the coil drifts forward at full idle. Scaled by `life`, so it eases in
+	// and out rather than switching on. P15: halved from 0.08. At 0.08 a three-second pause — which is what
+	// LOOKING at a photograph is — carried the reading work 0.24 works, about 12 degrees off square-on, so the
+	// frame the reader had stopped on was visibly turning away while they read it. That is the opposite of the
+	// "rustig, precies" the brief asks for, and it is also what makes the world feel like it is not staying
+	// where it was put. At 0.04 the same pause costs 6 degrees, which reads as the coil breathing rather than
+	// as it leaving.
+	autoMax: 0.5, // works the coil may turn on its own, in total. P15: 0.9 -> 0.5, and it is now a HARD ceiling
+	// rather than a per-rest budget (see below) — the coil settles onward for about twelve seconds after the
+	// first pause and then holds for good, and the world and the scrollbar can never diverge by more than half
+	// a work (~0.9% of this page's thumb travel).
 	/* ============================================================================================
-	   P12 (D-84): THE DRIFT IS NO LONGER A DEBT THE VISITOR PAYS. IT IS RE-BASED WHILE THEY REST.
-
-	   D-81 replaced a time-based unwind (which could move the world BACKWARD against a scroll) with a
-	   share of the visitor's own travel: `autoOffset -= travel * 0.45`. That removed the reversal, and it
-	   left something quieter and, on the evidence, worse — because it is present on EVERY gesture rather
-	   than only after a long idle.
-
-	   MEASURED on the built page at 1440×900, one 300 px wheel notch (worth 0.4186 works at this cadence),
-	   from a merely WARM state (not a long idle):
-
-	       journey moved  0.2107 works   =  50.3% of the input
-	       first frame    0.1218         =  the response is immediate, and it is immediately half-scale
-
-	   The camera was not late. It was UNDER-POWERED: the world travelled roughly half as far as the
-	   scrollbar for as long as any drift debt existed — and debt accrues every time the reader pauses for
-	   half a second, which is what reading a portfolio IS. That is exactly "stroef", "niet fris", "alsof
-	   het achter je aan komt": a direct, instant, correctly-damped response at the wrong GAIN.
-
-	   The fix is to stop treating the drift as something to undo. While the visitor is scrolling,
-	   `autoOffset` is FROZEN: the world moves 1:1 with the scrollbar, from the first frame, at full gain,
-	   with nothing subtracted. ~300 ms after they stop — the coil settled, nothing moving — the offset is
-	   RE-BASED: the same distance is added to `window.scrollY` and removed from `autoOffset` in one step.
-	   Because the journey is `target + autoOffset` and both change by the same amount, the rendered world
-	   does not move by so much as a pixel; only the scrollbar thumb catches up with the world it was
-	   describing (≤ 0.9 works ≈ 1.6% of this page's thumb travel). Nothing is hijacked: the correction
-	   happens at rest, never during a gesture, and it makes the scrollbar MORE honest, not less.
-	   ============================================================================================ */
-	rebaseDelay: 300, // ms of no scroll input, with the coil settled, before the drift is re-based
+	 * P15: THE RE-BASE IS GONE, AND WITH IT THE ONLY PROGRAMMATIC SCROLL ON THIS PAGE.
+	 *
+	 * WHAT IT WAS. D-84 froze the drift during a gesture (so the world travels 1:1 with the scrollbar, at
+	 * full gain) and settled the accrued offset ~300 ms later by adding it to `window.scrollY` while
+	 * subtracting it from `autoOffset` — a swap that is invisible on screen, because the camera reads only
+	 * the sum. That reasoning was right and the fix it replaced (unwinding the drift out of the visitor's own
+	 * travel, D-81) was genuinely worse.
+	 *
+	 * WHY IT GOES ANYWAY. It is still a `window.scrollTo` the visitor did not ask for, landing a beat after
+	 * their gesture ends. MEASURED on the built page: one wheel notch moved the scrollbar 300 px, and 480 ms
+	 * later the page moved a further 142 px on its own. Nothing on screen moves, but the thumb jumps, a
+	 * scroll event fires, and on a phone a programmatic scroll arriving just after a momentum fling is
+	 * exactly the kind of thing a mobile browser answers by re-animating its own URL bar. The owner's report
+	 * for this session is a list of ways the page appears to move without being asked to, so a mechanism
+	 * whose entire job is to move the page without being asked to has to justify itself, and it cannot: what
+	 * it buys is scrollbar honesty to within half a work.
+	 *
+	 * WHAT REPLACES IT. Nothing. `autoOffset` is simply clamped to `autoMax` and stays there — the drift
+	 * happens once, early, and is spent. The world and the scrollbar then disagree by at most 0.5 works
+	 * (~370 px of 42,000, or 0.9% of the thumb's travel), permanently and silently, which is a far smaller
+	 * dishonesty than a page that scrolls itself. `driftSpent`, `rebaseArmed` and `programmaticY` go with it,
+	 * along with the `scrollHeight` read that used to force a layout inside the frame loop.
+	 * ============================================================================================ */
 
 	/* --- the reading moment gets a moment (D-70, owner: "de gecentreerde foto verdient subtiele nadruk") -
 	   The work square-on at t=0 is already the sharpest, nearest and largest thing on screen, but at rest it
@@ -283,22 +308,18 @@ const CFG = {
 	seriesReadSat: 0.06,
 	seriesReadScale: 0.014,
 
-	/* --- neighbour hierarchy: LIGHT, not blur (D-72, owner: "highlight de hero met licht, niet met blur;
-	   de foto's aan de voorkant grotendeels scherp; veel minder blur dan nu") -----------------------------
+	/* --- neighbour hierarchy: LIGHT (D-72; the ONLY hierarchy in the world since P15) --------------------
 	   D-71 kept exactly ONE card crisp and blurred every front neighbour up to 7px, so the whole front strand
 	   read as a soft smear around one sharp hero — the owner judged this "doorgeschoten": the photography was
-	   suffering under the effect (blueprint priority 1). The hierarchy is now carried by LIGHT: a front work
+	   suffering under the effect (blueprint priority 1). The hierarchy is carried by LIGHT: a front work
 	   loses a little brightness as it turns away from square-on (`neighborDim`), so the hero is the brightest
-	   plane on the coil while its neighbours stay SHARP and fully readable. Both terms are multiplied by
-	   `depth` so they only touch the FRONT strand — the back is handled by farBlur + the opacity grade, and
-	   double-treating it would flatten the coil. A whisper of angle blur remains for the most strongly turned
-	   front planes only, purely as a hint of their oblique angle — blur is otherwise DEPTH indication only.
-	   The reading card (θ=0) is always exactly 0 blur / full brightness, so its guarantee is untouched. */
+	   plane on the coil while its neighbours stay sharp and fully readable. The term is multiplied by `depth`
+	   so it only touches the FRONT strand — the back is handled by `backDim` + the opacity grade, and
+	   double-treating it would flatten the coil. The reading card (theta=0) is always exactly full
+	   brightness, so its guarantee is untouched. */
 	sharpFalloff: 0.72, // radians of |θ| over which a front neighbour turns from square-on (0) to full (~41°)
-	neighborBlur: 0, // px of angle blur on the FRONT strand. ZERO (2→0, D-72 rev.2, owner: "de foto's aan de
-	// voorkant niet geblurt"). The entire front hemisphere is the focal plane — sharp, always. The hero is
-	// distinguished purely by LIGHT (neighborDim below), by being square-on and centred, and by being the
-	// largest plane. Blur exists ONLY on the back hemisphere now (backGamma), as honest depth of field.
+	/* P15: `neighborBlur` is gone with the rest of the blur (see the note above `backDim`). It had been 0
+	   since D-72 rev.2 — the entire front hemisphere is the focal plane and always was. */
 	neighborDim: 0.22, // brightness a fully-turned FRONT neighbour loses (0.16→0.22, D-72 rev.2). With the
 	// front strand now perfectly sharp, LIGHT is the only thing separating the hero from its crisp neighbours,
 	// so the falloff is a touch deeper — the eye still lands on the brightest, square-on plane, and the side
@@ -315,9 +336,8 @@ const CFG = {
 	edgeStart: 0.46, // fraction of the way to the cull (|y|/liveY) at which softening begins. Lowered slightly
 	// 0.5→0.46 (D-72) so a work spends more of its rise/fall arriving and departing — the gesture starts earlier
 	// and is gentler, which is the "foto's arriveren en vertrekken, ze verschijnen niet" the owner asked for.
-	edgeBlurMax: 0, // px of defocus a work reaches as it leaves the frame. ZERO (3→0, D-72 rev.2): a departing
-	// work is not blurred at all — it fades (opacity) and recedes (edgeSink) so it is "already out" by the time
-	// it would otherwise be soft, rather than lingering as a blurry ghost at the frame edge.
+	/* P15: `edgeBlurMax` is gone with the rest of the blur. It had been 0 since D-72 rev.2 — a departing
+	   work fades (opacity) and recedes (edgeSink); it was never defocused. */
 	edgeSink: 220, // px of translateZ recession a work reaches as it leaves the frame (D-72). A work near the
 	// cull sinks away from the camera and fades, so it ARRIVES from depth as it rises to centre and DEPARTS
 	// into depth as it rides off — an honest, un-blurred entrance and exit that reads as travel, not a pop.
@@ -448,15 +468,12 @@ export function createTraverse(root, opts = {}) {
 		deferred: !!el.querySelector('[data-tv-srcset]'),
 		sizeHint: '', // last `sizes` written, so measure() can be idempotent
 		/*
-		 * WHERE THE LIGHT GRADE IS APPLIED, AND WHY IT IS NOT THIS ELEMENT (P10 / D-81).
+		 * WHERE THE LIGHT GRADE IS APPLIED, AND WHY IT IS NOT THIS ELEMENT (P10 / D-81, kept at P15).
 		 *
-		 * This is the single change that took `/portfolio/` from 30fps to 60fps on a Retina display, and it
-		 * is not about the effect being expensive — it is about WHICH BOX carries it.
-		 *
-		 * A CSS `filter` on an element forces Chrome to allocate a render surface for it. When that same
-		 * element also carries a transform that changes every frame, the surface has to be re-rasterised in
-		 * SCREEN SPACE on every one of those frames, at device resolution. MEASURED on the built page in
-		 * headful Chrome at 1440×900, dpr 2, scrolling the coil continuously:
+		 * A CSS `filter` on an element forces Chrome to allocate a render surface for it, and when that same
+		 * element also carries a transform that changes every frame, the surface is re-rasterised in SCREEN
+		 * SPACE on every one of those frames at device resolution. MEASURED on the built page in headful
+		 * Chrome at 1440x900, dpr 2, scrolling continuously:
 		 *
 		 *     engine's own dynamic filter on .tv-work   median 33.4ms   p95 51ms    (~30fps)
 		 *     a STATIC blur(7px) on .tv-work            median 32.3ms   p95 50ms    (~30fps)
@@ -465,49 +482,19 @@ export function createTraverse(root, opts = {}) {
 		 *
 		 * The static case is the proof: the blur cost the same when it never changed, so the expense was never
 		 * the blur being recomputed — it was the filtered surface being redrawn because the element under it
-		 * had moved. Isolating the two halves of the grade agreed: with `farBlur: 0` and the whole
-		 * brightness/contrast/saturate grade left running, the page measured 16.7ms; with the grade off and
-		 * the blur left on, 32.5ms. The colour matrix is free; the render surface is not.
+		 * had moved. The colour matrix is free; the render surface is not.
 		 *
-		 * So the grade moves one level in, onto the `.media` box — which is exactly the photograph, carries no
-		 * transform of its own, and is rasterised ONCE in local space and then simply transformed with its
-		 * parent. Nothing about the art direction changes: the same blur, the same depth-of-field, the same
-		 * reading-moment light, on the same pixels. The caption and the gold mount line are now outside the
-		 * graded box, which is if anything more correct — a caption should not be defocused with the plate it
-		 * labels — and the difference where they overlap is under 7% of brightness, measured.
-		 */
-		grade: el.querySelector('.media') || el.querySelector('picture') || el.querySelector('img') || el,
-		/*
-		 * THE TWO GRADINGS COST DIFFERENT AMOUNTS, SO THEY GET DIFFERENT BOXES (P10 / D-81, second pass).
-		 *
-		 * Moving the whole filter off the transformed element fixed the median (33.4ms → 16.7ms) but left a
-		 * tail: 5–19 frames per 2.6s run still ran 30–50ms. MEASURED, correlating every frame against image
-		 * arrivals and against filter churn: ZERO images arrived during the run, and the long frames carried
-		 * **3.75 filter-string changes** against **1.32** on the healthy ones. The spikes were the blur being
-		 * regenerated.
-		 *
-		 * The cause is that both gradings shared one `filter` property. `blurPx` is deliberately rounded to
-		 * whole pixels so a travelling work re-blurs only a handful of times — but `brightness` beside it is a
-		 * continuous value that moves every single frame, so the STRING changed every frame, and Chrome
-		 * re-ran the entire chain, blur included. The quantisation was real and it was being defeated by its
-		 * own neighbour.
-		 *
-		 * So the depth-of-field stays on `.media` (regenerated only when the rounded pixel radius actually
-		 * changes) and the colour matrix moves one level in, onto the <img> — where it is a cheap per-pixel
-		 * operation that can change every frame for nothing. Measured on its own earlier in this session: the
-		 * colour grade with the blur disabled ran a flat 16.7ms.
-		 *
-		 * The two now compose inner-to-outer (colour, then blur) where they used to compose left-to-right
-		 * (blur, then colour). A Gaussian blur is linear and brightness/saturate are per-pixel linear, so the
-		 * two orders differ only in contrast's constant term — below the quantisation step, and verified on
-		 * the render.
+		 * P15 REMOVES THE BLUR ALTOGETHER (see `backDim` in CFG), so only the colour matrix is left — and it
+		 * stays one level in, on the <img>, where it is a per-pixel operation on a box that carries no
+		 * transform of its own and is rasterised once in local space. The `grade` element and the second
+		 * `filter` property that used to carry the depth of field are gone with it: one filter string, on one
+		 * element, changed only when its own quantised value changes.
 		 */
 		tone: el.querySelector('img') || el.querySelector('picture') || el.querySelector('.media') || el,
 		/* Last values written, so an unchanged frame writes nothing at all. Every one of these is a style
 		   invalidation on a subtree, and a custom property is an invalidation on the subtree that reads it —
 		   with the coil nearly still (the idle drift moves it a few thousandths of a work per frame) most of
 		   them do not change from frame to frame, and re-writing them was pure invalidation for no pixels. */
-		lastFilter: null,
 		lastTone: null,
 		lastOpacity: null,
 		lastZ: null,
@@ -555,25 +542,8 @@ export function createTraverse(root, opts = {}) {
 	let clock = 0; // seconds of run time, drives the sway oscillators (rAF-timed, not frame-counted)
 	let lastT = 0;
 	let autoOffset = 0; // works the idle auto-drift has added to the spring target (D-72); frozen while the
-	// visitor scrolls and re-based onto scrollY once they rest (P12 / D-84 — see rebaseDrift)
+	// visitor scrolls (D-84) and clamped to cfg.autoMax for good (P15 — the re-base is gone, see CFG)
 	let lastOrigin = ''; // last perspective-origin written, so the ambient drift writes only on change
-	/* ONE re-base per gesture (P12 / D-84). Armed by a real visitor scroll, disarmed the moment the offset
-	   has been settled onto scrollY. Without the arming the re-base would run on every frame of the idle
-	   period, converting the drift into scrollbar movement as fast as it accrued — an auto-tour that never
-	   rests and that moves the visitor's own scroll position, which is precisely what D-72 forbids. */
-	let rebaseArmed = false;
-	/* The scroll position the re-base itself moved to. `window.scrollTo` fires its scroll event
-	   ASYNCHRONOUSLY, after `rebaseDrift` has already returned, so restoring `lastInput` and disarming
-	   inside that function is not enough — the late event re-armed the re-base and reset the idle timer on
-	   every frame, which silently disabled the ambient drift altogether (measured: 12 px of drift in 14 s
-	   where 0.9 works ≈ 660 px was intended). Any scroll event that reports exactly this position is ours;
-	   the first one that does not clears it. */
-	let programmaticY = null;
-	/* Total drift accrued since the visitor last scrolled. `autoOffset` alone can no longer bound the
-	   drift, because the re-base zeroes it while the visitor is still resting — without this the coil would
-	   simply start a second 0.9-work drift after every settle-up. This is the D-72 budget itself: the coil
-	   turns for about eleven seconds after you stop, then holds, however the bookkeeping underneath moves. */
-	let driftSpent = 0;
 	/* When the runtime started, so the image look-ahead can open narrow and widen (see `loadAheadFirst`). */
 	let mountedAt = 0;
 	let outro = 0; // 0..1 end-of-journey dissolve, eased toward outroTarget in tick()
@@ -623,11 +593,34 @@ export function createTraverse(root, opts = {}) {
 	 * one-shot per work. Nothing is stashed without JavaScript or under reduced motion (the template gates
 	 * it on the same conditions the engine mounts under), so the accessible document is untouched.
 	 */
+	/*
+	 * P15 — FETCH PRIORITY BELONGS TO THE RESTORE, NOT TO THE MARKUP.
+	 *
+	 * The crown (the first three works and the first three lead-ins, which are what fills the frame at
+	 * journey 0) used to carry `priority` in the template, i.e. `loading="eager"` + `fetchpriority="high"`.
+	 * That is exactly right in intent and it could not work, because of the ORDER two things happen in:
+	 * Chrome's preload scanner runs AHEAD of the parser, so it reached those <source> elements and started
+	 * fetching them before the parse-time stash script — which is below 140 KB of markup — had run. It
+	 * picked from the server-rendered `sizes`, which describes the no-JS column, so it asked for the 900w
+	 * derivative of a panel that presents at ~284px; then the stash script removed the srcset, the browser
+	 * re-selected, and the speculative request was cancelled. MEASURED on the built site: exactly six
+	 * `net::ERR_ABORTED` image requests on every load of /portfolio/, one per priority image, every time.
+	 *
+	 * So `priority` is dropped from the coil's markup (nothing there is eager any more, and nothing is
+	 * speculatively fetched at the wrong size) and the priority is applied HERE instead — at the instant the
+	 * engine restores the srcset, which is the instant the fetch actually starts, and by which time the
+	 * honest `sizes` is already on the element. Same intent, applied where it takes effect, and six wasted
+	 * round-trips fewer.
+	 */
 	function loadIfNear(w, y) {
 		if (!w.deferred) return;
 		const ahead = performance.now() - mountedAt < cfg.loadRampMs ? cfg.loadAheadFirst : cfg.loadAhead;
 		if (Math.abs(y) > liveY * ahead) return;
 		w.deferred = false;
+		if (w.i < 3) {
+			const im = w.el.querySelector('img');
+			if (im) im.setAttribute('fetchpriority', 'high');
+		}
 		const pic = w.el.querySelector('picture');
 		if (pic) {
 			for (const s of pic.querySelectorAll('source[data-tv-srcset]')) {
@@ -867,10 +860,17 @@ export function createTraverse(root, opts = {}) {
 		   work could be culled mid-travel, so a keyboard visitor was ejected from the world on the very
 		   first Tab that reached it (measured: focus entered at hop 7 and was on <body> 1.6s later). The
 		   focused work stays alive until it is blurred, wherever the ribbon has carried it. */
+		/* `will-change` IS PAID FOR PER ELEMENT, NOT PER MOVING ELEMENT (P15). The stylesheet used to declare
+		   `will-change: transform, opacity` on `.tv-work` unconditionally, which asks the compositor for a
+		   layer for all 63 panels plus the lead-ins — for the whole life of the page, whether or not they are
+		   in the frame. The engine already knows exactly which works are live (this cull), so the hint is
+		   given to those and taken back from the rest. It is written only when visibility itself changes, so
+		   it costs one extra style write per work per entry/exit, and never a per-frame one. */
 		if (Math.abs(y) > liveY && w.el !== focused) {
 			if (w.visible) {
 				w.visible = false;
 				w.el.style.visibility = 'hidden';
+				w.el.style.willChange = 'auto';
 				w.el.setAttribute('aria-hidden', 'true');
 			}
 			return;
@@ -878,6 +878,7 @@ export function createTraverse(root, opts = {}) {
 		if (!w.visible) {
 			w.visible = true;
 			w.el.style.visibility = 'visible';
+			w.el.style.willChange = 'transform, opacity';
 			w.el.removeAttribute('aria-hidden');
 		}
 
@@ -914,14 +915,13 @@ export function createTraverse(root, opts = {}) {
 		const read = readT * readT * (3 - 2 * readT);
 		const hv = w.hoverF; // eased hover amount (0 unless a pointer is resting on this work)
 
-		/* NEIGHBOUR HIERARCHY BY LIGHT, NOT BLUR (D-72 rev.2). `off` is 0 at square-on and 1 once a work has
-		   turned sharpFalloff away; `turn` is its smoothstep. The whole FRONT hemisphere is razor sharp — the
-		   hero is distinguished from its crisp neighbours purely by LUMINANCE: a front work dims as it turns
-		   away (`neighborDim`, × depth so it only touches the front strand). `neighborBlur` is 0, so `angleBlur`
-		   is 0 — kept as a seam only. The reading card is θ=0 → turn=0 → full brightness. */
+		/* NEIGHBOUR HIERARCHY BY LIGHT (D-72 rev.2, and since P15 the ONLY hierarchy there is). `off` is 0 at
+		   square-on and 1 once a work has turned sharpFalloff away; `turn` is its smoothstep. The whole FRONT
+		   hemisphere is razor sharp and always was — the hero is distinguished from its crisp neighbours purely
+		   by LUMINANCE: a front work dims as it turns away (`neighborDim`, x depth so it only touches the front
+		   strand). The reading card is theta=0 -> turn=0 -> full brightness. */
 		const off = Math.min(Math.abs(theta) / cfg.sharpFalloff, 1);
 		const turn = off * off * (3 - 2 * off);
-		const angleBlur = turn * cfg.neighborBlur * depth;
 		const neighborLight = 1 - turn * cfg.neighborDim * depth;
 
 		/* ENTRANCE & EXIT BY DEPTH (D-72). A work near the cull recedes on translateZ (`edgeSink`) and fades
@@ -929,22 +929,27 @@ export function createTraverse(root, opts = {}) {
 		   DEPARTS into depth as it rides off — travel, not a pop, and without any defocus. */
 		const edgeSink = edgeSoft * cfg.edgeSink;
 
-		/* DEPTH OF FIELD — BACK HEMISPHERE ONLY (D-72 rev.2). `backAmt` is 0 across the entire front hemisphere
-		   (z ≥ 0: front-facing AND side works) and ramps to 1 at the very back, so the focal plane is the whole
-		   front of the coil and only the genuine back softens — "de foto's aan de voorkant niet geblurt". The
-		   angle/edge terms are 0 by config now; kept in the sum as tunable seams. Quantised to whole pixels so a
-		   still card caches one raster instead of rebuilding the filter every frame. */
+		/* THE BACK OF THE COIL FALLS INTO SHADOW — the replacement for the depth of field (P15). `backAmt` is 0
+		   across the entire front hemisphere (z >= 0: front-facing AND side works) and ramps to 1 at the very
+		   back, so a work keeps all of its light until it has turned past the side and only the genuine back
+		   darkens. Together with the opacity grade above this is what stops a BACKFACE — which presents its
+		   photograph mirrored — from ever reading as a backwards picture: measured on the render, a fully-turned
+		   work sits at opacity 0.20 x brightness 0.42, about 8% of the reading work's luminance. Present as
+		   depth, unreadable as a picture. It rides in the same colour matrix as everything else below, so it
+		   costs nothing beyond the multiply it already does. */
 		const backAmt = Math.max(0, -z / R);
-		const blurPx = Math.round(Math.pow(backAmt, cfg.backGamma) * cfg.farBlur + angleBlur + edgeSoft * cfg.edgeBlurMax);
+		const backLight = 1 - Math.pow(backAmt, cfg.backGamma) * cfg.backDim;
 		/* SERIES LIFT (Phase 4, D-74). 0 for every loose work; for a series cover it rides on `read`, so the
 		   extra light and scale ease in exactly as the cover turns square-on and out as it turns away. */
 		const seriesRead = w.isSeries ? read : 0;
-		/* THE COLOUR MATRIX — cheap, so it may change every frame. Quantised to 1% anyway (two decimals, not
-		   three): a 1% step in a slow temporal luminance ramp is far below the eye's threshold, and it cuts the
-		   number of style writes by roughly an order of magnitude. */
+		/* THE COLOUR MATRIX — the whole grade now, and cheap: a per-pixel operation on an untransformed box, no
+		   render surface anywhere. Quantised to 1% (two decimals, not three): a 1% step in a slow temporal
+		   luminance ramp is far below the eye's threshold, and it cuts the number of style writes by roughly an
+		   order of magnitude. */
 		const bright = (
 			(1 + read * cfg.readBright + seriesRead * cfg.seriesReadBright + hv * cfg.hoverBright) *
-			neighborLight
+			neighborLight *
+			backLight
 		).toFixed(2);
 		const tone = [];
 		if (Math.abs(parseFloat(bright) - 1) > 0.002) tone.push(`brightness(${bright})`);
@@ -956,15 +961,6 @@ export function createTraverse(root, opts = {}) {
 		if (toneStr !== w.lastTone) {
 			w.lastTone = toneStr;
 			w.tone.style.filter = toneStr;
-		}
-
-		/* THE DEPTH OF FIELD — expensive, so it lives alone on `.media`, the photograph's own untransformed
-		   box, and changes only when the rounded pixel radius does. Never on the element the camera moves.
-		   See the notes on `grade` and `tone` in mkNode for the measurements that decided both. */
-		const filter = blurPx > 0 ? `blur(${blurPx}px)` : '';
-		if (filter !== w.lastFilter) {
-			w.lastFilter = filter;
-			w.grade.style.filter = filter;
 		}
 
 		/* translate(-50%,-50%) is leftmost, so it is applied LAST, in the parent's flat space — it centres
@@ -998,8 +994,11 @@ export function createTraverse(root, opts = {}) {
 
 		/* The caption belongs to the reading moment only, and it fades as the work turns away or leaves the
 		   clear band: past a few degrees the text is foreshortened enough to stop being worth reading. */
+		/* Quantised to 2% (P15, was 1%). Every custom-property write invalidates the computed style of the
+		   subtree that reads it, and this one is written on every live work; a 2% step in an opacity ramp is
+		   invisible and roughly halves the number of invalidations on a travelling coil. */
 		const capO = Math.max(0, 1 - Math.abs(theta) / 0.3) * (1 - edgeSoft);
-		const capStr = capO.toFixed(2);
+		const capStr = (Math.round(capO * 50) / 50).toFixed(2);
 		if (capStr !== w.lastCap) {
 			w.lastCap = capStr;
 			w.el.style.setProperty('--tv-cap-o', capStr);
@@ -1024,7 +1023,9 @@ export function createTraverse(root, opts = {}) {
 		       between a light that switches on gently and one that blooms. */
 		const goldT = Math.max(0, 1 - Math.abs(theta) / cfg.goldFalloff);
 		const gold = z >= 0 ? goldT * goldT * goldT * (goldT * (goldT * 6 - 15) + 10) * (1 - edgeSoft) : 0;
-		const goldStr = gold.toFixed(3);
+		/* Quantised to 2% for the same reason as `--tv-cap-o` above: this is a per-work subtree invalidation
+		   feeding a single opacity, and three decimals of it changed on literally every frame. */
+		const goldStr = (Math.round(gold * 50) / 50).toFixed(2);
 		if (goldStr !== w.lastGold) {
 			w.lastGold = goldStr;
 			w.el.style.setProperty('--tv-gold', goldStr);
@@ -1074,7 +1075,28 @@ export function createTraverse(root, opts = {}) {
 			stage.style.opacity = (1 - e).toFixed(3);
 			stage.style.transform = `translateY(${(-e * vh * 0.08).toFixed(1)}px) scale(${(1 - e * 0.05).toFixed(4)})`;
 		}
-		if (viewportEl) viewportEl.style.visibility = e > 0.985 ? 'hidden' : '';
+		/*
+		 * THE HAND-OFF IS GEOMETRIC, NOT ONLY ANIMATED (P15).
+		 *
+		 * `.tv-viewport` is `position: fixed; inset: 0` — a full-screen surface that sits OVER whatever the
+		 * document has scrolled up underneath it, and the contact invitation and the site footer both live
+		 * below this root. Hiding it on `e > 0.985` alone makes that hand-off depend on a spring settling,
+		 * and a spring can be lagging for any number of reasons: a fling straight to the foot of the page, a
+		 * restored scroll position, a viewport resize mid-ending, a slow frame. Whenever it lags, the coil is
+		 * still being drawn on a screen the CTA is already on — which is exactly the "de spiraal loopt over
+		 * de CTA/footer heen" the owner reports, and no amount of tuning the spring can make it impossible.
+		 *
+		 * So the surface is ALSO hidden the moment the traverse's own box has finished passing the viewport:
+		 * once `root`'s bottom edge is at or above the bottom of the screen, everything below it in the
+		 * document is on screen, and the fixed camera has no business being there. That is a hard structural
+		 * guarantee (it cannot be lagged, overshot or raced), and it is not padding: nothing is moved, spaced
+		 * or hidden that the reader was meant to see — the coil has already dissolved by then in the normal
+		 * case, and this simply makes "already dissolved" true on every frame instead of nearly every frame.
+		 *
+		 * The reads are cached (`rangeTop` / `root.offsetHeight` refresh on measure), so this costs no layout.
+		 */
+		const passed = window.scrollY + vh >= rangeTop + rangeHeight - 1;
+		if (viewportEl) viewportEl.style.visibility = e > 0.985 || passed ? 'hidden' : '';
 	}
 
 	/* ---- input --------------------------------------------------------------------------------- */
@@ -1103,12 +1125,14 @@ export function createTraverse(root, opts = {}) {
 	 */
 	let rangeTop = 0;
 	let rangeUsable = 1;
+	let rangeHeight = 0; // root.offsetHeight, cached — renderOutro's geometric hand-off reads it every frame
 
 	function refreshRange() {
 		let top = 0;
 		for (let el = root; el; el = el.offsetParent) top += el.offsetTop;
 		rangeTop = top;
-		rangeUsable = Math.max(root.offsetHeight - window.innerHeight, 1);
+		rangeHeight = root.offsetHeight;
+		rangeUsable = Math.max(rangeHeight - window.innerHeight, 1);
 	}
 
 	function scrollRange() {
@@ -1116,14 +1140,9 @@ export function createTraverse(root, opts = {}) {
 	}
 
 	function readScroll() {
-		if (programmaticY !== null && Math.abs(window.scrollY - programmaticY) <= 1) {
-			// the re-base's own landing (see `programmaticY`): recompute the mapping, claim nothing else.
-		} else {
-			programmaticY = null;
-			lastInput = performance.now(); // any real scroll resets the idle-drift timer
-			rebaseArmed = true; // …and arms one settle-up of the accrued drift for when this gesture ends
-			driftSpent = 0; // …and gives the coil a fresh eleven seconds of turning once they stop again
-		}
+		/* Every scroll on this page is the visitor's now — the engine never moves the page itself (P15, see
+		   the re-base note in CFG) — so there is no programmatic landing to tell apart from a real one. */
+		lastInput = performance.now(); // any scroll resets the idle-drift timer
 		const top = rangeTop;
 		const usable = rangeUsable;
 		const scrolled = Math.max(window.scrollY - top, 0);
@@ -1167,7 +1186,6 @@ export function createTraverse(root, opts = {}) {
 		   keeps descending while the visitor is still — WITHOUT ever moving window.scrollY or the scrollbar.
 		   effTarget is clamped to the works range so the drift can never run into the ending zone or past the
 		   crown. `autoOffset` itself is updated below, eased by `life`. */
-		rebaseDrift(now);
 		const effTarget = Math.min(Math.max(target + autoOffset, 0), span);
 		const delta = effTarget - journey;
 		const jump = Math.abs(delta); // already in works
@@ -1189,7 +1207,13 @@ export function createTraverse(root, opts = {}) {
 
 		/* THE ENDING eases toward the scroll-derived target so a fling to the bottom dissolves the coil over
 		   a beat instead of snapping it out. */
-		outro += (outroTarget - outro) * 0.12;
+		/* THE ENDING eases toward the scroll-derived target so a fling to the bottom dissolves the coil over a
+		   beat instead of snapping it out — normalised to REAL TIME, not to frames (P15). `outro += d * 0.12`
+		   every frame is the same defect D-81 fixed for the main spring: on a 120Hz display the dissolve took
+		   half as long as it was tuned for, and on a machine dropping frames it took twice as long — i.e. the
+		   coil lingered longest over the arriving CTA exactly when the machine was least able to draw it. */
+		const kOutro = 1 - Math.pow(1 - 0.12, dt * 60);
+		outro += (outroTarget - outro) * kOutro;
 		if (Math.abs(outroTarget - outro) < 0.002) outro = outroTarget;
 
 		/* HOVER (pointer devices): each work's lift eases toward 1 while the pointer rests on it, 0 otherwise,
@@ -1217,13 +1241,11 @@ export function createTraverse(root, opts = {}) {
 		   grows, eased in by `life` — so the world keeps living instead of freezing. It is bounded by autoMax
 		   and clamped so it can never pass the last work.
 		   WHILE THE VISITOR SCROLLS IT IS SIMPLY FROZEN (P12 / D-84): nothing is subtracted from their input,
-		   so the world travels exactly as far as the scrollbar does, at full gain, from the first frame. The
-		   accumulated offset is settled up at rest instead, by `rebaseDrift`, where it cannot be felt. */
-		if (idle && driftSpent < cfg.autoMax) {
-			const step = cfg.autoSpeed * life * dt;
-			autoOffset += step;
-			driftSpent += step;
-		}
+		   so the world travels exactly as far as the scrollbar does, at full gain, from the first frame. And
+		   it is spent ONCE (P15): the clamp below is a permanent ceiling rather than a per-rest budget, so the
+		   coil settles onward for about twelve seconds after the first pause and then holds — nothing on this
+		   page ever moves the visitor's own scroll position to reconcile it. */
+		if (idle) autoOffset += cfg.autoSpeed * life * dt;
 		if (target + autoOffset > span) autoOffset = Math.max(span - target, 0);
 		autoOffset = Math.min(Math.max(autoOffset, 0), cfg.autoMax);
 
@@ -1236,52 +1258,6 @@ export function createTraverse(root, opts = {}) {
 		   fires under reduced motion (the runtime is not mounted at all there). */
 		if (cfg.onFrame) cfg.onFrame(journey, outro);
 		frame = requestAnimationFrame(tick);
-	}
-
-	/*
-	 * THE RE-BASE (P12 / D-84). See the note on `rebaseDelay` in CFG for why this exists at all.
-	 *
-	 * Runs only when the visitor has been still for `rebaseDelay` AND the coil has settled — i.e. when
-	 * nothing is moving and nothing can therefore be seen to move. It adds the drift's own distance to
-	 * `window.scrollY` and removes exactly that much from `autoOffset`, so `target + autoOffset` — the
-	 * only quantity the camera reads — is unchanged to the pixel. There is no frame on which the world
-	 * jumps, because there is no frame on which the sum differs.
-	 *
-	 * DELIBERATELY NOT ON THE INPUT EVENT. Doing this on the first `wheel` of a gesture would be tidier in
-	 * principle and worse in practice: Chrome animates a wheel notch on the compositor, and a scrollTo
-	 * lands in the middle of that animation and cancels it, so the visitor's first notch would silently
-	 * do less than they asked. At rest there is no animation to interrupt.
-	 *
-	 * `lastInput` is preserved across the programmatic scroll: `readScroll` treats every scroll as visitor
-	 * input (it drives the idle timer), and this scroll is not the visitor's.
-	 */
-	function rebaseDrift(now) {
-		if (!rebaseArmed || autoOffset < 0.0005) return;
-		if (now - lastInput < cfg.rebaseDelay) return;
-		if (Math.abs(journey - target - autoOffset) > 0.004) return; // still settling — wait
-		const worksUsable = Math.max(rangeUsable - outroPx, 1);
-		const pxPerWork = worksUsable / span;
-		if (!Number.isFinite(pxPerWork) || pxPerWork <= 0) return;
-		const maxY = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
-		const from = window.scrollY;
-		const to = Math.min(from + autoOffset * pxPerWork, maxY);
-		const applied = (to - from) / pxPerWork;
-		if (applied < 0.0005) {
-			/* At the foot of the document there is no scroll left to re-base onto, and there never will be
-			   until the visitor scrolls again — so disarm. Without this the guard above passes on every frame
-			   and `scrollHeight` is read on every frame, forcing a layout each time (the engine has just
-			   written a transform, so layout is always dirty here). The offset simply stays; it is bounded,
-			   invisible, and the next gesture arms a fresh attempt. */
-			rebaseArmed = false;
-			return;
-		}
-		const keepInput = lastInput;
-		programmaticY = to;
-		window.scrollTo({ top: to, behavior: 'instant' });
-		readScroll();
-		lastInput = keepInput; // this scroll is ours, not the visitor's: it must not restart the idle timer
-		rebaseArmed = false; // …and it must not re-arm itself, or the drift becomes a self-scrolling tour
-		autoOffset = Math.max(autoOffset - applied, 0);
 	}
 
 	/* THE AMBIENT DRIFT. A slow parallax of the camera only — the perspective-origin traces a gentle
@@ -1581,10 +1557,9 @@ export function createTraverse(root, opts = {}) {
 			w.el.style.height = '';
 			w.el.style.removeProperty('--tv-cap-o');
 			w.el.style.removeProperty('--tv-gold');
-			w.grade.style.filter = ''; // depth of field lives on .media now (P10 / D-81)
-			w.tone.style.filter = ''; // …and the colour matrix on the <img>
+			w.el.style.removeProperty('will-change');
+			w.tone.style.filter = ''; // the colour matrix — the whole grade since P15
 			w.hoverF = 0;
-			w.lastFilter = null;
 			w.lastTone = null;
 			w.lastOpacity = null;
 			w.lastZ = null;

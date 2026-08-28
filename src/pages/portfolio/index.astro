@@ -18,7 +18,9 @@
  * alt text and a real optimised derivative. Series carry a real href to their project page; loose works
  * carry a real lightbox anchor that, without JavaScript, simply opens the optimised derivative (blueprint
  * 8.22 / §16.3). Without JS or under reduced motion the three headed chapters ARE the wayfinding; the chrome
- * overlay (marker, world-title beats, scroll hint, ambient tint) only appears once the coil is active.
+ * overlay (the corner mark, the world mark, the crossing beat, the ambient sky) only appears once the coil
+ * is active — with the sole exception of the BOOT state (P15), which is what stands between the visitor and
+ * this document during the handover; see the note on `data-tv-boot` below.
  *
  * THE LIGHTBOX is supplementary (§4.4): the scrollable coil is the primary portfolio. It intercepts the
  * loose-work anchors; series works navigate to their richer project pages.
@@ -83,7 +85,37 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 	description="Het portfolio van Leonard Rieksen Fotografie, architectuur- en interieurfotografie, van complete reeksen tot losse beelden, als één doorlopende doortocht door het werk in drie werelden: Projecten, Architectuur en Interieur."
 	bodyClass="is-portfolio"
 >
-	<div class="tv" data-tv-root>
+	<!-- ================================================================================================= *
+	     `data-tv-boot` — THE BOOT STATE (P15). "Dat oude concept bestaat helemaal niet meer."
+
+	     WHAT THE OWNER SEES on entry, and it is not a ghost of an old build: it is the ACCESSIBLE DOCUMENT
+	     below — a centred display-size "Portfolio" over a lede, then "Projecten / 9 / Complete opdrachten,
+	     als geheel" over a single 62rem column of photographs. That document is the progressive-enhancement
+	     truth this page is required to ship (blueprint 8.22 / §16.3), it is correct, and it is also a
+	     completely different portfolio design. Until the engine raises `data-tv-active` it is what the
+	     browser paints. MEASURED on the built site at 1.6 Mbps / 4x CPU: it held the screen from first paint
+	     to ~2.6 s — seconds of a portfolio concept that is not this one, on every cold visit, and long
+	     enough on a warm one to register as a flash.
+
+	     WHY IT IS NOT DELETED. Without JavaScript and under reduced motion it IS the whole portfolio, and it
+	     is what search engines and screen readers read. Deleting it trades a flash for a broken page.
+
+	     THE FIX IS THE MISSING HANDSHAKE, AND IT IS DECLARATIVE ON PURPOSE. This attribute is in the HTML,
+	     so it is true from the very first byte the parser sees — there is no script to wait for and
+	     therefore no window in which the wrong layout can paint. (An earlier cut set it from the inline
+	     script further down this file; MEASURED, that script is below 140 KB of markup, so on a throttled
+	     connection the baseline column had already been on screen for 1.8 s before it ran. Timing was the
+	     whole defect; a flag that races the paint cannot fix a flash.) The stylesheet gates its effect on
+	     `html.js` — set in BaseLayout's render-blocking head script — and on
+	     `prefers-reduced-motion: no-preference`, which are exactly the two conditions the engine mounts
+	     under. See portfolio-chrome.css §0.
+
+	     FAILSAFE. If the engine never activates — a runtime error, a browser that refuses the 3D field — the
+	     same delayed pass that restores the stashed photography below drops this attribute, and the
+	     accessible column is exactly what it always was. The worst case is the previous behaviour arriving
+	     late, never a page that stays empty. Nothing here gates, waits or has to be dismissed: the boot
+	     state ends on `data-tv-active`, which on a warm load is the next frame. -->
+	<div class="tv" data-tv-root data-tv-boot>
 		<!-- THE ENTRANCE IS NOT A CURTAIN ANY MORE (P14).
 		     WHAT WAS HERE. A full-bleed brand OVERTURE (D-74) held over the whole viewport while the crown
 		     photography decoded — up to a 4.2 s hard cap — with a hairline of light drawing to full, and only
@@ -162,12 +194,17 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 								const full = fulls.get(it);
 								const isSeries = Boolean(it.href);
 								const media = (
+									/* NO `priority` HERE (P15). See loadIfNear() in traverse.js: an eager image in the
+									   coil is fetched by the preload scanner, at the no-JS `sizes`, before the
+									   parse-time stash script below can run — and then cancelled when it does.
+									   MEASURED: six `net::ERR_ABORTED` requests on every load. The crown's high
+									   fetch priority is applied by the engine at the moment it restores the
+									   srcset, which is the moment the fetch actually happens. */
 									<Media
 										src={it.image}
 										alt={it.alt}
 										sizes={SIZES}
 										widths={[600, 900, 1300, 1700]}
-										priority={gi < 3}
 									/>
 								);
 								/* PROJECT RECOGNITION (Phase 4, D-74). A SERIES announces itself as enterable, its
@@ -236,14 +273,13 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 					   without JavaScript, never part of any world. */
 					leadItems.map((it, li) => {
 						const ar = it.ar || 1.5;
-						/* P12 (D-84): the first three lead-ins are CROWN imagery — they are what fills the top of
-						   the frame at journey 0 — so they carry the same fetch priority as the first works. They
-						   were `priority={false}`, i.e. the last things the browser asked for, which is why the
-						   entrance curtain (which now waits on them) lifted on a coil whose upper half was blank.
-						   The rest stay lazy: they are only reached once the visitor is already travelling. */
+						/* D-84 gave the first three lead-ins — CROWN imagery, what fills the top of the frame at
+						   journey 0 — the same fetch priority as the first works. P15 keeps that intent and moves
+						   it into `loadIfNear()`, for the reason documented there and on the works above: an eager
+						   image in the coil is speculatively fetched at the wrong size and then cancelled. */
 						return (
 							<figure class="tv-work tv-lead" data-tv-lead data-ar={ar.toFixed(4)} aria-hidden="true">
-								<Media src={it.image} alt="" sizes={SIZES} widths={[600, 900]} priority={li < 3} />
+								<Media src={it.image} alt="" sizes={SIZES} widths={[600, 900]} />
 							</figure>
 						);
 					})
@@ -304,6 +340,7 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 				   engine has not already claimed, so the worst case is the previous behaviour, never a gap. */
 				window.setTimeout(function () {
 					if (root.hasAttribute('data-tv-active')) return;
+					root.removeAttribute('data-tv-boot'); // the coil never came — hand the page back to the document
 					var stuck = root.querySelectorAll('[data-tv-srcset]');
 					for (var n = 0; n < stuck.length; n++) {
 						var e = stuck[n];
@@ -323,36 +360,40 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 		     motion the three headed chapters above are the wayfinding, and none of this exists. -->
 
 		<!-- ============================================================================================= *
-		     THE WORLD RAIL (P14) — the portfolio's navigation, stated rather than hidden.
+		     THE WORLD MARK (P15) — the portfolio's navigation, at chrome scale.
 
-		     WHAT WAS HERE, and why it went. A collapsed corner MARKER reading "PORTFOLIO / • Projecten 1/3"
-		     over a progress hairline, which opened — on click — into a panel holding a proportional journey
-		     map and a three-item jump list. Every one of those parts worked. Together they failed the only
-		     test that matters for navigation: the owner did not read the thing in the corner as a control at
-		     all. It looked like a status label, "1 / 3" does not say what the other two are, and the three
-		     destinations — the whole point — were behind a click nobody had a reason to make.
+		     WHAT WAS HERE. A bordered, near-opaque, backdrop-blurred RAIL carrying three labels and three
+		     counts in two lines each, spanning the full width of a phone. Its information was right — all
+		     three worlds present, current one marked, one tap to travel — and the owner's verdict is a list
+		     of size complaints: too big, too textual, too dominant on a phone, visually too present, not
+		     immediately legible as navigation. Those are one complaint: it was a WIDGET, on a page whose
+		     whole subject is photographs.
 
-		     WHAT IT IS NOW. One rail carrying all three worlds at once. The information hierarchy the brief
-		     asks for is simply present: PROJECTEN | ARCHITECTUUR | INTERIEUR, current one lit and marked,
-		     the other two visibly available. Nothing to discover, nothing to open, one tap to travel.
+		     WHAT IT IS NOW. The same three destinations as three words: one line of uppercase micro-type in
+		     the bottom-left corner, hairline-separated, current world lit and ticked in gold, over an
+		     edgeless corner wash. No box, no border, no fill, no backdrop-filter, no visible counts. The
+		     counts move into each anchor's accessible name, where they are more use and cost the corner
+		     nothing; the collection's proportions are still SHOWN, by the boundary ticks on the progress
+		     hairline. The ink is 12px; every target is still >=44px tall (WCAG 2.5.8).
 
-		     It also ABSORBS the panel rather than deleting it: each segment's width is proportional to its
-		     work count, so the rail IS the journey map that used to live inside the dropdown, and the
-		     position node rides along it. Current world, all worlds, relative size, and exactly how far
-		     through the whole coil you are — one object, no state.
-
-		     THE MARKUP IS THE FALLBACK. Three real anchors to real `#work-<id>` targets, in the document,
-		     in tab order, working without JavaScript and without the engine (where they simply scroll the
-		     accessible chaptered column to that world). The chrome script upgrades a click into an instant,
-		     exact `focusWork()` — the same D-73 travel as before, unchanged. -->
+		     THE MARKUP IS THE FALLBACK, unchanged since P14: three real anchors to real `#work-<id>`
+		     targets, in the document, in tab order, working without JavaScript and without the engine
+		     (where they simply scroll the accessible chaptered column to that world). The chrome script
+		     upgrades a click into an instant, exact `focusWork()` — the same D-73 travel as before. -->
 		<nav class="pf-worlds" data-pf-worlds-nav aria-label="Portfolio-werelden">
-			<!-- The world's own descriptor, shown briefly when you cross into a new one. This is what remains
-			     of the D-73 world-title BEAT, which was a full-viewport radial scrim under a display-size
-			     heading, fired on every boundary — the "same interruption again" the owner reports when
-			     changing worlds. A world change is navigation, so its feedback belongs to the navigation:
-			     the active segment lights, and this one line says what the room is. aria-hidden — the
-			     anchors' own `aria-current` carries the state for assistive technology. -->
-			<p class="pf-worlds__note" data-pf-note aria-hidden="true"></p>
+			<!-- CROSSING INTO A WORLD (§6). The world's name and its one-line descriptor, lit for a beat
+			     directly above the mark when the visitor crosses a boundary, with a gold hairline beside
+			     them. It is deliberately in the corner the navigation already owns rather than over the
+			     work: the P14 answer to this was a full-viewport scrim under a display-size heading, which
+			     is exactly the "same interruption again when changing worlds" the owner reported. A world
+			     change is navigation, so its announcement belongs to the navigation — and a name appearing
+			     where there was no name is the clearest signal a corner can give. It covers no photograph,
+			     dims nothing and needs no dismissal. aria-hidden: the anchors' own `aria-current` already
+			     carries this state for assistive technology. -->
+			<p class="pf-worlds__note" data-pf-note aria-hidden="true">
+				<span class="pf-worlds__note-name" data-pf-note-name></span>
+				<span class="pf-worlds__note-sub" data-pf-note-sub></span>
+			</p>
 			<div class="pf-worlds__rail">
 				{
 					worlds.map((w, i) => (
@@ -365,19 +406,19 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 							aria-label={`${w.label}, ${w.count} beelden`}
 						>
 							<span class="pf-world__label">{w.label}</span>
+							{/* Visually hidden — the number lives in the accessible name above. Kept in the
+							    markup so the no-JS document, where this nav is a plain list of anchors,
+							    still carries it for anyone reading the page source or with CSS off. */}
 							<span class="pf-world__count">{w.count}</span>
 						</a>
 					))
 				}
-				<!-- THE PROPORTIONAL MAP, on the track rather than in the segment widths. Sizing the three
-				     SEGMENTS by their work counts (9 / 40 / 7) is arithmetically honest and useless: it left
-				     "Projecten" and "Interieur" too narrow to hold their own names, and a navigation label
-				     that reads "PROJE…" fails the only test this control has. The segments are therefore
-				     equal and legible, and the proportion moves to the hairline underneath them, where the
-				     boundary ticks show how the collection actually divides and the fill + node give the
-				     exact position along the whole coil (D-74).
-				     The `aria-label` on each anchor exists because the visible text reads "Interieur" over
-				     "7", which an assistive technology concatenates to "Interieur7" — a number that says
+				<!-- THE PROPORTIONAL MAP. One hairline under the three words: the fill and the node give the
+				     exact position along the whole coil, and one tick per boundary shows where the
+				     collection actually divides (D-74) — which is where the relative sizes that the P14
+				     rail carried in two extra lines of type now live.
+				     The `aria-label` on each anchor exists because the visible text is one word, and the
+				     count beside it would otherwise be concatenated to "Interieur7" — a number that says
 				     nothing. The accessible name states what the number IS and still CONTAINS the visible
 				     label, so WCAG 2.5.3 (Label in Name) holds and voice control can still say "Interieur". -->
 				<span class="pf-worlds__track" aria-hidden="true">
@@ -397,7 +438,6 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 			</div>
 		</nav>
 
-		
 		<!-- The world boundaries, for the chrome controller. Structural data only (a JSON data island). -->
 		<script type="application/json" data-tv-worlds is:inline set:html={JSON.stringify(worlds)}></script>
 	</div>
