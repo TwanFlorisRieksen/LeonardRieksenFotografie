@@ -12,8 +12,10 @@
  * success → /bedankt/ (migrated from the old site's proven flow). Progressive enhancement: the form is a
  * plain server-POST form that works with zero client JS.
  *
- * CONTENT AUTHORITY (CLAUDE §9.2): the contact facts (KvK / region) are MIGRATED factual data extracted
+ * CONTENT AUTHORITY (CLAUDE §9.2): the contact fact (KvK) is MIGRATED factual data extracted
  * from Leo's own contact page (OLD_WEBSITE_CONTENT_INVENTORY, A-02), real, owner-confirm, not invented.
+ * The region (Midden-Nederland) is REMOVED from the whole site on the owner's explicit instruction (D-88):
+ * Leo does not photograph only there, so the site no longer names a region anywhere.
  * The e-mail address and the removal of the telephone number are current explicit OWNER instructions
  * (D-76), which supersede the migrated values. Consistent with the footer, which ships the same email.
  *
@@ -38,13 +40,12 @@ import contactImg from '../assets/static/contact.jpeg';
    OPTIONAL "telefoonnummer" field is deliberately kept: that is the VISITOR's own number, volunteered so
    Leo can call back, not the business number this instruction removes. */
 const email = 'LeonardRFotografie@gmail.com';
-const region = 'Midden-Nederland';
 const kvk = '32169926';
 ---
 
 <BaseLayout
 	title="Contact"
-	description="Neem contact op met Leonard Rieksen Fotografie. Een vraag, opdracht of kort overleg over architectuur- of interieurfotografie in Midden-Nederland, stuur gerust een bericht."
+	description="Neem contact op met Leonard Rieksen Fotografie. Een vraag, opdracht of kort overleg over architectuur- of interieurfotografie, stuur gerust een bericht."
 >
 	<!-- 1. INTRO (13.49), a calm, low-friction opening. Cool blue-hour afterglow, matching the photograph
 	     below. Deliberately restrained; reserves trailing space for the datum + image to rise into. -->
@@ -89,10 +90,6 @@ const kvk = '32169926';
 					</ul>
 					<SocialLinks class="contact-details__social" />
 					<dl class="contact-details__meta">
-						<div class="contact-details__row">
-							<dt>Regio</dt>
-							<dd>{region}</dd>
-						</div>
 						<div class="contact-details__row">
 							<dt>KvK</dt>
 							<dd>{kvk}</dd>

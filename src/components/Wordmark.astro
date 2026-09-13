@@ -26,6 +26,15 @@
  * clearance top and bottom, which reads as intentional rather than as a mark jammed against two edges.
  * Verified in the render at 320/360/390/430/768/1024/1280/1440/1920.
  *
+ * D-88 — THE MARK REPLACES THE LOCKUP (owner instruction, 2026-09-13). The owner supplied the LRF monogram
+ * over its gold rule WITHOUT the two name lines (`assets/logoLRF-beperkt.png`), to be used as the logo across
+ * the whole site. The construction above is kept exactly: trimmed derivative `/brand/lrf-mark.png`, the
+ * artwork's own ratio (511 / 231 = 2.212) on the box, `object-fit: contain`. Only the size changes, because
+ * the mark is a different shape: at the lockup's 62px height the bare monogram would be ~2.5× as large as it
+ * was inside the lockup and would dominate the chrome. It is sized so the letterforms stay in the range they
+ * had: 6–6.75rem wide = 43–49px tall inside the 76px bar. The accessible name still carries the full
+ * business name, which the artwork itself no longer spells out.
+ *
  * FOCUS. `.wordmark` is a link and the first focusable element in the chrome, so BackToTop moves focus
  * here after a jump (see BackToTop.astro). For a POINTER visitor that programmatic move used to paint the
  * global 2px focus ring around the logo — a blue box appearing because a mouse user pressed an unrelated
@@ -41,10 +50,10 @@ const { class: className } = Astro.props;
 <a class:list={['wordmark', className]} href="/" aria-label="Leonard Rieksen Fotografie, naar de homepagina">
 	<img
 		class="wordmark__image"
-		src="/brand/lrf-lockup.png"
+		src="/brand/lrf-mark.png"
 		alt=""
-		width="998"
-		height="396"
+		width="511"
+		height="231"
 		draggable="false"
 		decoding="async"
 	/>
@@ -54,8 +63,8 @@ const { class: className } = Astro.props;
 	.wordmark {
 		display: block;
 		/* The artwork's own ratio, so the box can never be a shape the lockup does not have. */
-		aspect-ratio: 998 / 396;
-		width: clamp(8.75rem, 11.5vw, 9.75rem);
+		aspect-ratio: 511 / 231;
+		width: clamp(6rem, 8vw, 6.75rem);
 		color: var(--color-text);
 		line-height: 0;
 	}
@@ -73,7 +82,7 @@ const { class: className } = Astro.props;
 	/* Very narrow phones: the lockup steps down rather than crowding the menu trigger. */
 	@media (max-width: 26rem) {
 		.wordmark {
-			width: 8.25rem;
+			width: 5.75rem;
 		}
 	}
 </style>

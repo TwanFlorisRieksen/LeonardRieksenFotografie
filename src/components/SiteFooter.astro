@@ -37,7 +37,6 @@ const legalLinks = [
 // old-site address (CLAUDE §3.1.1). The telephone number is removed from the whole site by the same
 // instruction, so the footer never carried one and still does not.
 const email = 'LeonardRFotografie@gmail.com';
-const region = 'Midden-Nederland';
 ---
 
 <footer class="site-footer">
@@ -47,7 +46,7 @@ const region = 'Midden-Nederland';
 			<div class="site-footer__brand">
 				<Wordmark />
 				<p class="site-footer__positioning t-secondary">
-					Architectuur- en interieurfotografie in {region}.
+					Architectuur- en interieurfotografie.
 				</p>
 			</div>
 
@@ -69,7 +68,7 @@ const region = 'Midden-Nederland';
 				</ul>
 			</nav>
 
-			<div class="site-footer__col">
+			<div class="site-footer__col site-footer__col--contact">
 				<h2 class="t-eyebrow site-footer__heading">Contact</h2>
 				<ul class="site-footer__list">
 					<li>
@@ -168,15 +167,29 @@ const region = 'Midden-Nederland';
 	       content — and the contact column contains `LeonardRFotografie@gmail.com`, one 28-character token.
 	       `minmax(0, …)` is what actually lets a grid track shrink;
 	     · four columns were attempted down to 52rem, and between ~832 and ~990px there is not room for four.
-	   The e-mail is additionally allowed to break, because a token that long will out-argue any track sizing
-	   at some viewport otherwise. */
+	   D-88 REVERSES THE LAST SENTENCE OF THAT NOTE. Letting the address break is what the owner then saw: at
+	   540–600px and 1024–1100px it ran onto two lines, which reads as a defect rather than as an address.
+	   The address now never breaks, and the layout guarantees its column is wide enough instead (MEASURED on
+	   the render: the link is 247px with its icon, 222px without):
+	     · four columns, 993–1215px — the contact column was 201–247px. The brand and contact columns trade
+	       proportions (1.6/1.3 → 1.3/1.6) so the TOTAL stays 4.9fr: navigation and legal keep exactly the
+	       widths they had, and the room comes from the brand column, which has the most slack;
+	     · two columns, 481–992px — contact already sits alone in its row; it now spans that row instead of
+	       being held to the left half, so nothing moves, it simply has the width;
+	     · one column — ≥252px from 320px up. Below 320px (narrower than any supported phone) the icon is the
+	       part that yields, never the address. */
 	.site-footer__grid {
 		display: grid;
 		grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
 		gap: var(--space-2xl) var(--space-xl);
 	}
 	.site-footer__contact span {
-		overflow-wrap: anywhere;
+		white-space: nowrap;
+	}
+	@media (min-width: 62.0625rem) and (max-width: 75.9375rem) {
+		.site-footer__grid {
+			grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr);
+		}
 	}
 	.site-footer__positioning {
 		margin-top: var(--space-md);
@@ -241,7 +254,8 @@ const region = 'Midden-Nederland';
 		.site-footer__grid {
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		}
-		.site-footer__brand {
+		.site-footer__brand,
+		.site-footer__col--contact {
 			grid-column: 1 / -1;
 		}
 	}
@@ -249,6 +263,11 @@ const region = 'Midden-Nederland';
 		.site-footer__grid {
 			grid-template-columns: 1fr;
 			gap: var(--space-xl);
+		}
+	}
+	@media (max-width: 19.9375rem) {
+		.site-footer__contact[href^='mailto'] :global(svg) {
+			display: none;
 		}
 	}
 </style>

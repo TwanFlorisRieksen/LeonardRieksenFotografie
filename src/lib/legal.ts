@@ -18,7 +18,7 @@
  *   · NO telephone number. Removed sitewide by explicit owner instruction (D-76) and not reintroduced here.
  */
 
-export { SITE_NAME, PERSON_NAME, CONTACT_EMAIL, KVK, SERVICE_AREA } from './schema';
+export { SITE_NAME, PERSON_NAME, CONTACT_EMAIL, KVK } from './schema';
 
 /**
  * The Google Analytics 4 measurement ID. This is Leo's OWN, PRE-EXISTING property: the same ID was already

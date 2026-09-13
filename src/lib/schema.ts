@@ -8,7 +8,7 @@
  *
  * ONLY WHAT IS ACTUALLY TRUE, AND ACTUALLY ON THE PAGE. Every value below is a fact already published in
  * the visible site and traceable to the old-site inventory or an explicit owner instruction: the business
- * name, Leo's name, the e-mail address, the KvK number, the service region, the two disciplines and the
+ * name, Leo's name, the e-mail address, the KvK number, the two disciplines and the
  * confirmed social profiles.
  * Nothing is invented, and several tempting types are DELIBERATELY ABSENT (CLAUDE §13.3, blueprint 10.x):
  *
@@ -28,8 +28,6 @@ export const PERSON_NAME = 'Leo Rieksen';
 export const CONTACT_EMAIL = 'LeonardRFotografie@gmail.com';
 /** Chamber-of-Commerce number, published on /contact/. Migrated factual data, not invented. */
 export const KVK = '32169926';
-/** The region Leo actually works in, as the site states it. Not a location page, not a keyword. */
-export const SERVICE_AREA = 'Midden-Nederland';
 
 type Node = Record<string, unknown>;
 
@@ -52,14 +50,13 @@ function baseNodes(site: URL): Node[] {
 			url: abs(site, '/'),
 			logo: {
 				'@type': 'ImageObject',
-				url: abs(site, '/brand/lrf-logo.png'),
-				width: 600,
-				height: 238,
+				url: abs(site, '/brand/lrf-mark-logo.png'),
+				width: 511,
+				height: 231,
 			},
 			email: CONTACT_EMAIL,
 			description:
 				'Architectuur- en interieurfotografie door Leo Rieksen, gebouwen en ruimtes vastgelegd met aandacht voor licht, lijn en materiaal.',
-			areaServed: { '@type': 'AdministrativeArea', name: SERVICE_AREA },
 			identifier: { '@type': 'PropertyValue', name: 'KvK', value: KVK },
 			sameAs: SOCIAL_LINKS.map(({ href }) => href),
 			founder: { '@id': person },
@@ -159,7 +156,6 @@ export function serviceNode(site: URL, canonical: URL, name: string, description
 		description,
 		serviceType: name,
 		provider: { '@id': abs(site, '/#organization') },
-		areaServed: { '@type': 'AdministrativeArea', name: SERVICE_AREA },
 	};
 }
 

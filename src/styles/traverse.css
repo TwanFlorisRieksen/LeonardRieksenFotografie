@@ -50,6 +50,26 @@
 
 .tv[data-tv-active] {
 	height: auto;
+	/*
+	 * THE COIL CANNOT PAINT PAST ITS OWN BOX (D-88).
+	 *
+	 * Everything the traverse draws on screen — the camera surface `.tv-viewport`, the corner mark
+	 * `.pf-worlds`, the opening mark `.pf-intro` — is `position: fixed`, and a fixed box is not clipped by
+	 * the document it scrolls over. P15 hid the camera surface from script once the root had scrolled past,
+	 * and measured zero overlap frames. But script only sees main-thread frames: on a real wheel or trackpad
+	 * the compositor scrolls the CTA into view BEFORE the next rAF writes `visibility`, and the corner mark
+	 * was never covered at all (it faded on a 450ms opacity transition keyed to a spring, measured visible
+	 * for 54 frames with the CTA on screen). That is the "einde van de portfolio loopt over de CTA en footer".
+	 *
+	 * A `clip-path` on this root DOES clip fixed descendants, and the clip moves with the root on the
+	 * compositor, so it cannot lag a scroll. The bottom edge is exactly the root's own bottom edge — where
+	 * the CTA begins — and the other three edges are pushed far out, so nothing the coil draws above or
+	 * beside the root (under the transparent header at scroll 0, a departing work past the shoulder) is
+	 * touched. Verified by forcing every fixed layer visible with the CTA at 500px: without the clip the coil
+	 * and the corner mark cover the CTA; with it the CTA is whole and receives the hit test.
+	 * The script hand-off in renderOutro() stays: it still stops the camera being painted at all.
+	 */
+	clip-path: inset(-100vh -100vw 0 -100vw);
 }
 
 /* The scroll spacer gives the page real height, so the scrollbar tells the truth about how much work

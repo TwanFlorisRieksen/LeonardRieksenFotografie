@@ -15,8 +15,12 @@ import sharp from 'sharp';
 import { writeFileSync } from 'node:fs';
 
 const SRC = '../assets/logoLRF.png';
-/** The lockup's true ink box, measured from the master's alpha channel. */
-const INK = { left: 338, top: 252, width: 998, height: 396 }; // ratio 2.5202
+/** D-88: the visible logo is the owner's supplied MARK — the LRF monogram over its gold rule, without the
+    name lines — delivered as `../assets/logoLRF-beperkt.png` (538×266). It is the same artwork, at the same
+    scale, as the master's monogram, so the favicon below (already drawn from that monogram) is unchanged. */
+const MARK_SRC = '../assets/logoLRF-beperkt.png';
+/** The supplied mark's true ink box, measured from its alpha channel. */
+const MARK_INK = { left: 15, top: 18, width: 511, height: 231 }; // ratio 2.2121
 /** The monogram + its gold rule — the favicon's optical version at 32 px and up. */
 const MARK = { left: 581, top: 246, width: 511, height: 246 };
 /** At 16 px the gold rule is a sub-pixel smear and it steals height from the letterforms, so the smallest
@@ -26,12 +30,13 @@ const MARK_SMALL = { left: 665, top: 248, width: 363, height: 194 };
 /** --p-sapphire-850, the lit top edge of the site's chrome. */
 const BG = { r: 15, g: 25, b: 46, alpha: 1 };
 
-/* 1 — the header lockup (transparent, trimmed) and a large logo for schema.org/Organization. */
+/* 1 — the chrome mark (transparent, trimmed; ~3.5× its largest CSS width) and a logo for
+   schema.org/Organization at the file's own native width — never upscaled past the 511px the owner supplied. */
 for (const [w, out] of [
-	[440, 'public/brand/lrf-lockup.png'],
-	[600, 'public/brand/lrf-logo.png'],
+	[400, 'public/brand/lrf-mark.png'],
+	[511, 'public/brand/lrf-mark-logo.png'],
 ]) {
-	await sharp(SRC).extract(INK).resize({ width: w }).png({ compressionLevel: 9 }).toFile(out);
+	await sharp(MARK_SRC).extract(MARK_INK).resize({ width: w }).png({ compressionLevel: 9 }).toFile(out);
 }
 
 /* 2 — favicon artwork: the monogram on the chrome sapphire. Rounded for the .ico (it is drawn as-is in
@@ -80,4 +85,4 @@ sizes.forEach((s, i) => {
 });
 writeFileSync('public/favicon.ico', Buffer.concat([header, dir, ...pngs]));
 
-console.log('[brand] lrf-lockup.png, lrf-logo.png, apple-touch-icon.png, favicon.ico regenerated');
+console.log('[brand] lrf-mark.png, lrf-mark-logo.png, apple-touch-icon.png, favicon.ico regenerated');

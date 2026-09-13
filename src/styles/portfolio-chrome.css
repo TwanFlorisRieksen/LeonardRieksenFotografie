@@ -43,6 +43,12 @@
  * the engine is about to measure — it is simply not painted, and neither are the chapter headings.
  */
 @media (prefers-reduced-motion: no-preference) {
+	/* The boot surface is fixed and full-screen too; bound it to the root exactly as the active coil is
+	   (traverse.css, D-88), so a load restored at the foot of the page never paints it over the CTA. */
+	html.js .tv[data-tv-boot]:not([data-tv-active]) {
+		clip-path: inset(-100vh -100vw 0 -100vw);
+	}
+
 	html.js .tv[data-tv-boot]:not([data-tv-active]) .tv-viewport {
 		position: fixed;
 		inset: 0;
@@ -571,11 +577,17 @@ html.js .tv[data-tv-boot] .pf-intro::after,
 	}
 }
 
-/* At the ending the coil dissolves into the contact invitation; the chrome recedes with it (§3.5). */
+/* At the ending the coil dissolves into the contact invitation; the chrome recedes with it (§3.5).
+   D-88: opacity alone left the mark's three anchors (`pointer-events: auto` of their own) present after the
+   fade — invisible links lying over the footer's bottom-left, clickable and in the tab order. `visibility`
+   follows the fade out, so once it has gone it is genuinely gone. */
 .tv.is-tv-ending .pf-worlds {
 	opacity: 0;
+	visibility: hidden;
 	pointer-events: none;
-	transition: opacity 450ms var(--ease-standard);
+	transition:
+		opacity 450ms var(--ease-standard),
+		visibility 0s linear 450ms;
 }
 
 /* ---- 3c. CROSSING INTO A WORLD (§6) ------------------------------------------------------------
