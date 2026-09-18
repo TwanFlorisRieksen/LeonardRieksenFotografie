@@ -905,12 +905,20 @@ html.js .tv[data-tv-boot] .pf-intro::after,
    which is the wrong trade on the screen where this control matters most. So below 26rem the mark takes the
    whole width between the gutters and sits ABOVE the disc instead of beside it. The disc only appears once
    the visitor has scrolled; the mark is there from the first frame, and it is the more important of the two.
-   `--consent-h` is still added, so the cookie bar is cleared as well (P12 / D-84). */
+   `--consent-h` is still added, so the cookie bar is cleared as well (P12 / D-84).
+
+   P21: THERE ARE NOW TWO DISCS IN THAT COLUMN — the auto-scroll stop sits 3.25rem above the back-to-top
+   disc — so the mark has to clear both. MEASURED with only the original offset: the stop disc (spanning
+   68–112px up from the bottom edge at 320px) sat on top of "INTERIEUR" exactly as the back-to-top disc
+   used to, and for the same reason. One more disc pitch answers it; the nav's own 14.4px bottom padding
+   is what turns the remaining arithmetic into visible air (6.4px between the rail and the upper disc). */
 @media (max-width: 26rem) {
 	.pf-worlds {
 		padding-right: 0.9rem;
-		/* clear of the disc: its own 2.75rem plus the gutter it sits in, plus a hair of air */
-		bottom: calc(var(--consent-h, 0px) + 2.75rem + clamp(1rem, 0.5rem + 1.4vw, 2rem) * 0.5);
+		/* clear of BOTH discs: their 2.75rem + the 3.25rem pitch between them, plus the gutter they sit in */
+		bottom: calc(
+			var(--consent-h, 0px) + 2.75rem + 3.25rem + clamp(1rem, 0.5rem + 1.4vw, 2rem) * 0.5
+		);
 	}
 }
 
@@ -935,4 +943,105 @@ html.js .tv[data-tv-boot] .pf-intro::after,
 	.tv-sky__haze {
 		animation: none !important;
 	}
+}
+
+/* ---- 3e. THE STOP (P21 / D-93) -----------------------------------------------------------------
+ * The portfolio scrolls itself while nobody is holding it. This pauses it, for good, for the session.
+ *
+ * It is deliberately the SAME OBJECT as the back-to-top disc (BackToTop.astro, P8.7 / D-78): 44px, round,
+ * quiet, no gold, sitting in the column that corner already owns, directly above it. Two controls in one
+ * place read as "the page's controls"; one control in each corner reads as clutter in both.
+ *
+ * NO `backdrop-filter`, for the reason the disc below it drops its own on this page (P15): a backdrop
+ * filter costs what is BEHIND it, re-blurred on every frame that content changes, and what is behind this
+ * is a coil whose every visible photograph is re-transformed 60 times a second. This is the opaque surface
+ * the disc already falls back to where backdrop-filter is unsupported, so it is a state the vocabulary was
+ * designed for, not a new one.
+ */
+
+.pf-auto {
+	display: none;
+	position: fixed;
+	right: clamp(1rem, 0.5rem + 1.4vw, 2rem);
+	/* Stacked one disc-height plus a hairline gap above the back-to-top disc, in the same reserved column,
+	   clearing the cookie bar the same way it does (`--consent-h`). A FIXED offset rather than a stacking
+	   layout: the disc below it is absent until the reader is deep in the page, and a control that slides
+	   down the screen when another one appears is a control that moves while you are reaching for it. */
+	bottom: calc(clamp(1rem, 0.5rem + 1.4vw, 2rem) + var(--consent-h, 0px) + 3.25rem);
+	z-index: var(--z-sticky);
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem; /* 44px — the touch-target floor exactly (WCAG 2.5.8) */
+	height: 2.75rem;
+	padding: 0;
+	color: rgba(236, 238, 242, 0.78);
+	background: linear-gradient(152deg, rgba(31, 42, 64, 0.9) 0%, rgba(10, 15, 26, 0.9) 100%);
+	border: 1px solid rgba(236, 238, 242, 0.19);
+	border-radius: 999px;
+	box-shadow:
+		inset 0 1px 0 rgba(236, 238, 242, 0.24),
+		0 10px 26px -14px rgba(0, 0, 0, 0.7);
+	cursor: pointer;
+	transition:
+		color var(--dur-interaction) var(--ease-standard),
+		border-color var(--dur-interaction) var(--ease-standard),
+		opacity 600ms var(--ease-standard) 620ms,
+		visibility 600ms 620ms;
+}
+
+/* Arrives with the world, on the same beat the world mark arrives on, and out of the tab order until it
+   is visible (WCAG 2.4.7 / 2.4.11) — exactly as `.pf-worlds` does above. */
+.tv[data-tv-active] .pf-auto {
+	display: inline-flex;
+	opacity: 1;
+	visibility: visible;
+}
+
+@starting-style {
+	.tv[data-tv-active] .pf-auto {
+		opacity: 0;
+		visibility: hidden;
+	}
+}
+
+.pf-auto:hover,
+.pf-auto:focus-visible {
+	color: var(--color-text);
+	border-color: rgba(236, 238, 242, 0.34);
+}
+
+.pf-auto:focus-visible {
+	outline: 2px solid var(--color-focus);
+	outline-offset: 2px;
+}
+
+/* THE STATE IS THE GLYPH, not a colour: two bars while the page is travelling (press to pause), a play
+   triangle while it is stopped (press to resume). `aria-pressed` carries the same fact for assistive
+   technology, and the accessible name says what pressing it will DO — both written by the runtime. */
+.pf-auto__glyph {
+	fill: currentColor;
+}
+
+.pf-auto__play {
+	display: none;
+}
+
+.pf-auto.is-off .pf-auto__pause {
+	display: none;
+}
+
+.pf-auto.is-off .pf-auto__play {
+	display: block;
+}
+
+/* Recedes with the rest of the chrome at the ending, and genuinely goes: `visibility`, so an invisible
+   button is not left lying over the contact invitation, clickable and in the tab order (the D-88 lesson
+   from `.pf-worlds`). */
+.tv.is-tv-ending .pf-auto {
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transition:
+		opacity 450ms var(--ease-standard),
+		visibility 0s linear 450ms;
 }

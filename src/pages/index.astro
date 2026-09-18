@@ -21,6 +21,11 @@ import Section from '../components/Section.astro';
 import Media from '../components/Media.astro';
 import ContactCta from '../components/ContactCta.astro';
 import heroImg from '../assets/static/hero.jpeg';
+/* The phone's own hero master (P16). A PORTRAIT blue-hour frame Leo supplied specifically for a phone
+   screen — 1933×3054, i.e. the only full-bleed master on the site that is taller than it is wide, and by
+   a wide margin the highest-resolution one. It is delivered ONLY to phone-width viewports; see the
+   `artMedia` query on the hero <Media> and the block comment above it. */
+import heroMobileImg from '../assets/static/heromobiel.jpg';
 import amersfoortImg from '../assets/static/amersfoort-toren.jpg';
 import eemhuisImg from '../assets/static/eemhuis-bibliotheek.jpg';
 
@@ -73,9 +78,56 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		     ~85 KB. That is the one image on the site where those bytes buy something the visitor sees on the
 		     first screen; every other photograph keeps the default. The `sizes`/`widths` above are honest and
 		     unchanged — see Media.astro for why the largest candidate is now 1536 rather than 1400. -->
+		<!-- ── THE PHONE GETS ITS OWN PHOTOGRAPH (P16, owner instruction) ──────────────────────────────
+		     WHY ART DIRECTION IS THE CORRECT INSTRUMENT HERE, and not a crop. Blueprint 8.11 is explicit:
+		     the default is to preserve the photographer's composition, and a differing crop is allowed only
+		     when it is *deliberately selected*. It also names exactly what an automatic mobile crop costs —
+		     architectural lines removed, visual balance changed. Both were happening: `hero.jpeg` is 3:2
+		     LANDSCAPE, and a 390×844 phone is 1:2.16, so `object-fit: cover` was keeping a 46%-tall
+		     horizontal SLICE of a wide waterfront and discarding the rest. Leo answered that by shooting
+		     for the frame the phone actually has, so this is not a crop decision at all: it is a second,
+		     deliberately selected master.
+
+		     THE BOUNDARY IS PHONE-ONLY, on the owner's instruction ("UITSLUITEND MOBIEL FORMAAT, dus geen
+		     ipad, tablet"). 32rem = 512px sits above every phone in portrait (the widest current phones are
+		     ~440–480 CSS px) and far below every tablet in portrait (iPad mini 744, iPad 768–810, small
+		     Android tablets 600). It is therefore NOT the site's 52rem tablet boundary, which would have
+		     taken the iPad with it. A phone in LANDSCAPE is ~844px wide and correctly keeps the landscape
+		     photograph. Note the consequence, which is the honest reading of any width query: a desktop
+		     window narrowed below 512px also gets the portrait frame — that window IS a phone-shaped
+		     viewport, and the portrait master is the right photograph for it.
+
+		     `sizes` IS 137vw, AND THAT IS NOT A TYPO. Under `object-fit: cover` a 0.633-ratio photograph in
+		     a 0.46-ratio box is scaled to match the box's HEIGHT, so the image is laid out WIDER than the
+		     box it is cropped by: 844 × 0.633 = 534 CSS px of photograph across a 390 CSS px screen, a
+		     factor of 1.37. Across the phone aspect ratios that matter the factor runs 1.13 (375×667) to
+		     1.406 (360×800, 412×915). A `100vw` here would under-request by up to 29% and hand every phone
+		     a visibly soft hero — which is precisely the defect the landscape master already had,
+		     unfixably, at a factor of 3.25. 137vw is the honest middle of that range; the ±3% it can miss
+		     at the extremes is a fraction of one candidate step.
+
+		     THE LARGEST CANDIDATE IS 1440, NOT THE MASTER'S 1933, and that is a deliberate performance
+		     trade rather than the P14 clamp bug returning. Built sizes for this photograph: 560w = 42 KB,
+		     720w ≈ 60 KB, 900w ≈ 90 KB, 1080w = 122 KB, 1440w = 190 KB, 1933w = 308 KB (AVIF). The only
+		     device that would ever reach for 1933 is a DPR-3 phone, which needs 1602 device px and would
+		     therefore be paying 118 KB extra — on the LCP image, on mobile — to go from 2.70× to 3.62×
+		     effective density on a screen where that difference cannot be seen. Blueprint 8.87–8.92 make
+		     the hero's arrival a hard requirement and 8.10 asks for enough variants to deliver efficiently
+		     and no more. A DPR-2 phone, the common case, lands on 1080w / 122 KB. (The master's full
+		     resolution is preserved on disk; raising the cap is one number if that trade ever changes.)
+
+		     `alt` IS NOW SHARED, and had to change. A <picture> has exactly one accessible name, so a
+		     screen-reader user on a phone would otherwise have been told they were looking at the
+		     Reitdiephaven in Groningen while the page served a different building entirely. The text below
+		     is true of BOTH photographs and invents nothing; the new frame's location is not recorded
+		     anywhere in the project's sources, so it is not named (CLAUDE §4.6). -->
 		<Media
 			src={heroImg}
-			alt="De Reitdiephaven in Groningen tijdens het blauwe uur, kleurrijke houten woningen weerspiegeld in stil water."
+			artSrc={heroMobileImg}
+			artMedia="(max-width: 32rem)"
+			artWidths={[560, 720, 900, 1080, 1440]}
+			artSizes="137vw"
+			alt="Architectuur tijdens het blauwe uur, verlicht en weerspiegeld in stil water."
 			priority={true}
 			widths={[640, 1024, 1400, 1920]}
 			sizes="100vw"
@@ -1693,6 +1745,205 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		.home-hero__media {
 			--m-parallax: 3.5%;
 			--m-parallax-scale: 1.09;
+		}
+	}
+
+	/* ══ THE PHONE HERO (P16) ══════════════════════════════════════════════════════════════════════════
+	   THE BRIEF: "design de hero sectie opnieuw, zodat deze er perfect uit[ziet] op mobiel, en niet meer
+	   als een soort 'zelfde versie als desktop' die dan eigenlijk niet gemaakt is voor mobiel."
+
+	   THE DIAGNOSIS, MEASURED at 390×844 on the version this replaces, not guessed:
+	     1. THE PHOTOGRAPH WAS A SLICE. `hero.jpeg` is 3:2 landscape (1.50); the frame is 0.462. `cover`
+	        therefore scaled it to the frame's HEIGHT and kept a 1266-CSS-px-wide picture inside a 390px
+	        screen — 69% of the photograph discarded, and the 31% that survived enlarged 3.25× past its own
+	        1536px master. Both the composition and the resolution were lost, and neither was fixable by
+	        tuning: the frame simply is not the shape of that photograph. Leo's portrait master (see the
+	        <Media> block comment) is the fix, and it is the only part of this that needed a new file.
+	     2. THE FOOT WAS A BLACK PANEL, NOT A PHOTOGRAPH. Mapping the old mobile ramp back onto the frame:
+	        0.86 alpha at y 490, 0.56 at y 354, 0.16 at y 236, reaching 0 only at y 101. It was not carrying
+	        the type; it was dimming the SKY, 12% down from the top of the screen. The bottom 45% of the
+	        first screen was effectively a rectangle, which is the single loudest thing about the old shot.
+	     3. THE BLOCK WAS THE DESKTOP BLOCK. Same datum drawn edge to edge (at 390px a full-width rule is
+	        the widest graphic on the screen and cuts the picture in half), same rhythm, and a 32px text
+	        link as the only call to action — a 211×32 target where a thumb wants 44–48.
+
+	   THE COMPOSITION IS READ OFF THE NEW PHOTOGRAPH. Profiling the delivered frame (brightest pixel per
+	   20px row, full width, scrim removed) finds a structure a phone can actually use:
+
+	        y   0– 80   sky, 0.18–0.28        → the header's own scrim already covers this
+	        y  80–400   the lit silos, up to 1.00
+	        y 400–435   the quay uplights, 0.71–0.83
+	        y 435–478   THE QUAY WALL IN SHADOW, 0.096–0.111   ← the darkest band in the frame
+	        y 478–555   the top of the reflection, 0.81–0.83   ← the brightest water
+	        y 555–815   the calm reflection, 0.38–0.56
+	        y 815–844   the baked copyright signature, 0.84
+
+	   That 43px shadow band at y 435–478 is the hinge. It is where the photograph's own light goes out, so
+	   it is where a veil can BEGIN without being seen to begin — and it sits at 51.5–56.6% of the frame on
+	   every phone, because a 0.633 picture in any portrait phone frame is cropped horizontally, never
+	   vertically, so this geometry does not move between devices (checked 360×800, 375×667, 390×844,
+	   412×915, 430×932). The veil is therefore anchored to it: full strength through the water, then 0.655 →
+	   0.40 → 0.16 → 0 across y 469 → 451 → 435 → 410, the whole release inside (or above) the shadow.
+	   Verified on the render rather than asserted: sampling mean luminance every 4px down the composite,
+	   y 434 → 502 glides 0.0123 → 0.0131 with no step anywhere, while the only real deltas in that stretch
+	   (+0.175 at y 422, +0.093 at y 506) are the quay uplights and the reflection, i.e. the photograph's
+	   own features. ABOVE THAT LINE NOTHING IS COVERED AT ALL — the entire
+	   building, the uplights and the sky are delivered at full strength, which is the actual difference
+	   between this screen and the old one.
+
+	   WHAT IS NOT DONE HERE, deliberately: the type is not shrunk to buy room (the h1 gets BIGGER, 32.5 →
+	   35px), and no copy is cut. The room comes from the veil's shape and the block's rhythm instead.
+
+	   SCOPE: 32rem (512px) is a PHONE query, on the owner's instruction — above the widest phone in
+	   portrait (~440–480 CSS px), far below every tablet in portrait (600–810). The 52rem block above is
+	   untouched, so iPad and every tablet width render exactly as they did. */
+	@media (max-width: 32rem) {
+		/* The picture is cropped horizontally only, so `center` keeps the building centred and pays the
+		   27% width crop symmetrically — the silos stay whole and the crane keeps its silhouette at the
+		   right edge as the composition's counterweight. Verified against an off-centre alternative
+		   (35%), which cut the crane through its middle and gained nothing on the left. */
+		.home-hero__media :global(img) {
+			object-position: 50% 50%;
+		}
+
+		/* THE VEIL, anchored to the shadow band (see above). Two things change besides the stops:
+		   · it is CHROMATIC. rgb(7,11,22) is a blue-hour navy rather than the neutral rgb(6,8,11), so the
+		     water reads as water deepening into night instead of as black paint over a photograph. Over a
+		     magenta reflection a neutral veil greys the colour out; a navy one keeps the hue and takes the
+		     level, which is what a longer exposure would have done anyway;
+		   · it ENDS. The last stop is a true 0 inside a region the photograph has already taken to black,
+		     so the ramp has no visible top edge anywhere on the frame — the failure mode of a gradient that
+		     stops mid-slope.
+		   It stays on `.home-hero__scrim` rather than becoming a new layer on purpose: home-cinema.js fades
+		   the photograph and THIS element together, in lockstep, as the hero leaves. A separate veil would
+		   be left behind as an empty rectangle travelling over the sky — the defect that fix exists for. */
+		.home-hero__scrim {
+			background: linear-gradient(
+				to top,
+				rgba(7, 11, 22, 0.8) 0%,
+				rgba(7, 11, 22, 0.74) 12%,
+				rgba(7, 11, 22, 0.735) 26%,
+				rgba(7, 11, 22, 0.712) 38%,
+				rgba(7, 11, 22, 0.655) 44.5%,
+				rgba(7, 11, 22, 0.4) 46.5%,
+				rgba(7, 11, 22, 0.16) 48.5%,
+				rgba(7, 11, 22, 0) 51.5%
+			);
+		}
+
+		/* THE DATUM BECOMES A MARK. Full width, the site's gold hairline is a 331px rule drawn across a
+		   390px photograph: the widest graphic element on the screen, and a line from edge to edge is a
+		   banner (the same reasoning that took it off the full container on desktop in D-77 — it just
+		   arrives at a different answer here, because on a phone the column IS the full measure and the
+		   only way to stop the rule being a banner is to stop it being full width). At 2.75rem it is what
+		   a hairline is for: a caption's tick, the site's own `--grad-datum`, unmistakably the same mark. */
+		.home-hero__datum {
+			width: 2.75rem;
+			margin-bottom: 0.85rem;
+		}
+
+		/* THE TYPE, RE-SET FOR THE FRAME rather than inherited from it.
+		   The h1 GROWS to 35px and its leading tightens to 1.0. Three lines is not a compromise here, it is
+		   the larger option: at this measure the sentence breaks 14 / 14 / 17 characters, so three lines
+		   buy ~35px of type where two lines would have forced ~26px to fit 25 characters on one. It stays,
+		   by a factor of nearly three, the largest thing on the page. */
+		.home-hero__title {
+			margin-top: 0.4rem;
+			max-width: 14ch;
+			font-size: clamp(1.95rem, 1.15rem + 3.9vw, 2.25rem);
+			line-height: 1;
+			letter-spacing: -0.012em;
+		}
+		/* The lead moves up one step of the paper ramp (300 → 200). Over a photograph the secondary text is
+		   the element with the least contrast headroom, so on the one screen where it sits on water rather
+		   than on a surface it is given back the step it can afford — and that step is paid for by the
+		   veil, which needs ~0.06 less alpha to carry it. Brighter text, lighter veil, more photograph. */
+		.home-hero__sub {
+			margin-top: 0.85rem;
+			font-size: 0.9375rem;
+			line-height: 1.55;
+			color: var(--p-paper-200);
+		}
+		.home-hero__actions {
+			margin-top: 1.1rem;
+		}
+		/* THE CALL TO ACTION BECOMES A THUMB TARGET. It was an inline text link 32px tall — above WCAG
+		   2.2's 24px floor (2.5.8) but well under the 44–48px a thumb actually wants, and it is the one
+		   control on the first screen. The padding is added BELOW the label and the gold rule rides with
+		   it, so the target grows to 48px without the link looking any heavier; `touch-action` keeps the
+		   tap immediate. Nothing about its type, colour or hover behaviour changes. */
+		.home-hero__cta {
+			min-height: 48px;
+			align-items: flex-end;
+			padding-bottom: 0.9rem;
+			touch-action: manipulation;
+		}
+
+		/* THE HEADER IS DELIBERATELY NOT TOUCHED, and that is a measured decision rather than an omission.
+		   The portrait master opens on a LIT blue-hour sky where the landscape one opened on a near-black
+		   one (raw luminance 0.18–0.28 across the header band against 0.02–0.05 before), so the shared
+		   overlay scrim was re-measured on the new composite at 390×844: wordmark 7.14:1, menu control
+		   6.53:1, and 5.08:1 at the very foot of the header where the scrim has almost released. All pass
+		   AA on their own, so the scrim already absorbs the brighter sky and deepening it would only take
+		   light off the photograph's sky to fix a problem that does not exist. */
+	}
+
+	/* ── THE SHORT PHONE (P16) ──────────────────────────────────────────────────────────────────────────
+	   FOUND BY MEASURING A THIRD FRAME, exactly as D-77's short-desktop variant was. At 390×844 and
+	   430×932 the card lands at 57–63% of the frame, comfortably past the photograph's bright reflection
+	   band; at 375×667 (iPhone SE, iPhone 8 — still a real share of phones) the same card lands at 45%,
+	   because the card's height is fixed in PIXELS while the photograph's structure is a FRACTION of the
+	   frame. It measured 1.19:1 on the eyebrow there: the type had climbed out of the veil entirely and
+	   was sitting on the lit quay.
+	   Grading the whole ramp to cover the worst case was rejected on arithmetic, as it was in D-77: it
+	   would take the tall phones — the overwhelming majority — down with it, for a frame they do not have.
+	   So the SHORT frame gets its own two adjustments instead, and only where it has to:
+	     · the block is compacted (one-line eyebrow at slightly tighter tracking, a smaller display size and
+	       a tighter rhythm), which drops it from ~322px to ~265px and moves its top down past 55%;
+	     · the veil's PLATEAU is raised while its release stays anchored to the same shadow band, because on
+	       a frame this short the type unavoidably sits over the bright top of the reflection.
+	   The composition is unchanged: same crop, same mark, same order, same reveal, same target sizes. */
+	@media (max-width: 32rem) and (max-height: 45rem) {
+		.home-hero {
+			padding-block-end: 2rem;
+		}
+		@supports (height: 100lvh) {
+			.home-hero {
+				padding-block-end: calc(2rem + var(--hero-chrome));
+			}
+		}
+		.home-hero__scrim {
+			background: linear-gradient(
+				to top,
+				rgba(7, 11, 22, 0.84) 0%,
+				rgba(7, 11, 22, 0.8) 12%,
+				rgba(7, 11, 22, 0.78) 26%,
+				rgba(7, 11, 22, 0.76) 38%,
+				rgba(7, 11, 22, 0.72) 44.5%,
+				rgba(7, 11, 22, 0.44) 46.5%,
+				rgba(7, 11, 22, 0.17) 48.5%,
+				rgba(7, 11, 22, 0) 51.5%
+			);
+		}
+		.home-hero__datum {
+			margin-bottom: 0.7rem;
+		}
+		/* One line at 317px of measure, which 12px at the standard tracking does not fit. */
+		.home-hero .t-eyebrow {
+			font-size: 0.6875rem;
+			letter-spacing: 0.1em;
+		}
+		.home-hero__title {
+			margin-top: 0.35rem;
+			font-size: 1.7rem;
+		}
+		.home-hero__sub {
+			margin-top: 0.7rem;
+			font-size: 0.875rem;
+			line-height: 1.5;
+		}
+		.home-hero__actions {
+			margin-top: 0.8rem;
 		}
 	}
 

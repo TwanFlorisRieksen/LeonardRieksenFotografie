@@ -438,6 +438,50 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 			</div>
 		</nav>
 
+		<!-- ============================================================================================= *
+		     THE STOP (P21 / D-93). The portfolio travels by itself while nobody is holding it (traverse.js,
+		     `autoTick`). Auto-advancing content that runs for more than five seconds needs a mechanism to
+		     pause it (WCAG 2.2.2), and "scroll, and it stops for 1.4 seconds" is an interruption, not a
+		     pause — so this is a real, persistent stop, remembered for the session.
+
+		     WHY IT IS A DISC IN THIS CORNER AND NOT A FOURTH WORD IN THE MARK. The world mark's three
+		     uppercase words already fill the bottom-left corner at 320px, and the owner's verdict on the
+		     version before it was that it was too textual and too dominant. A fourth item there would be
+		     exactly that complaint again. The opposite corner already owns a control vocabulary — the
+		     44px back-to-top disc — so this is the same disc, in the same column, directly above it: the
+		     corner where this page keeps its controls, saying one more thing.
+
+		     It is a real `<button>` with a real accessible name, carrying state in `aria-pressed` and in a
+		     glyph (never colour alone). Under no-JS and under reduced motion it is `display: none` with the
+		     rest of the chrome — and correctly so: there is no auto-scroll to stop, because the runtime that
+		     performs it never mounts. The runtime wires it in `start()` and owns the state, so there is no
+		     controller here that could get out of step with the thing it controls. -->
+		<button
+			type="button"
+			class="pf-auto"
+			data-pf-auto
+			aria-pressed="true"
+			aria-label="Automatisch scrollen pauzeren"
+		>
+			<svg
+				class="pf-auto__glyph"
+				width="12"
+				height="12"
+				viewBox="0 0 12 12"
+				aria-hidden="true"
+				focusable="false"
+			>
+				<g class="pf-auto__pause"><rect x="2.4" y="1.6" width="2.6" height="8.8" rx="0.5" /><rect
+						x="7"
+						y="1.6"
+						width="2.6"
+						height="8.8"
+						rx="0.5"
+					/></g>
+				<path class="pf-auto__play" d="M3.1 1.5 10.4 6 3.1 10.5Z" />
+			</svg>
+		</button>
+
 		<!-- The world boundaries, for the chrome controller. Structural data only (a JSON data island). -->
 		<script type="application/json" data-tv-worlds is:inline set:html={JSON.stringify(worlds)}></script>
 	</div>

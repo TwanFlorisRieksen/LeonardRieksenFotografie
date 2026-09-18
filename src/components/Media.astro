@@ -11,7 +11,7 @@
  *   - alt required; pass alt="" for a genuinely decorative image (PH-14).
  * Extra classes/attributes pass through to the wrapper, so callers extend without duplicating markup.
  */
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 
 interface Props {
@@ -27,6 +27,15 @@ interface Props {
 	/** Encoder quality. Omit for the project default; raise only for a photograph that is presented
 	 *  full-bleed and therefore has to survive being enlarged past its own resolution. */
 	quality?: number;
+	/** ART DIRECTION (blueprint 8.11) — an alternative master, deliberately selected, delivered only where
+	 *  `artMedia` matches. Blueprint 8.11 makes this a restrained, opt-in capability: the default remains
+	 *  "same composition, more resolutions". Omit all four props and this component behaves exactly as
+	 *  before (the <Picture> path below), which is why no other call site changes. */
+	artSrc?: ImageMetadata;
+	artMedia?: string;
+	artWidths?: number[];
+	artSizes?: string;
+	artQuality?: number;
 	class?: string;
 	[key: string]: unknown;
 }
@@ -42,6 +51,11 @@ const {
 	fit = 'cover',
 	position = 'center',
 	quality,
+	artSrc,
+	artMedia,
+	artWidths,
+	artSizes,
+	artQuality,
 	class: className,
 	...rest
 } = Astro.props;
@@ -70,8 +84,77 @@ const {
  * simply does not contain them. See documenten/ASSET_INVENTORY.md — a larger hero master is an owner input,
  * not an implementation choice, and nothing here upscales to fake it.
  */
-const requested = widths.map((w) => Math.min(w, src.width));
-const effectiveWidths = [...new Set(requested)].sort((a, b) => a - b);
+const clampWidths = (list: number[], master: ImageMetadata) =>
+	[...new Set(list.map((w) => Math.min(w, master.width)))].sort((a, b) => a - b);
+
+const effectiveWidths = clampWidths(widths, src);
+
+/*
+ * THE ART-DIRECTED PATH (P16). Only taken when a caller supplies BOTH `artSrc` and `artMedia`; otherwise
+ * the <Picture> below renders exactly what it always did, byte for byte.
+ *
+ * WHY IT IS HAND-ROLLED RATHER THAN A SECOND <Picture>. Art direction is a property of the <picture>
+ * ELEMENT — a `media` attribute on the sources that precede the default ones — and `<Picture>` owns the
+ * whole element, so there is no seam to insert into. The alternative that avoids hand-rolling (two <Media>
+ * blocks toggled with `display`) is worse on the one metric that matters here: a `display:none` <img> is
+ * still fetched, so every visitor would download both photographs and the LCP candidate would race a
+ * photograph it will never show. So the element is built here, once, inside the component that is already
+ * responsible for image delivery — no parallel convention, no second pipeline (CLAUDE §11.5).
+ *
+ * WHAT IS PRESERVED, deliberately and in full: derivatives only (never the master — PH-08), the same
+ * upscale clamp, the same AVIF/WebP order, `sizes` on EVERY element that carries a `srcset` (an `img`'s
+ * sizes does not reach a `source`), and the eager/high-priority LCP treatment. A JPEG art source is emitted
+ * as well, so a browser that supports neither AVIF nor WebP still receives the ART-DIRECTED photograph
+ * rather than silently falling through to the default master in the <img>.
+ *
+ * ALT: a <picture> has exactly one accessible name, so an art-directed pair MUST share an alt that is true
+ * of both photographs. Callers own that — see the hero's alt in src/pages/index.astro.
+ */
+const artFormats: ('avif' | 'webp' | 'jpeg')[] = ['avif', 'webp', 'jpeg'];
+const artSources =
+	artSrc && artMedia
+		? await Promise.all(
+				artFormats.map(async (format) => ({
+					format,
+					srcset: (
+						await getImage({
+							src: artSrc,
+							widths: clampWidths(artWidths ?? widths, artSrc),
+							sizes: artSizes ?? sizes,
+							format,
+							...(artQuality ? { quality: artQuality } : {}),
+						})
+					).srcSet.attribute,
+				}))
+			)
+		: null;
+
+/* The default (non-art-directed) sources + the <img> fallback, built only on the hand-rolled path. */
+const baseSources = artSources
+	? await Promise.all(
+			formats.map(async (format) => ({
+				format,
+				srcset: (
+					await getImage({
+						src,
+						widths: effectiveWidths,
+						sizes,
+						format,
+						...(quality ? { quality } : {}),
+					})
+				).srcSet.attribute,
+			}))
+		)
+	: null;
+const baseImg = artSources
+	? await getImage({
+			src,
+			widths: effectiveWidths,
+			sizes,
+			format: 'jpeg',
+			...(quality ? { quality } : {}),
+		})
+	: null;
 
 const styleVars = ratio ? `--media-ratio:${ratio};--media-fit:${fit};--media-pos:${position};` : undefined;
 ---
@@ -82,17 +165,41 @@ const styleVars = ratio ? `--media-ratio:${ratio};--media-fit:${fit};--media-pos
 	style={styleVars}
 	{...rest}
 >
-	<Picture
-		src={src}
-		alt={alt}
-		widths={effectiveWidths}
-		sizes={sizes}
-		formats={formats}
-		loading={priority ? 'eager' : 'lazy'}
-		decoding={priority ? 'auto' : 'async'}
-		fetchpriority={priority ? 'high' : 'auto'}
-		{...(quality ? { quality } : {})}
-	/>
+	{
+		artSources && baseSources && baseImg ? (
+			<picture>
+				{artSources.map((s) => (
+					<source media={artMedia} type={`image/${s.format}`} srcset={s.srcset} sizes={artSizes ?? sizes} />
+				))}
+				{baseSources.map((s) => (
+					<source type={`image/${s.format}`} srcset={s.srcset} sizes={sizes} />
+				))}
+				<img
+					src={baseImg.src}
+					srcset={baseImg.srcSet.attribute}
+					sizes={sizes}
+					width={src.width}
+					height={src.height}
+					alt={alt}
+					loading={priority ? 'eager' : 'lazy'}
+					decoding={priority ? 'auto' : 'async'}
+					fetchpriority={priority ? 'high' : 'auto'}
+				/>
+			</picture>
+		) : (
+			<Picture
+				src={src}
+				alt={alt}
+				widths={effectiveWidths}
+				sizes={sizes}
+				formats={formats}
+				loading={priority ? 'eager' : 'lazy'}
+				decoding={priority ? 'auto' : 'async'}
+				fetchpriority={priority ? 'high' : 'auto'}
+				{...(quality ? { quality } : {})}
+			/>
+		)
+	}
 </div>
 
 <style>

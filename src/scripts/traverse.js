@@ -227,49 +227,57 @@ const CFG = {
 	swayPeriodX: 15, // seconds — the two axes use different periods so the float never repeats a straight line
 	swayPeriodY: 21,
 
-	/* --- the coil keeps turning (D-72, owner: "wanneer de gebruiker stopt met scrollen, de wereld moet
-	   vanzelf heel langzaam verder naar beneden bewegen … alsof de coil continu rustig verder draait") -------
-	   When the visitor is idle, the JOURNEY itself creeps forward — the coil descends of its own accord, very
-	   slowly, so the world keeps living instead of freezing. This is NOT scroll hijacking: window.scrollY and
-	   the scrollbar are NEVER touched. The drift lives in `autoOffset`, an addend to the spring target; it eases
-	   in with the same `life` envelope as the camera sway, is bounded so the world and the scrollbar never
-	   diverge by more than a couple of works, and UNWINDS the moment the visitor scrolls again so the scrollbar
-	   stays honest whenever they are in control. Reduced motion never mounts the runtime, so this is off there. */
-	autoSpeed: 0.04, // works per second the coil drifts forward at full idle. Scaled by `life`, so it eases in
-	// and out rather than switching on. P15: halved from 0.08. At 0.08 a three-second pause — which is what
-	// LOOKING at a photograph is — carried the reading work 0.24 works, about 12 degrees off square-on, so the
-	// frame the reader had stopped on was visibly turning away while they read it. That is the opposite of the
-	// "rustig, precies" the brief asks for, and it is also what makes the world feel like it is not staying
-	// where it was put. At 0.04 the same pause costs 6 degrees, which reads as the coil breathing rather than
-	// as it leaving.
-	autoMax: 0.5, // works the coil may turn on its own, in total. P15: 0.9 -> 0.5, and it is now a HARD ceiling
-	// rather than a per-rest budget (see below) — the coil settles onward for about twelve seconds after the
-	// first pause and then holds for good, and the world and the scrollbar can never diverge by more than half
-	// a work (~0.9% of this page's thumb travel).
-	/* ============================================================================================
-	 * P15: THE RE-BASE IS GONE, AND WITH IT THE ONLY PROGRAMMATIC SCROLL ON THIS PAGE.
-	 *
-	 * WHAT IT WAS. D-84 froze the drift during a gesture (so the world travels 1:1 with the scrollbar, at
-	 * full gain) and settled the accrued offset ~300 ms later by adding it to `window.scrollY` while
-	 * subtracting it from `autoOffset` — a swap that is invisible on screen, because the camera reads only
-	 * the sum. That reasoning was right and the fix it replaced (unwinding the drift out of the visitor's own
-	 * travel, D-81) was genuinely worse.
-	 *
-	 * WHY IT GOES ANYWAY. It is still a `window.scrollTo` the visitor did not ask for, landing a beat after
-	 * their gesture ends. MEASURED on the built page: one wheel notch moved the scrollbar 300 px, and 480 ms
-	 * later the page moved a further 142 px on its own. Nothing on screen moves, but the thumb jumps, a
-	 * scroll event fires, and on a phone a programmatic scroll arriving just after a momentum fling is
-	 * exactly the kind of thing a mobile browser answers by re-animating its own URL bar. The owner's report
-	 * for this session is a list of ways the page appears to move without being asked to, so a mechanism
-	 * whose entire job is to move the page without being asked to has to justify itself, and it cannot: what
-	 * it buys is scrollbar honesty to within half a work.
-	 *
-	 * WHAT REPLACES IT. Nothing. `autoOffset` is simply clamped to `autoMax` and stays there — the drift
-	 * happens once, early, and is spent. The world and the scrollbar then disagree by at most 0.5 works
-	 * (~370 px of 42,000, or 0.9% of the thumb's travel), permanently and silently, which is a far smaller
-	 * dishonesty than a page that scrolls itself. `driftSpent`, `rebaseArmed` and `programmaticY` go with it,
-	 * along with the `scrollHeight` read that used to force a layout inside the frame loop.
-	 * ============================================================================================ */
+	/* --- THE PAGE TRAVELS BY ITSELF (P21 / D-93, owner: "zorg voor een automatische, slome scroll in de
+	   portfolio … als je iets hebt aangeraakt, zelf heb gescrolt, of een foto lightbox heb geopend en weer
+	   sluit, en je houdt de pagina zelf niet meer vast, moet er een automatische scroll komen, subtiel, traag,
+	   maar moet er altijd zijn") ---------------------------------------------------------------------------
+
+	   WHAT THIS REPLACES. D-72 shipped an idle "drift": `autoOffset`, a bounded addend to the spring target
+	   that turned the coil a little while the visitor was still, WITHOUT ever moving window.scrollY. P15 then
+	   made its ceiling permanent (autoMax 0.5 works), so the world settled onward for about twelve seconds
+	   after the first pause and then held for good. That mechanism answers a different brief than this one:
+	   it is a BREATH, and the owner has now asked for a JOURNEY — one that resumes after every interaction and
+	   "moet er altijd zijn". A bounded camera offset cannot be that, for a reason that is arithmetic rather
+	   than aesthetic: unbound it and the world runs to the end of the coil while the scrollbar still says the
+	   top, after which the drift dead-ends, the scrollbar is grossly dishonest, and a scroll down moves
+	   nothing because the journey is already clamped at `span`. So `autoOffset` is gone, and the auto travel
+	   is a REAL SCROLL of the page.
+
+	   WHAT IT IS. While the visitor is not driving, the engine advances `window.scrollY` by a fraction of a
+	   pixel per frame. Everything downstream — the journey, the spring, the chrome's progress hairline, the
+	   world beats, the scrollbar thumb, the ending — is fed by the existing scroll path and needs no special
+	   case: the page is simply being scrolled, slowly, and the world follows exactly as it follows a finger.
+	   The scrollbar therefore never lies, which is the one thing the D-72/P15 lineage could never deliver.
+
+	   WHY THIS IS NOT THE PROGRAMMATIC SCROLL P15 DELETED. That one was a JUMP — 142 px landing 480 ms after
+	   a gesture the visitor had already finished, so the thumb visibly leapt while the screen did not move.
+	   This is a continuous sub-pixel creep that only ever runs when the visitor has been still for
+	   `autoDelay`, and it yields INSTANTLY and completely on any input (see `releaseAuto`) — wheel, touch,
+	   pointer, key, or a scroll event that is not the one we just wrote. The scroll input of the visitor
+	   stays leading (blueprint 7.30): they can stop it, reverse it and leave at any moment, and doing so
+	   costs one gesture, not a fight.
+
+	   WHERE IT STOPS. At the end of the WORKS range, where the ending zone begins — the coil's dissolve into
+	   the contact invitation is a departure, and a page should not walk the visitor out of the door by
+	   itself. It resumes the moment they scroll back up.
+
+	   ACCESSIBILITY. Reduced motion never mounts the runtime, so there is no auto-scroll there at all. Under
+	   the pointer profile the visitor also gets an explicit, persistent pause in the world mark
+	   (`[data-pf-auto]`, wired in start()) — auto-advancing content that runs for more than five seconds
+	   needs a mechanism to stop it (WCAG 2.2.2), and "scroll to interrupt it for 1.4 s" is not one. Keyboard
+	   focus inside the coil also holds it, because travelling the camera under a focused work would fight the
+	   person using it. */
+	autoSpeed: 0.09, // works per second the page scrolls itself at full speed. 0.09 x scrollPerWork (720) is
+	// ~65 px/s, i.e. a new photograph arriving square-on roughly every 11 seconds — a gallery pace. The D-72
+	// drift ran at 0.04 and its tuning note is still true of a DRIFT (at 0.08 a three-second pause turned the
+	// work being read 12 degrees off square-on, which is the world leaving while you look at it). That note
+	// was about a world that is supposed to stay where it was put; this is a world that is supposed to
+	// travel, and 0.04 (29 px/s, 25 s per work) reads as a fault rather than as a journey.
+	autoDelay: 1400, // ms of no visitor input before the page starts moving itself. Comfortably clear of the
+	// 900 ms `tv-emerge` entrance, and long enough that the end of a wheel gesture is not immediately
+	// followed by the page carrying on without being asked.
+	autoRamp: 1600, // ms for the auto-scroll to ease from nothing to full speed, so it never starts with a
+	// step. Release is NOT ramped — input drops it to zero on the same frame.
 
 	/* --- the reading moment gets a moment (D-70, owner: "de gecentreerde foto verdient subtiele nadruk") -
 	   The work square-on at t=0 is already the sharpest, nearest and largest thing on screen, but at rest it
@@ -404,15 +412,15 @@ const CFG = {
  *    square-on rather than snapping. Note this changes only the LAG, never the gain: the coil already
  *    travels exactly as far as the scrollbar (D-84).
  *
- * 2. `autoSpeed` 0.08 -> 0. The idle auto-drift (D-72) exists because a pointer visitor often simply rests
- *    the mouse and the world should not freeze. A touch visitor has taken their hand off the glass, and
- *    there the same behaviour is content moving on its own straight after a gesture — indistinguishable
- *    from the page not having stopped where they put it. It also drags in the re-base (D-84), which settles
- *    the accrued drift by writing `window.scrollY`; a programmatic scroll landing shortly after a momentum
- *    fling is exactly the kind of thing a mobile browser answers by re-animating its own URL bar.
- *    The world does NOT go still: the camera sway below is untouched in kind and keeps breathing. It moves
- *    only `perspective-origin`, so it never touches the journey, the scrollbar or a photograph's framing —
- *    which is precisely why it is the half that is safe to keep here and the drift is the half that is not.
+ * 2. `autoDelay` 1400 -> 2200 (P21). Touch USED to set `autoSpeed: 0` — the D-72 idle drift was switched
+ *    off entirely under a finger, because content moving on its own straight after a gesture is
+ *    indistinguishable from the page not having stopped where you put it. The owner's P21 instruction names
+ *    touch explicitly ("als je iets hebt aangeraakt … moet er een automatische scroll komen"), so the
+ *    auto-scroll now runs here too and the objection is answered with TIME rather than with absence: a
+ *    momentum fling has to die out and the hand has to be genuinely off the glass before the page takes
+ *    over. The mechanism it used to drag in with it — D-84's re-base, a programmatic JUMP landing after a
+ *    gesture, which is what a mobile browser answers by re-animating its URL bar — no longer exists; a
+ *    sub-pixel creep is not a jump.
  *
  * 3. `swayAmp` 3.4 -> 2.2. The sway is a percentage of the viewport, so the same number is a much larger
  *    share of the visual field on a 390 pt screen than on a 1440 px one. Same breath, same periods, scaled
@@ -423,7 +431,7 @@ const CFG = {
  */
 const TOUCH_CFG = {
 	damp: 0.42,
-	autoSpeed: 0,
+	autoDelay: 2200,
 	swayAmp: 2.2,
 };
 
@@ -437,6 +445,15 @@ const clampUnit = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 /* sessionStorage key holding the exact coil scrollY the visitor left at when they opened a project, so the
    return from that project lands on the identical frame (Phase 3 / D-73). */
 const RETURN_Y_KEY = 'tv-return-y';
+
+/* sessionStorage key holding the visitor's explicit stop for the auto-scroll (P21), so the choice survives
+   opening a project and coming back. Absent means on, which is the owner's "moet er altijd zijn". */
+const AUTO_OFF_KEY = 'tv-auto-off';
+
+/* The input events that mean "there is a hand on this page", listened for on window so they are caught
+   wherever in the document they happen (the coil is fixed; the scroll spacer is not the target). Passive
+   throughout — none of them is prevented, this only observes that the visitor is driving. */
+const autoInputEvents = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
 
 export function createTraverse(root, opts = {}) {
 	// P14 — see TOUCH_CFG. Explicit opts still override, so the tuning harness reaches every value.
@@ -541,8 +558,13 @@ export function createTraverse(root, opts = {}) {
 	let life = 0; // 0..1 ambient-drift amplitude, eased toward 1 when idle and 0 on input
 	let clock = 0; // seconds of run time, drives the sway oscillators (rAF-timed, not frame-counted)
 	let lastT = 0;
-	let autoOffset = 0; // works the idle auto-drift has added to the spring target (D-72); frozen while the
-	// visitor scrolls (D-84) and clamped to cfg.autoMax for good (P15 — the re-base is gone, see CFG)
+	/* ---- the auto-scroll (P21, see CFG) ---- */
+	let autoLife = 0; // 0..1 eased auto-scroll amplitude; ramps up over autoRamp, drops to 0 on any input
+	let autoRun = false; // true while the engine is the one moving the page
+	let autoY = 0; // the engine's own fractional scroll position (window.scrollY is an integer)
+	let autoSelfY = -1; // the exact value last written, so our own scroll event is not mistaken for a visitor
+	let autoPaused = false; // the visitor's explicit stop (the [data-pf-auto] control); persists for the session
+	let autoBtn = null; // that control, if the page provides one
 	let lastOrigin = ''; // last perspective-origin written, so the ambient drift writes only on change
 	/* When the runtime started, so the image look-ahead can open narrow and widen (see `loadAheadFirst`). */
 	let mountedAt = 0;
@@ -1140,9 +1162,17 @@ export function createTraverse(root, opts = {}) {
 	}
 
 	function readScroll() {
-		/* Every scroll on this page is the visitor's now — the engine never moves the page itself (P15, see
-		   the re-base note in CFG) — so there is no programmatic landing to tell apart from a real one. */
-		lastInput = performance.now(); // any scroll resets the idle-drift timer
+		/* IS THIS SCROLL OURS? (P21). The engine moves the page itself while the visitor is idle, so a scroll
+		   event is no longer proof that the visitor did something. Ours lands within a pixel of the value we
+		   asked for one frame ago; anything else is the visitor and takes the wheel immediately. This is the
+		   BACKUP path — the direct input listeners below release the auto-scroll before a scroll event even
+		   arrives — but it is the only one that catches a SCROLLBAR DRAG, which dispatches no pointer event
+		   to the document at all. */
+		if (autoRun && Math.abs(window.scrollY - autoSelfY) <= 2) {
+			// our own creep: do not reset the idle timer, or the auto-scroll would cancel itself every frame
+		} else {
+			releaseAuto();
+		}
 		const top = rangeTop;
 		const usable = rangeUsable;
 		const scrolled = Math.max(window.scrollY - top, 0);
@@ -1182,11 +1212,10 @@ export function createTraverse(root, opts = {}) {
 		lastT = now;
 		clock += dt;
 
-		/* AUTO-DRIFT + SPRING. The idle auto-drift (D-72) adds `autoOffset` to the scroll target, so the coil
-		   keeps descending while the visitor is still — WITHOUT ever moving window.scrollY or the scrollbar.
-		   effTarget is clamped to the works range so the drift can never run into the ending zone or past the
-		   crown. `autoOffset` itself is updated below, eased by `life`. */
-		const effTarget = Math.min(Math.max(target + autoOffset, 0), span);
+		/* THE SPRING. `target` is now the whole story: the auto-scroll (P21) moves the PAGE, so its travel
+		   arrives here through the same `readScroll()` path a wheel does and needs no addend of its own.
+		   (D-72's `autoOffset` used to be added in at this line — see the CFG note for why it is gone.) */
+		const effTarget = Math.min(Math.max(target, 0), span);
 		const delta = effTarget - journey;
 		const jump = Math.abs(delta); // already in works
 		if (jump < 0.0012) {
@@ -1231,23 +1260,13 @@ export function createTraverse(root, opts = {}) {
 		/* LIFE — the idle amplitude for BOTH the camera sway and the auto-drift. It eases toward 1 once the
 		   visitor has been still for idleDelay with the scroll settled and we are clear of the ending, and back
 		   toward 0 on any input, so neither the float nor the drift ever fights an active scroll. `scrollSettled`
-		   compares the SCROLL component of the journey (journey − autoOffset) against the scroll target, so a
-		   still-settling teleport does not prematurely start the drift. */
-		const scrollSettled = Math.abs(journey - autoOffset - target) < 0.06;
+		   keeps a still-settling teleport from prematurely starting the sway. (P21: the journey no longer
+		   carries an ambient offset, so this is a straight comparison against the scroll target.) */
+		const scrollSettled = Math.abs(journey - target) < 0.06;
 		const idle = now - lastInput > cfg.idleDelay && scrollSettled && outroTarget < 0.05;
 		life = clampUnit(life + (idle ? 1 : -1) * ((dt * 1000) / cfg.idleRamp));
 
-		/* THE COIL KEEPS TURNING (D-72). While the visitor is idle the journey drifts forward — `autoOffset`
-		   grows, eased in by `life` — so the world keeps living instead of freezing. It is bounded by autoMax
-		   and clamped so it can never pass the last work.
-		   WHILE THE VISITOR SCROLLS IT IS SIMPLY FROZEN (P12 / D-84): nothing is subtracted from their input,
-		   so the world travels exactly as far as the scrollbar does, at full gain, from the first frame. And
-		   it is spent ONCE (P15): the clamp below is a permanent ceiling rather than a per-rest budget, so the
-		   coil settles onward for about twelve seconds after the first pause and then holds — nothing on this
-		   page ever moves the visitor's own scroll position to reconcile it. */
-		if (idle) autoOffset += cfg.autoSpeed * life * dt;
-		if (target + autoOffset > span) autoOffset = Math.max(span - target, 0);
-		autoOffset = Math.min(Math.max(autoOffset, 0), cfg.autoMax);
+		autoTick(now, dt);
 
 		render();
 		renderAmbient();
@@ -1258,6 +1277,93 @@ export function createTraverse(root, opts = {}) {
 		   fires under reduced motion (the runtime is not mounted at all there). */
 		if (cfg.onFrame) cfg.onFrame(journey, outro);
 		frame = requestAnimationFrame(tick);
+	}
+
+	/* ============================================================================================
+	 * THE AUTO-SCROLL (P21 / D-93). See the CFG note for the brief and for why this moves the page rather
+	 * than the camera. One function, called once per frame from tick(), and one release path.
+	 * ============================================================================================ */
+
+	/* THE VISITOR TAKES THE WHEEL. Called from every input path — wheel, touch, pointer, key, and any scroll
+	   event that is not the one we just wrote. Not a ramp-down: the moment there is a hand on the page the
+	   engine is not moving it, on the same frame, with nothing left in flight to reconcile. */
+	function releaseAuto() {
+		lastInput = performance.now();
+		autoRun = false;
+		autoLife = 0;
+	}
+
+	/* DOES A KEYBOARD VISITOR HOLD A WORK? Scrolling the page out from under a focused element is hostile
+	   and risks WCAG 2.4.11, so an INDICATED focus inside the coil holds the auto-scroll.
+
+	   It has to be the indicated kind, and this is not pedantry — it is the difference between the feature
+	   working and not working. A mouse click on a photograph focuses its anchor, and closing the lightbox
+	   deliberately RETURNS focus to it (Lightbox.astro, so the next Tab resumes at the photograph rather
+	   than at the top of the document). A plain `focused !== null` test therefore latched after exactly the
+	   interaction the owner named — "een foto lightbox heb geopend en weer sluit" — and the page never moved
+	   again. MEASURED before this guard was narrowed: still at y=185 three seconds after close.
+
+	   Two signals, both already maintained by the site: `data-focus-quiet` marks a focus a script moved for
+	   a POINTER visitor (quiet-focus.js), and `:focus-visible` is the browser's own answer for everything
+	   else. Either one saying "this was not the keyboard" is enough. */
+	function keyboardHoldsWork() {
+		if (focused === null) return false;
+		const ae = document.activeElement;
+		if (!ae || !focused.contains(ae)) return false;
+		if (ae.hasAttribute('data-focus-quiet')) return false;
+		try {
+			return ae.matches(':focus-visible');
+		} catch {
+			return true; // a browser without :focus-visible: hold, which is the safe side
+		}
+	}
+
+	function autoTick(now, dt) {
+		if (cfg.autoSpeed <= 0) return;
+
+		/* WHEN THE PAGE MAY MOVE ITSELF. Every clause is a way of saying "the visitor is not holding it":
+		   they have been still for autoDelay; they have not pressed the stop; no keyboard focus is resting on
+		   a work; the spring has settled, so a teleport is not still arriving; and we are not already in the
+		   ending. */
+		const may =
+			!autoPaused &&
+			!keyboardHoldsWork() &&
+			now - lastInput > cfg.autoDelay &&
+			Math.abs(journey - target) < 0.06 &&
+			outroTarget < 0.001;
+
+		autoLife = clampUnit(autoLife + (may ? (dt * 1000) / cfg.autoRamp : -1));
+		if (autoLife <= 0) {
+			autoRun = false;
+			return;
+		}
+
+		/* THE LIMIT IS THE END OF THE WORKS, NOT THE END OF THE PAGE. The trailing outro zone dissolves the
+		   coil into the contact invitation; arriving there is a departure and belongs to the visitor. */
+		const worksUsable = Math.max(rangeUsable - outroPx, 1);
+		const limit = rangeTop + worksUsable;
+
+		if (!autoRun) {
+			autoRun = true;
+			autoY = window.scrollY; // pick up wherever they left it, to the pixel
+		}
+		if (autoY >= limit) return;
+
+		/* Speed in DOCUMENT PIXELS, derived from the same works↔scroll mapping readScroll() uses, so the
+		   cadence is one work per (1 / autoSpeed) seconds at every viewport size. Smootherstepped by
+		   `autoLife`, so the first pixel is as slow as the ramp implies rather than a step. */
+		const a = autoLife * autoLife * (3 - 2 * autoLife);
+		autoY = Math.min(autoY + cfg.autoSpeed * a * dt * (worksUsable / span), limit);
+
+		const y = Math.round(autoY);
+		if (y !== autoSelfY) {
+			autoSelfY = y;
+			/* `'instant'`, NOT the bare `window.scrollTo(0, y)` form: the site sets
+			   html{scroll-behavior: smooth} (base.css), and `auto` inherits it — a smooth-scrolled sequence of
+			   per-frame targets queues 60 competing animations a second, which is a page that fights itself
+			   rather than one that creeps. Positional, instant, one value per frame. */
+			window.scrollTo({ top: y, behavior: 'instant' });
+		}
 	}
 
 	/* THE AMBIENT DRIFT. A slow parallax of the camera only — the perspective-origin traces a gentle
@@ -1289,12 +1395,11 @@ export function createTraverse(root, opts = {}) {
 		const w = works[Math.min(Math.max(index, 0), works.length - 1)];
 		if (!w) return;
 		/* An intentional navigation to a specific work (keyboard focus, a wayfinding jump, a project return)
-		   must land EXACTLY on that work. The idle auto-drift (autoOffset) is an ambient offset added to the
-		   spring target; left in place it would carry the arrival past the intended work by up to autoMax
-		   (measured: a jump to work 48 landed on 50 after the coil had idled). Clearing it here makes the
-		   arrival exact and honest — the drift is meant to breathe from a RESTING place, not to corrupt a
-		   deliberate move. scrollY is set below, so the scrollbar and journey stay in agreement. */
-		autoOffset = 0;
+		   must land EXACTLY on that work, and must not be immediately walked off it. Releasing here restarts
+		   the auto-scroll's own clock from this arrival, so the visitor gets the full autoDelay to look at
+		   the thing they asked to be taken to. (P21: it also drops the stale `autoSelfY`, since the scroll
+		   set below is not ours to recognise.) */
+		releaseAuto();
 		const { top, usable } = scrollRange();
 		/* Map through the WORKS portion of the spacer, not the whole of it. readScroll() reserves the trailing
 		   outro zone for the ending, so the journey spans `usable − outroPx`; mapping through the full `usable`
@@ -1377,14 +1482,12 @@ export function createTraverse(root, opts = {}) {
 		const href = a.getAttribute('href') || '';
 		if (/^\/portfolio\/[^#?]/.test(href)) {
 			try {
-				/* The position to come BACK to is where the WORLD is, not where the scrollbar is. Any drift
-				   that has not yet been re-based (P12 / D-84) sits between the two, so it is folded in here —
-				   otherwise a visitor who paused to look, then opened a project, returned up to 0.9 works
-				   behind the photograph they left. `start()` restores this number and zeroes autoOffset, so
-				   the sum is exactly the frame they were on. */
-				const worksUsable = Math.max(rangeUsable - outroPx, 1);
-				const y = window.scrollY + autoOffset * (worksUsable / span);
-				sessionStorage.setItem(RETURN_Y_KEY, String(Math.round(y)));
+				/* The position to come BACK to is simply the scroll position (P21). It used to need a
+				   correction term: D-72's drift sat BETWEEN the scrollbar and the world, so a visitor who
+				   paused to look and then opened a project returned up to 0.9 works behind the photograph
+				   they left. The auto-scroll moves the page itself, so the scrollbar is the world — there is
+				   nothing left to fold in, and the return is exact by construction. */
+				sessionStorage.setItem(RETURN_Y_KEY, String(Math.round(window.scrollY)));
 			} catch {
 				/* ignore */
 			}
@@ -1483,7 +1586,7 @@ export function createTraverse(root, opts = {}) {
 			}
 			readScroll();
 			journey = target;
-			autoOffset = 0;
+			releaseAuto();
 			render();
 		};
 		place();
@@ -1492,7 +1595,9 @@ export function createTraverse(root, opts = {}) {
 		clock = 0;
 		lastT = 0;
 		life = 0;
-		autoOffset = 0;
+		lastInput = performance.now(); // the auto-scroll's clock starts at the arrival, not at zero
+		autoLife = 0;
+		autoRun = false;
 		outro = 0;
 		outroTarget = 0;
 		render();
@@ -1510,6 +1615,11 @@ export function createTraverse(root, opts = {}) {
 		if (document.readyState !== 'complete')
 			window.addEventListener('load', () => { refreshRange(); readScroll(); }, { once: true });
 		window.addEventListener('scroll', readScroll, { passive: true });
+		/* THE VISITOR'S OWN INPUT, AHEAD OF THE SCROLL EVENT (P21). These fire before the page has moved, so
+		   the auto-scroll is already released by the time the first pixel of a gesture lands — there is never
+		   a frame in which the engine and a hand are both moving the page. `touchstart` rather than
+		   `touchmove`: a finger DOWN on the glass is already "de pagina vasthouden". */
+		autoInputEvents.forEach((t) => window.addEventListener(t, releaseAuto, { passive: true }));
 		window.addEventListener('resize', onResize, { passive: true });
 		root.addEventListener('keydown', onKey);
 		root.addEventListener('focusin', onFocusIn);
@@ -1519,6 +1629,44 @@ export function createTraverse(root, opts = {}) {
 			stage.addEventListener('pointerover', onPointerOver);
 			stage.addEventListener('pointerout', onPointerOut);
 		}
+
+		/* THE STOP (WCAG 2.2.2). The page provides the control; the engine owns the state, so there is no
+		   cross-module handshake and nothing to wire when the runtime is not mounted (under reduced motion
+		   and without JavaScript the chrome this lives in is `display: none` and the auto-scroll does not
+		   exist). The choice persists for the session, so it survives opening a project and coming back. */
+		autoBtn = root.querySelector('[data-pf-auto]');
+		if (autoBtn) {
+			try {
+				autoPaused = sessionStorage.getItem(AUTO_OFF_KEY) === '1';
+			} catch {
+				/* ignore */
+			}
+			syncAutoBtn();
+			autoBtn.addEventListener('click', () => {
+				autoPaused = !autoPaused;
+				if (autoPaused) releaseAuto();
+				else lastInput = performance.now();
+				try {
+					if (autoPaused) sessionStorage.setItem(AUTO_OFF_KEY, '1');
+					else sessionStorage.removeItem(AUTO_OFF_KEY);
+				} catch {
+					/* ignore */
+				}
+				syncAutoBtn();
+			});
+		}
+	}
+
+	/* The control carries its state in `aria-pressed` for assistive technology and in a class for the eye —
+	   two independent signals, never colour alone (A11Y-09). The label says what PRESSING it will do. */
+	function syncAutoBtn() {
+		if (!autoBtn) return;
+		autoBtn.setAttribute('aria-pressed', autoPaused ? 'false' : 'true');
+		autoBtn.classList.toggle('is-off', autoPaused);
+		autoBtn.setAttribute(
+			'aria-label',
+			autoPaused ? 'Automatisch scrollen aanzetten' : 'Automatisch scrollen pauzeren'
+		);
 	}
 
 	function stop() {
@@ -1537,6 +1685,9 @@ export function createTraverse(root, opts = {}) {
 			stage.style.transform = '';
 		}
 		window.removeEventListener('scroll', readScroll);
+		autoInputEvents.forEach((t) => window.removeEventListener(t, releaseAuto));
+		autoRun = false;
+		autoLife = 0;
 		window.removeEventListener('resize', onResize);
 		root.removeEventListener('keydown', onKey);
 		root.removeEventListener('focusin', onFocusIn);
