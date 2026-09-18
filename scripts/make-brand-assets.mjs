@@ -10,31 +10,39 @@
  *
  * Run:  node scripts/make-brand-assets.mjs      (from output/)
  * Outputs are committed; this script exists so they are reproducible, never hand-edited.
+ *
+ * D-89 (2026-09-18, owner instruction): the owner supplied a revised full lockup, same 1672×941 canvas
+ * as the previous master, with a larger-set FOTOGRAFIE line — `../assets/logoLRF-2026-09-18.png`. Owner
+ * chose (asked directly): header/favicon stay MONOGRAM-ONLY, cut from this new artwork rather than kept on
+ * the old files, because the header bar's fixed 76px height still can't hold the full stacked lockup — see
+ * D-84/D-88 above. The previous `logoLRF.png` / `logoLRF-beperkt.png` are left in place, superseded, not
+ * deleted (CLAUDE.md §2.5/§9.3: originals are never destroyed). Both crop sources below now point at the
+ * one new file; its monogram sits at practically the same canvas position as the old master's (measured
+ * left≈579 vs old 581, top≈251 vs old 246), which is why the padded favicon boxes barely moved.
  */
 import sharp from 'sharp';
 import { writeFileSync } from 'node:fs';
 
-const SRC = '../assets/logoLRF.png';
-/** D-88: the visible logo is the owner's supplied MARK — the LRF monogram over its gold rule, without the
-    name lines — delivered as `../assets/logoLRF-beperkt.png` (538×266). It is the same artwork, at the same
-    scale, as the master's monogram, so the favicon below (already drawn from that monogram) is unchanged. */
-const MARK_SRC = '../assets/logoLRF-beperkt.png';
-/** The supplied mark's true ink box, measured from its alpha channel. */
-const MARK_INK = { left: 15, top: 18, width: 511, height: 231 }; // ratio 2.2121
-/** The monogram + its gold rule — the favicon's optical version at 32 px and up. */
-const MARK = { left: 581, top: 246, width: 511, height: 246 };
+const SRC = '../assets/logoLRF-2026-09-18.png';
+const MARK_SRC = '../assets/logoLRF-2026-09-18.png';
+/** The new master's monogram+rule ink box, measured from its alpha channel (row-gap scan: monogram
+    251–438, rule 474–482, then LEONARD RIEKSEN 535–583, FOTOGRAFIE 625–664 — cropped here at the rule). */
+const MARK_INK = { left: 579, top: 251, width: 514, height: 232 }; // ratio 2.2155
+/** The monogram + its gold rule, with the same few px of breathing room the old crop had — the favicon's
+    optical version at 32 px and up. */
+const MARK = { left: 579, top: 244, width: 514, height: 247 };
 /** At 16 px the gold rule is a sub-pixel smear and it steals height from the letterforms, so the smallest
     entry carries the monogram ALONE, drawn larger. Measured: this is the difference between three
     recognisable letters and a grey blur. */
-const MARK_SMALL = { left: 665, top: 248, width: 363, height: 194 };
+const MARK_SMALL = { left: 665, top: 248, width: 361, height: 194 };
 /** --p-sapphire-850, the lit top edge of the site's chrome. */
 const BG = { r: 15, g: 25, b: 46, alpha: 1 };
 
 /* 1 — the chrome mark (transparent, trimmed; ~3.5× its largest CSS width) and a logo for
-   schema.org/Organization at the file's own native width — never upscaled past the 511px the owner supplied. */
+   schema.org/Organization at the file's own native width — never upscaled past the 514px the owner supplied. */
 for (const [w, out] of [
 	[400, 'public/brand/lrf-mark.png'],
-	[511, 'public/brand/lrf-mark-logo.png'],
+	[514, 'public/brand/lrf-mark-logo.png'],
 ]) {
 	await sharp(MARK_SRC).extract(MARK_INK).resize({ width: w }).png({ compressionLevel: 9 }).toFile(out);
 }

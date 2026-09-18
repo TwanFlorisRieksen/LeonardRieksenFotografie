@@ -51,8 +51,8 @@ function baseNodes(site: URL): Node[] {
 			logo: {
 				'@type': 'ImageObject',
 				url: abs(site, '/brand/lrf-mark-logo.png'),
-				width: 511,
-				height: 231,
+				width: 514,
+				height: 232,
 			},
 			email: CONTACT_EMAIL,
 			description:
