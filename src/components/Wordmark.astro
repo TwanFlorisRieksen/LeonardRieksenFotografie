@@ -58,6 +58,16 @@
  * fixed element measured against the old bar (the mobile-nav panel's inset, the portfolio world-rail's top
  * offset) now reads the same token, so nothing can drift out of sync with it again.
  *
+ * D-91 (2026-09-18, owner instruction, same day) — BAR SIZE WINS OVER LOCKUP LEGIBILITY. The owner tried
+ * the 6.5rem bar and asked for the original 76px (4.75rem) back explicitly, nothing else changed.
+ * `--header-height` (tokens.css) is back to 4.75rem — the mobile-nav panel and portfolio world-rail offset
+ * follow automatically, being the same token. The logo has to fit inside that again: height 3.75rem (60px),
+ * ~8px clearance top/bottom (same convention as D-88/D-84). At that scale "FOTOGRAFIE" is back to ~5.8px —
+ * essentially the D-84 precedent this file argued against reusing under D-90 — but this time it's not a
+ * substitute the agent chose to avoid a header redesign; it's what the owner asked for directly, after
+ * seeing the larger bar and rejecting it on size, not on the logo being small. Full lockup construction
+ * (asset, no-crop, no-stretch) is unchanged; only the box shrank.
+ *
  * FOCUS. `.wordmark` is a link and the first focusable element in the chrome, so BackToTop moves focus
  * here after a jump (see BackToTop.astro). For a POINTER visitor that programmatic move used to paint the
  * global 2px focus ring around the logo — a blue box appearing because a mouse user pressed an unrelated
@@ -87,7 +97,7 @@ const { class: className } = Astro.props;
 		display: block;
 		/* The artwork's own ratio, so the box can never be a shape the lockup does not have. */
 		aspect-ratio: 1000 / 414;
-		height: 5.5rem;
+		height: 3.75rem;
 		width: auto;
 		color: var(--color-text);
 		line-height: 0;
@@ -107,7 +117,7 @@ const { class: className } = Astro.props;
 	   stays the same at every width, so the extra clearance just grows a little on the smallest screens. */
 	@media (max-width: 26rem) {
 		.wordmark {
-			height: 4.5rem;
+			height: 3.25rem;
 		}
 	}
 </style>
