@@ -1117,7 +1117,13 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 
 	   ZERO CHANGE ON DESKTOP, by construction: there `lvh == svh`, so the added height and the added padding
 	   are both exactly 0 and the computed style is identical to what it was. The `@supports` guard means a
-	   browser without `lvh` keeps the previous behaviour rather than losing the hero. */
+	   browser without `lvh` keeps the previous behaviour rather than losing the hero.
+
+	   ⚠ SUPERSEDED ON PHONES (P20.1) — the "why it is not `dvh`" argument below did not survive a real
+	   device. On an iPhone 15 this construction leaves a permanent ~152px dead band under the card and puts
+	   the composition in the upper middle of the screen. Phones now take `100dvh` with this compensation
+	   switched off; see the `(max-width: 32rem)` block further down for the measurement and the corrected
+	   reasoning. Everything at tablet width and above still uses exactly what is written here. */
 	@supports (height: 100lvh) {
 		.home-hero {
 			--hero-chrome: calc(100lvh - 100svh);
@@ -1798,6 +1804,50 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	   portrait (~440–480 CSS px), far below every tablet in portrait (600–810). The 52rem block above is
 	   untouched, so iPad and every tablet width render exactly as they did. */
 	@media (max-width: 32rem) {
+		/* ── THE PHONE HERO IS EXACTLY ONE SCREEN, ALWAYS (P20.1) ───────────────────────────────────────
+		   THE REPORT, from a real iPhone 15 rather than an emulator: "hij moet fullscreen zijn, maar hij is
+		   dat nu niet, de volgende sectie begint al, en de herotekst staat midden in het scherm."
+
+		   THE MECHANISM IS THE `lvh` COMPENSATION ABOVE, and the owner's own screenshot measures it. That
+		   block makes the box `100lvh` and pays the difference back as bottom padding, on the reasoning that
+		   the composition should stay measured against the SMALL viewport. On a desktop that is free
+		   (`lvh == svh`, both terms are 0). On an iPhone 15 the two viewports are ~652 and ~760, so:
+		     · with the URL bar EXPANDED the box is 760 tall inside a 652 screen — the hero's own bottom edge
+		       is 108px BELOW the fold, so the reader must scroll to reach the end of a "full-screen" hero;
+		     · the moment they do, Safari retracts the bar, the screen becomes 760, the box fits it exactly —
+		       and the card, still carrying 108px of compensation padding, is now floating 152px above the
+		       bottom, in the upper middle of the screen, over the building instead of over the water. The
+		       next section is exposed by the scroll it took to get there.
+		   Reproduced before changing anything (viewport forced to 652 and 760 with the delta injected): dead
+		   space below the CTA 152px in BOTH states, card top at 53% of the screen expanded and 38% collapsed.
+		   The owner's screenshot measures 151px. That is the defect, exactly.
+
+		   THE FIX IS `dvh`, and the comment above says `dvh` is wrong. That comment was right about the
+		   symptom and wrong about the trade, so it is corrected here rather than quietly worked around:
+		     · its objection is that `dvh` relayouts while the bar animates. True — but what moves is a
+		       BOTTOM-ANCHORED block inside a box whose other layers are all `inset: 0`. The card stays a
+		       constant 44px above the bottom EDGE OF THE SCREEN while the screen grows, which is how every
+		       full-bleed native screen behaves; it is the content BELOW the hero that shifts, and it is
+		       off-screen while it happens. Chrome and Safari both exclude layout shifts caused by browser-UI
+		       resize from CLS, so the "CLS liability" does not materialise either;
+		     · the alternative it chose has no such transient — it has a PERMANENT 152px dead band and a
+		       composition that is never where it was designed to be. A transient during a 200ms toolbar
+		       animation is a smaller cost than a hero that is wrong in both resting states.
+		   So on phones the box tracks the CURRENT viewport and the compensation is switched off
+		   (`--hero-chrome: 0px`, which also neutralises it in the short-frame block below). The `@supports`
+		   guard means a browser with `lvh` but not `dvh` keeps the previous behaviour rather than losing the
+		   hero, and the query means tablets and desktop keep the `lvh` model exactly as D-87 left it. */
+		@supports (height: 100dvh) {
+			.home-hero {
+				--hero-chrome: 0px;
+				min-height: 100dvh;
+				/* The foot scales with the smallest viewport too, for the same reason the block does: 44px
+				   of air under the CTA is right on an 844px frame and is a sixth of the card's own height
+				   on a 623px one. 44px at the top of the range, ~32px at the bottom. */
+				padding-block-end: clamp(1.9rem, 5.2svh, 2.75rem);
+			}
+		}
+
 		/* The picture is cropped horizontally only, so `center` keeps the building centred and pays the
 		   27% width crop symmetrically — the silos stay whole and the crane keeps its silhouette at the
 		   right edge as the composition's counterweight. Verified against an off-centre alternative
@@ -1840,17 +1890,42 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		.home-hero__datum {
 			width: 2.75rem;
 			margin-bottom: 0.85rem;
+			margin-bottom: clamp(0.62rem, 1.61svh, 0.85rem);
 		}
 
-		/* THE TYPE, RE-SET FOR THE FRAME rather than inherited from it.
-		   The h1 GROWS to 35px and its leading tightens to 1.0. Three lines is not a compromise here, it is
-		   the larger option: at this measure the sentence breaks 14 / 14 / 17 characters, so three lines
-		   buy ~35px of type where two lines would have forced ~26px to fit 25 characters on one. It stays,
-		   by a factor of nearly three, the largest thing on the page. */
+		/* ── THE BLOCK IS A CONSTANT FRACTION OF THE FRAME, NOT A FIXED NUMBER OF PIXELS (P20.1) ─────────
+		   WHY THIS HAD TO CHANGE TOO, and why fixing the padding alone would have shipped the same bug in a
+		   quieter form. Two heights govern this hero and they are not the same height:
+		     · the VEIL and the photograph's own structure are fractions of the box — the shadow band the
+		       veil is anchored to is at 51.5–56.6% of the frame whatever the frame is;
+		     · the CARD was a fixed ~322px of type.
+		   A fixed block inside a variable frame therefore sits at a different fraction on every device, and
+		   the one that matters is the SMALL viewport, because that is what a phone shows before the URL bar
+		   retracts. Measured: 322px + padding is 43% of an 844px frame (card top 57%, safely inside the
+		   veil) but 56% of a 652px one (card top 44%) — which puts the datum and the gold eyebrow ABOVE the
+		   veil's release, on the lit building, where they are unreadable. That is the second half of the
+		   owner's screenshot, and it is why the eyebrow there is barely legible.
+		   A height MEDIA QUERY cannot fix it, which is the trap this replaces: on iOS a `@media (height)`
+		   query is evaluated against the LARGE viewport (the same one `100vh` has always used), so on an
+		   iPhone 15 it reads ~760 and never fires, while `dvh` is 652 with the bar out. The old
+		   `(max-height: 45rem)` variant would have sat out the exact state that needs it.
+		   So the block is expressed in `svh` — the SMALLEST viewport the box can ever take, hence the one
+		   that has to fit. Every metric that carries height (the datum's gap, the title and its leading,
+		   the lead, the rhythm, the foot) scales with it; the eyebrow and the 48px tap target deliberately
+		   do NOT, because a label and a thumb target do not get smaller just because a phone is short. The
+		   result is a card that is ~43% of the frame at every size, so its top lands at ~56–57% — just past
+		   the shadow band — on every phone in both viewport states. Each property keeps a plain fallback
+		   declaration above the fluid one, so a browser without `svh` gets the previous fixed value rather
+		   than nothing.
+		   The h1 still GROWS relative to what it replaced (35.2px at 844 against 32.5px), and three lines
+		   is still the larger option: at this measure the sentence breaks 14 / 14 / 17 characters, so three
+		   lines buy ~35px where two would have forced ~26px to fit 25 characters. */
 		.home-hero__title {
 			margin-top: 0.4rem;
+			margin-top: clamp(0.28rem, 0.76svh, 0.4rem);
 			max-width: 14ch;
 			font-size: clamp(1.95rem, 1.15rem + 3.9vw, 2.25rem);
+			font-size: clamp(1.6rem, 4.17svh, 2.25rem);
 			line-height: 1;
 			letter-spacing: -0.012em;
 		}
@@ -1860,12 +1935,15 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		   veil, which needs ~0.06 less alpha to carry it. Brighter text, lighter veil, more photograph. */
 		.home-hero__sub {
 			margin-top: 0.85rem;
+			margin-top: clamp(0.62rem, 1.61svh, 0.85rem);
 			font-size: 0.9375rem;
+			font-size: clamp(0.82rem, 1.78svh, 0.9375rem);
 			line-height: 1.55;
 			color: var(--p-paper-200);
 		}
 		.home-hero__actions {
 			margin-top: 1.1rem;
+			margin-top: clamp(0.8rem, 2.08svh, 1.1rem);
 		}
 		/* THE CALL TO ACTION BECOMES A THUMB TARGET. It was an inline text link 32px tall — above WCAG
 		   2.2's 24px floor (2.5.8) but well under the 44–48px a thumb actually wants, and it is the one
@@ -1888,62 +1966,21 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		   light off the photograph's sky to fix a problem that does not exist. */
 	}
 
-	/* ── THE SHORT PHONE (P16) ──────────────────────────────────────────────────────────────────────────
-	   FOUND BY MEASURING A THIRD FRAME, exactly as D-77's short-desktop variant was. At 390×844 and
-	   430×932 the card lands at 57–63% of the frame, comfortably past the photograph's bright reflection
-	   band; at 375×667 (iPhone SE, iPhone 8 — still a real share of phones) the same card lands at 45%,
-	   because the card's height is fixed in PIXELS while the photograph's structure is a FRACTION of the
-	   frame. It measured 1.19:1 on the eyebrow there: the type had climbed out of the veil entirely and
-	   was sitting on the lit quay.
-	   Grading the whole ramp to cover the worst case was rejected on arithmetic, as it was in D-77: it
-	   would take the tall phones — the overwhelming majority — down with it, for a frame they do not have.
-	   So the SHORT frame gets its own two adjustments instead, and only where it has to:
-	     · the block is compacted (one-line eyebrow at slightly tighter tracking, a smaller display size and
-	       a tighter rhythm), which drops it from ~322px to ~265px and moves its top down past 55%;
-	     · the veil's PLATEAU is raised while its release stays anchored to the same shadow band, because on
-	       a frame this short the type unavoidably sits over the bright top of the reflection.
-	   The composition is unchanged: same crop, same mark, same order, same reveal, same target sizes. */
-	@media (max-width: 32rem) and (max-height: 45rem) {
-		.home-hero {
-			padding-block-end: 2rem;
-		}
-		@supports (height: 100lvh) {
-			.home-hero {
-				padding-block-end: calc(2rem + var(--hero-chrome));
-			}
-		}
-		.home-hero__scrim {
-			background: linear-gradient(
-				to top,
-				rgba(7, 11, 22, 0.84) 0%,
-				rgba(7, 11, 22, 0.8) 12%,
-				rgba(7, 11, 22, 0.78) 26%,
-				rgba(7, 11, 22, 0.76) 38%,
-				rgba(7, 11, 22, 0.72) 44.5%,
-				rgba(7, 11, 22, 0.44) 46.5%,
-				rgba(7, 11, 22, 0.17) 48.5%,
-				rgba(7, 11, 22, 0) 51.5%
-			);
-		}
-		.home-hero__datum {
-			margin-bottom: 0.7rem;
-		}
-		/* One line at 317px of measure, which 12px at the standard tracking does not fit. */
+	/* ── THE ONE-LINE EYEBROW IS A WIDTH PROBLEM, NOT A HEIGHT ONE (P20.1) ──────────────────────────────
+	   This replaces the `(max-height: 45rem)` short-phone variant entirely. That variant did two jobs and
+	   both have moved: its block-compaction is now done continuously by the `svh` metrics above (which work
+	   in the state a height media query cannot even see — see the block comment there), and its heavier veil
+	   is no longer needed, because a card that is a constant fraction of the frame always lands in the same
+	   place relative to the photograph, so one ramp carries it everywhere.
+	   What is left is genuinely about width: "ARCHITECTUUR- & INTERIEURFOTOGRAFIE" is 35 characters, and at
+	   12px with the standard eyebrow tracking it wraps to two lines below ~384px of viewport (measured: two
+	   lines at 360 and 375, one line at 390). A wrapped eyebrow is not a size problem, it is a second line
+	   of chrome above the title. 11px at 0.1em measures ~277px against 302px of available measure at 360px,
+	   so it holds on the narrowest phone in use with room to spare. */
+	@media (max-width: 24rem) {
 		.home-hero .t-eyebrow {
 			font-size: 0.6875rem;
 			letter-spacing: 0.1em;
-		}
-		.home-hero__title {
-			margin-top: 0.35rem;
-			font-size: 1.7rem;
-		}
-		.home-hero__sub {
-			margin-top: 0.7rem;
-			font-size: 0.875rem;
-			line-height: 1.5;
-		}
-		.home-hero__actions {
-			margin-top: 0.8rem;
 		}
 	}
 
