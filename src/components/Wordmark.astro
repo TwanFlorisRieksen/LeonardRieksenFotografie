@@ -35,13 +35,28 @@
  * had: 6–6.75rem wide = 43–49px tall inside the 76px bar. The accessible name still carries the full
  * business name, which the artwork itself no longer spells out.
  *
- * D-89 (2026-09-18, owner instruction) — NEW MASTER, SAME TREATMENT. The owner supplied a revised full
- * lockup (`assets/logoLRF-2026-09-18.png`, same 1672×941 canvas as before, larger FOTOGRAFIE line) to
- * become the site's logo. Asked directly, the owner chose to keep the header monogram-only rather than
- * fit the full lockup into the fixed 76px bar (that remains a header redesign — see D-84 above); the full
- * lockup is what feeds the schema.org/Organization logo instead (`/brand/lrf-mark-logo.png`, see schema.ts).
- * `make-brand-assets.mjs` now crops the monogram+rule from the new file: 514×232 ink (ratio 2.2155,
- * imperceptibly different from D-88's 511×231). Old masters kept, superseded, not deleted (CLAUDE.md §9.3).
+ * D-89 (2026-09-18, owner instruction) — NEW MASTER. The owner supplied a revised full lockup
+ * (`assets/logoLRF-2026-09-18.png`, same 1672×941 canvas as before, larger FOTOGRAFIE line) to become the
+ * site's logo. `make-brand-assets.mjs` re-measured the monogram+rule crop from the new file: 514×232 ink
+ * (ratio 2.2155, imperceptibly different from D-88's 511×231). Old masters kept, superseded, not deleted
+ * (CLAUDE.md §9.3).
+ *
+ * D-90 (2026-09-18, owner instruction, same day) — THE FULL LOCKUP RETURNS TO THE HEADER AND FOOTER. D-89
+ * first kept the header monogram-only (the owner's answer when asked). The owner then looked at the live
+ * site, said the old logo was "still" there, and asked explicitly for the full lockup — name and all — in
+ * both header and footer. This is a different image now: `/brand/lrf-logo.png`, trimmed from the new
+ * master's FULL ink box (monogram + rule + "LEONARD RIEKSEN" + "FOTOGRAFIE"), aspect-ratio 1000/414.
+ *
+ * SIZE, decided by legibility rather than by reusing the old bar. The pre-D-88 version of this component
+ * DID show the full lockup inside the unchanged 4.75rem bar (9.75rem wide → 61.9px tall) — but at that
+ * scale "FOTOGRAFIE" rendered at ~6px, present but not actually readable, closer to a texture than a word.
+ * Given the owner's brief here is explicitly to show the name, that scale was rejected rather than reused.
+ * Instead the box is sized off the SMALLER of the two name lines ("FOTOGRAFIE", 40px native): at a render
+ * height of 5.5rem (88px) it lands at ~8.5px caps and "LEONARD RIEKSEN" at ~10.4px — small, but a tracked
+ * all-caps line, which is the type of text most tolerant of small sizes. `--header-height` (tokens.css)
+ * grew from 4.75rem to 6.5rem to hold that with the same ~8px top/bottom clearance D-88 used, and every
+ * fixed element measured against the old bar (the mobile-nav panel's inset, the portfolio world-rail's top
+ * offset) now reads the same token, so nothing can drift out of sync with it again.
  *
  * FOCUS. `.wordmark` is a link and the first focusable element in the chrome, so BackToTop moves focus
  * here after a jump (see BackToTop.astro). For a POINTER visitor that programmatic move used to paint the
@@ -58,10 +73,10 @@ const { class: className } = Astro.props;
 <a class:list={['wordmark', className]} href="/" aria-label="Leonard Rieksen Fotografie, naar de homepagina">
 	<img
 		class="wordmark__image"
-		src="/brand/lrf-mark.png"
+		src="/brand/lrf-logo.png"
 		alt=""
-		width="514"
-		height="232"
+		width="1000"
+		height="414"
 		draggable="false"
 		decoding="async"
 	/>
@@ -71,8 +86,9 @@ const { class: className } = Astro.props;
 	.wordmark {
 		display: block;
 		/* The artwork's own ratio, so the box can never be a shape the lockup does not have. */
-		aspect-ratio: 514 / 232;
-		width: clamp(6rem, 8vw, 6.75rem);
+		aspect-ratio: 1000 / 414;
+		height: 5.5rem;
+		width: auto;
 		color: var(--color-text);
 		line-height: 0;
 	}
@@ -87,10 +103,11 @@ const { class: className } = Astro.props;
 		-webkit-user-drag: none;
 		-webkit-touch-callout: none;
 	}
-	/* Very narrow phones: the lockup steps down rather than crowding the menu trigger. */
+	/* Very narrow phones: the lockup steps down rather than crowding the menu trigger. --header-height
+	   stays the same at every width, so the extra clearance just grows a little on the smallest screens. */
 	@media (max-width: 26rem) {
 		.wordmark {
-			width: 5.75rem;
+			height: 4.5rem;
 		}
 	}
 </style>

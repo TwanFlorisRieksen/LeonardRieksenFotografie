@@ -50,9 +50,9 @@ function baseNodes(site: URL): Node[] {
 			url: abs(site, '/'),
 			logo: {
 				'@type': 'ImageObject',
-				url: abs(site, '/brand/lrf-mark-logo.png'),
-				width: 514,
-				height: 232,
+				url: abs(site, '/brand/lrf-logo-schema.png'),
+				width: 1000,
+				height: 414,
 			},
 			email: CONTACT_EMAIL,
 			description:

@@ -145,7 +145,7 @@ const contact = { label: 'Contact', href: '/contact/' };
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-lg);
-		min-height: 4.75rem;
+		min-height: var(--header-height);
 	}
 
 	/* --- Transparent overlay variant (P4 homepage hero, D-19) --------------------------------------
@@ -313,7 +313,7 @@ const contact = { label: 'Contact', href: '/contact/' };
 	   deep fill — the menu reads as the header opening downward, not as a separate black sheet. */
 	.mnav__panel {
 		position: fixed;
-		inset: 4.75rem 0 0 0;
+		inset: var(--header-height) 0 0 0;
 		z-index: var(--z-overlay);
 		background: var(--grad-chrome-footer);
 		padding: var(--space-xl) var(--gutter);

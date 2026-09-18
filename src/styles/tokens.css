@@ -537,6 +537,10 @@
 	--container-wide: 1680px; /* big image moments */
 	--gutter: clamp(1.25rem, 1rem + 3.5vw, 4rem);
 	--grid-gap: clamp(1rem, 0.5rem + 1.6vw, 2rem);
+	/* D-90: the shared header bar height, one token so SiteHeader's own min-height, its mobile-nav panel
+	   inset, and the portfolio world-rail's top offset (portfolio-chrome.css) can never drift apart. Grew
+	   from 4.75rem (D-84/D-88's monogram-only bar) to fit the full name lockup — see Wordmark.astro. */
+	--header-height: 6.5rem;
 
 	/* --- Radii (6.81) — architectural precision = mostly sharp --- */
 	--radius-none: 0;

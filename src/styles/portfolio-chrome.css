@@ -88,7 +88,7 @@
 	   stays reachable under reduced motion while this one cannot be). */
 	html.js .tv[data-tv-boot]:not([data-tv-active]) .pf-intro {
 		position: fixed;
-		top: calc(4.75rem + clamp(0.85rem, 2.5vh, 1.6rem));
+		top: calc(var(--header-height) + clamp(0.85rem, 2.5vh, 1.6rem));
 		left: clamp(1rem, 3vw, 2.25rem);
 		right: auto;
 		transform: none;
@@ -438,8 +438,8 @@ html.js .tv[data-tv-boot] .pf-intro::after,
 .tv[data-tv-active] .pf-intro {
 	position: fixed;
 	/* Clear of the site header, which is the other fixed thing in this corner (`.site-header__inner` is
-	   `min-height: 4.75rem`; this leaves a gutter under it at every viewport). */
-	top: calc(4.75rem + clamp(0.85rem, 2.5vh, 1.6rem));
+	   `min-height: var(--header-height)`; this leaves a gutter under it at every viewport). */
+	top: calc(var(--header-height) + clamp(0.85rem, 2.5vh, 1.6rem));
 	left: clamp(1rem, 3vw, 2.25rem);
 	right: auto;
 	transform: none;
