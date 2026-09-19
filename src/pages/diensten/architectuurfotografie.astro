@@ -354,7 +354,6 @@ const svcSchema = [
 		position: relative;
 		width: min(90vw, 74rem);
 		margin-inline: auto;
-		will-change: transform;
 	}
 	/* The section head. It carries the label the left plate used to wear, which is precisely why the plate's
 	   caption was ambiguous: an eyebrow reading "Representatief werk" sitting above one photograph's caption
@@ -390,7 +389,6 @@ const svcSchema = [
 		width: var(--plate-w, auto);
 		max-width: 100%;
 		margin-top: var(--plate-drop, 0px); /* set by the runtime so the optical centres agree. */
-		will-change: transform;
 	}
 	/* Baseline proportions, what a reader with JS off or reduced motion gets. They have to be a real
 	   composition on their own, so they are the same relationship the runtime resolves in pixels. */
@@ -686,7 +684,6 @@ const svcSchema = [
 	.stage > * {
 		position: absolute;
 		inset: 0;
-		will-change: opacity, transform;
 	}
 	/* The sky you start under: deep slate blue, lifting a little toward the ground haze at the foot. Always
 	   on. Tuned to the surfaces it replaces so the walls that stay opaque never read as a slab of a colour
@@ -777,7 +774,11 @@ const svcSchema = [
 			rgba(var(--p-atmos-cool), 0.06) 74%,
 			rgba(var(--p-atmos-cool), 0) 100%
 		);
-		mix-blend-mode: screen;
+		/* PERF-014: `mix-blend-mode: screen` removed. A blended layer cannot be composited independently, so
+		   every frame in which this element moves — and it moves on every frame of every scroll — dragged a
+		   full style recalculation through the main thread. Over this page's near-black ground the blend
+		   buys nothing that can be seen: A/B of the rendered page at three scroll positions, mean 0.16-0.64 / 255, maximum 2.
+		   To restore, put `mix-blend-mode: screen;` back here. */
 		opacity: 0;
 	}
 	/* THE HORIZON, the ground haze you begin level with, which SINKS out of the frame as you climb. This
@@ -792,7 +793,11 @@ const svcSchema = [
 			rgba(62, 84, 138, 0.12) 42%,
 			rgba(20, 30, 52, 0) 72%
 		);
-		mix-blend-mode: screen;
+		/* PERF-014: `mix-blend-mode: screen` removed. A blended layer cannot be composited independently, so
+		   every frame in which this element moves — and it moves on every frame of every scroll — dragged a
+		   full style recalculation through the main thread. Over this page's near-black ground the blend
+		   buys nothing that can be seen: A/B of the rendered page at three scroll positions, mean 0.16-0.64 / 255, maximum 2.
+		   To restore, put `mix-blend-mode: screen;` back here. */
 		opacity: 0;
 	}
 	/* The corners let go as you rise, because there is simply more sky. */
@@ -993,5 +998,24 @@ const svcSchema = [
 		opacity: 1;
 		transform: none;
 		transition: none;
+	}
+
+	/* ============================================================================================
+	 * PERF-012 — `will-change` IS PAID FOR PER ELEMENT, FOR AS LONG AS IT IS DECLARED.
+	 * These used to be declared unconditionally, which asks the compositor for a dedicated layer at device
+	 * resolution for the whole life of the page, for elements that only move while the reader scrolls.
+	 * `html.is-moving` is raised by this page's runtime on the frame the world starts moving and dropped on
+	 * the frame it stops, so the hint is true exactly while it is true. Nothing about the rendering
+	 * changes — an element that is actually being transformed is promoted by the browser anyway; what goes
+	 * is the permanent allocation for an element standing still.
+	 * The full-screen `.stage > *` layers lose the hint outright rather than gaining the gate: they carry
+	 * only `opacity` and a small `transform`, both of which the compositor handles on demand, and they are
+	 * the largest surfaces on the page — where a permanent layer costs most and buys least.
+	 * TO RESTORE: move each declaration back into its own rule and re-add `will-change: opacity, transform`
+	 * to `.stage > *`.
+	 * ============================================================================================ */
+	:global(html.is-moving) .spread__rail,
+	:global(html.is-moving) .plate {
+		will-change: transform;
 	}
 </style>

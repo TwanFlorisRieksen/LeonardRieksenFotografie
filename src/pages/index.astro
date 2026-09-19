@@ -722,8 +722,48 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	.stage > * {
 		position: absolute;
 		inset: 0;
-		will-change: opacity, transform;
 	}
+
+	/* ============================================================================================
+	 * THE ATMOSPHERE STANDS STILL WHEN THE READER DOES (PERF-003 / P22)
+	 *
+	 * `home-cinema.js` used to add one function to `gsap.ticker` and run it 60 times a second for the whole
+	 * life of the page. Almost everything it computed was a pure function of `window.scrollY` and now runs
+	 * once per scroll instead (see that file). Three terms were not: `Math.sin(gsap.ticker.time * k)` on the
+	 * horizon's travel, on the haze's drift and on the hero's water-light — a slow autonomous breath so the
+	 * world would live at rest (CINEMATIC_MOTION_LANGUAGE 5.7).
+	 *
+	 * THOSE THREE ARE GONE, AND THE DECISION IS A MEASUREMENT RATHER THAN A PREFERENCE. The brief's own
+	 * condition is "keep one barely perceptible breath IF it demonstrably costs little". It does not. Each
+	 * was re-implemented as a pure CSS animation and measured on the built page, four idle seconds:
+	 *
+	 *     as shipped (ticker)                          420 recalcs / 355 ms   (desktop)  230 / 154 (mobile)
+	 *     CSS breath via the `translate` property      240 recalcs / 338 ms              240 / 242
+	 *     CSS breath via `transform` on a ::before     240 recalcs / 337 ms              240 / 224
+	 *     …and with `will-change` promotion added      240 recalcs / 401 ms              240 / 238
+	 *     …and with the lumen's blend removed too      240 recalcs / 404 ms              240 / 228
+	 *     ALL THREE BREATHS REMOVED                      6 recalcs /  99 ms                3 /  25
+	 *
+	 * Every mechanism costs a full-rate style recalculation. The reason is structural rather than a matter
+	 * of which property is animated: `.stage` is a fixed, isolated full-viewport layer sitting BEHIND the
+	 * whole document, so anything moving inside it re-evaluates the stacking context the page is painted
+	 * over. (The same kind of animation IS free on /portfolio/ — 0 recalcs, 4.9 ms — because `.tv-sky` lives
+	 * inside a self-contained fixed 3D context with nothing painted between it and those layers.)
+	 *
+	 * WHAT KEEPS THE PAGE ALIVE AT REST: the scroll cue at the foot of the hero, which is an affordance
+	 * rather than decoration, and which is now paused the moment the reader has scrolled (see
+	 * `.home-hero__scroll span` below) — by which point it is already invisible, so it was pure waste.
+	 * Everything else moves the instant the reader does, which is the whole of this page's choreography.
+	 *
+	 * TO RESTORE THE BREATH: re-add the `Math.sin(gsap.ticker.time * k)` terms in `home-cinema.js`
+	 * (`update()`: horizon `+ Math.sin(t * 0.3) * 1.1 * A` vh, haze `Math.sin(t * 0.16) * 2.2 * A` %, and
+	 * the lumen's `--lx` / `--lo` block) and put that function back on `gsap.ticker`. See the changelog,
+	 * PERF-003.
+	 *
+	 * PERF-012: `will-change: opacity, transform` is also dropped from `.stage > *` above. It asked the
+	 * compositor for a permanent layer for all six full-screen layers, including the three that never move
+	 * at all, for the whole life of the page. To restore, put that one declaration back.
+	 * ============================================================================================ */
 
 	/* Deep-night base, the constant dark the whole descent sits in; always on under motion-scene. A real,
 	   faintly chromatic night (cool at the crown, a whisper warmer at the foot), never a flat ink fill. */
@@ -791,7 +831,12 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			color-mix(in srgb, var(--hz) 16%, transparent) 34%,
 			transparent 64%
 		);
-		mix-blend-mode: screen;
+		/* PERF-014: `mix-blend-mode: screen` removed. A blended layer cannot be composited independently, so
+		   every frame in which this element moves — and it moves on every frame of every scroll — dragged a
+		   full style recalculation through the main thread. Over this near-black sky the blend was buying
+		   nothing that can be seen: A/B of the rendered page at four scroll positions gave a maximum
+		   per-channel difference of 3/255 (0/255 at the hero), mean 0.000-0.239. To restore, put
+		   `mix-blend-mode: screen;` back here. */
 		opacity: 0;
 	}
 	/* Atmospheric haze, two very soft depth planes that drift laterally + rise slower than scroll (parallax
@@ -801,7 +846,7 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		background:
 			radial-gradient(60% 46% at 28% 22%, rgba(var(--p-atmos-cool), 0.07) 0%, transparent 60%),
 			radial-gradient(54% 40% at 80% 46%, rgba(var(--p-atmos-cool), 0.05) 0%, transparent 56%);
-		mix-blend-mode: screen;
+		/* PERF-014, same measurement and same reasoning as `.stage__horizon` above. */
 		opacity: 0.85;
 	}
 	/* Depth vignette, deepens AS the camera passes the gallery (the abyss the plate emerges from) and again
@@ -811,6 +856,26 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			radial-gradient(132% 102% at 50% 40%, transparent 30%, rgba(3, 5, 9, 0.62) 100%),
 			linear-gradient(180deg, transparent 54%, rgba(3, 5, 9, 0.55) 100%);
 		opacity: 0;
+	}
+
+	/* ============================================================================================
+	 * PERF-012 — `will-change` IS PAID FOR PER ELEMENT, FOR AS LONG AS IT IS DECLARED.
+	 * These used to be declared unconditionally, which asks the compositor for a dedicated layer at device
+	 * resolution for the whole life of the page, for photographs that only move while the reader scrolls.
+	 * `html.is-moving` is raised by this page's runtime on the frame the world starts moving and dropped on
+	 * the frame it stops (see the drive in home-cinema.js), so the hint is true exactly while it is true.
+	 * Nothing about the rendering changes — an element that is actually being transformed is promoted by
+	 * the browser anyway; what goes is the permanent allocation for an element standing still.
+	 * TO RESTORE: move each declaration back into its own rule above and delete this block.
+	 * ============================================================================================ */
+	:global(html.is-moving) .home-hero__media,
+	:global(html.is-moving) .home-hero__dusk,
+	:global(html.is-moving) .work-immersive__media,
+	:global(html.is-moving) .spec-card__media {
+		will-change: transform;
+	}
+	:global(html.is-moving) .home-hero__enter {
+		will-change: opacity;
 	}
 
 	/* ============================================================= *
@@ -1220,6 +1285,20 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	   lifts above the photo/scrim but stays behind the title/CTA); screen-blended so it only adds light, never
 	   darkens; opacity 0 until home-cinema.js gives it life (no-JS / reduced motion → absent). --lx/--lo are
 	   driven by the cinema runtime's slow drift+breath. */
+	/* ============================================================================================
+	   PERF-003 — THIS WAS THE MOST EXPENSIVE SINGLE THING ON THE HOMEPAGE, AND IT WAS A GRADIENT.
+	   The drift and breath used to be two custom properties, `--lx` and `--lo`, written by the ticker on
+	   every frame. Both feed the `background` — the gradient's own centre and its own alpha stops — so every
+	   frame REPAINTED a full-viewport, screen-blended radial gradient, for the whole life of the page, to
+	   move a soft glow a few per cent sideways. (`will-change: opacity, background` was the tell: a layer
+	   hinting that its PAINT will change is a layer that cannot be composited at all.)
+	   The gradient is now static and painted once, at the rest value the breath oscillated around
+	   (`--lo` 0.11). The element's `opacity` is still GSAP's: the 1.4 s intro tween, the desktop exchange's
+	   `autoAlpha: 0`, and — new — the mobile hero melt, which is what the old per-frame `heroLight` factor
+	   was approximating by hand. `--lx`/`--ly`/`--lo` are gone; nothing reads them any more.
+	   TO RESTORE: put the old `background`, `will-change` and the `if (lumen) { … }` block in
+	   home-cinema.js back. See the changelog, PERF-003.
+	   ============================================================================================ */
 	.home-hero__lumen {
 		position: absolute;
 		inset: 0;
@@ -1227,13 +1306,12 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 		pointer-events: none;
 		opacity: 0;
 		background: radial-gradient(
-			42% 30% at var(--lx, 50%) var(--ly, 82%),
-			rgba(var(--p-atmos-warm), var(--lo, 0.12)) 0%,
-			rgba(var(--p-atmos-warm), calc(var(--lo, 0.12) * 0.28)) 46%,
+			42% 30% at 50% 82%,
+			rgba(var(--p-atmos-warm), 0.11) 0%,
+			rgba(var(--p-atmos-warm), 0.031) 46%,
 			rgba(var(--p-atmos-warm), 0) 72%
 		);
 		mix-blend-mode: screen;
-		will-change: opacity, background;
 	}
 	/* The dusk descent layer (P6.2 refinement). A bottom-weighted night gradient that home-cinema.js raises
 	   as the hero dissolves, so the lower photograph (water + houses) sinks into the deep BEFORE the whole
@@ -1305,7 +1383,6 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			rgba(19, 41, 70, 0) 100%
 		);
 		transform: translateY(100%);
-		will-change: transform;
 	}
 	/* ENTRANCE, a slow camera settle on first paint (blueprint 7.98 "subtiel"): the establishing shot eases
 	   from a hair of overscan to rest as the page opens, so the opening seconds read as an arrival, not a
@@ -1357,7 +1434,6 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 			rgba(6, 9, 17, 0.8) 52%,
 			rgba(5, 7, 13, 0.95) 100%
 		);
-		will-change: opacity;
 	}
 	/* Layer 2, a top-weighted darkness on a deliberately later curve, so the blue-hour sky is the last
 	   thing to resolve. The eye reads it as light rising THROUGH the scene from the water up, rather than a
@@ -1625,6 +1701,13 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	:global(html.is-scrolled) .home-hero__scroll {
 		opacity: 0;
 		pointer-events: none;
+	}
+	/* PERF-003. Once the reader has scrolled, this cue is already invisible (the rule above) — but its
+	   animation kept running at 60 fps behind that zero opacity for the rest of the visit. MEASURED: 240
+	   style recalculations and ~74 ms of main thread per four idle seconds, for something nobody can see.
+	   Pausing is enough; the element keeps its state and resumes if the reader returns to the top. */
+	:global(html.is-scrolled) .home-hero__scroll span {
+		animation-play-state: paused;
 	}
 	@media (prefers-reduced-motion: no-preference) {
 		.home-hero__scroll span {
@@ -2509,7 +2592,6 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	/* Hero photograph, eases toward the pointer within its clip (7.47 "lichte pointer-based beeldreactie"),
 	   composed under the scroll parallax on the wrapper. */
 	.home-hero__media :global(img) {
-		will-change: transform;
 	}
 	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
 		:global(html.js) .home-hero__media :global(img) {
@@ -2522,7 +2604,6 @@ const ogImage = await getImage({ src: heroImg, width: 1200, format: 'jpeg' });
 	   two formerly inert photos into the section's realtime centre. */
 	.spec-card__media {
 		position: relative;
-		will-change: transform;
 	}
 	.spec-card__media::after {
 		content: '';

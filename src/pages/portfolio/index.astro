@@ -439,10 +439,16 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 		</nav>
 
 		<!-- ============================================================================================= *
-		     THE STOP (P21 / D-93). The portfolio travels by itself while nobody is holding it (traverse.js,
-		     `autoTick`). Auto-advancing content that runs for more than five seconds needs a mechanism to
-		     pause it (WCAG 2.2.2), and "scroll, and it stops for 1.4 seconds" is an interruption, not a
-		     pause — so this is a real, persistent stop, remembered for the session.
+		     THE START (P21 / D-93, inverted by PERF-001 / P22). The portfolio CAN travel by itself
+		     (traverse.js, `autoTick`), but only once the visitor asks it to. It opens stopped: the coil
+		     stands exactly where the reader put it, and this control offers the journey rather than
+		     performing it. The choice is remembered for the session, so it survives opening a project and
+		     coming back. While it IS running it becomes a pause — auto-advancing content that runs for more
+		     than five seconds needs a real mechanism to stop it (WCAG 2.2.2), and "scroll, and it stops for
+		     1.4 seconds" is an interruption, not a pause.
+		     The default state is written into THIS markup (`is-off`, `aria-pressed="false"`), not left to
+		     the runtime, so the very first painted frame already shows the correct glyph and the correct
+		     accessible name — there is no frame in which a stopped page offers a pause button.
 
 		     WHY IT IS A DISC IN THIS CORNER AND NOT A FOURTH WORD IN THE MARK. The world mark's three
 		     uppercase words already fill the bottom-left corner at 320px, and the owner's verdict on the
@@ -458,10 +464,10 @@ const SIZES = '(max-width: 68rem) 92vw, 62rem';
 		     controller here that could get out of step with the thing it controls. -->
 		<button
 			type="button"
-			class="pf-auto"
+			class="pf-auto is-off"
 			data-pf-auto
-			aria-pressed="true"
-			aria-label="Automatisch scrollen pauzeren"
+			aria-pressed="false"
+			aria-label="Automatisch scrollen starten"
 		>
 			<svg
 				class="pf-auto__glyph"

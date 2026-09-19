@@ -339,8 +339,28 @@ export function initInterieurCinema() {
 			   `walk` is how far through the building you are. Near surfaces are driven fast off it, the far
 			   `beyond` slowly — and that RATIO is the whole mechanism. Every value is a pure function of
 			   scroll position, so the walk reverses exactly and a fling cannot desynchronise anything. */
+			/* ============================================================================================
+			 * ONE UPDATE PER SCROLL, NOT PER FRAME (PERF-006 / P22)
+			 * ============================================================================================
+			 * Every value below is a pure function of where the reader is — `window.scrollY` and the
+			 * viewport rectangles of the beats, which cannot move unless the page scrolls or is re-measured.
+			 * Running it on `gsap.ticker` therefore paid 60 times a second for an answer that only changes
+			 * when the reader moves, and it did so for the whole life of the page. It also read
+			 * `getBoundingClientRect()` on several elements on every one of those frames.
+			 *
+			 * MEASURED on the built site, four seconds in which the visitor does nothing at all (before):
+			 *     desktop 32 recalcs / 138 ms, mobile 20 recalcs / 31 ms.
+			 *
+			 * THE AUTONOMOUS BREATH IS GONE WITH IT: `Math.sin(t * 0.1) * 0.34 * A` on the jambs' sway and `Math.sin(t * 0.07) * 0.8 * A` on the dusk beyond the glass — the only term(s) here that were a function
+			 * of TIME rather than of the reader, and therefore the only reason a permanent loop was needed.
+			 * On the homepage the same breath was re-implemented as a CSS animation in four different ways
+			 * and every one of them still cost a full-rate style recalculation, because these are fixed,
+			 * isolated, full-viewport layers sitting behind the whole document (see the measurement table in
+			 * src/pages/index.astro above `.stage__sky--b`). The brief's condition — keep one breath IF it
+			 * demonstrably costs little — therefore resolves to removing it. The world stands still exactly
+			 * as long as the reader does, and moves completely, from the first pixel, the moment they scroll.
+			 * ============================================================================================ */
 			function update() {
-				const t = gsap.ticker.time;
 				const walk = walkAt(window.scrollY);
 				const inRoom = roomNear();
 				const g = gaze(turn);
@@ -382,7 +402,7 @@ export function initInterieurCinema() {
 				const openness = n1 * 1 + n2 * 0; // the pavilion opens the walls; the stairwell never does.
 				const jamb =
 					(pinch * 5.2 - openness * 7.4 + nSeq * 3.4 - nRel * 5.6 - nEnd * 3.1) * A; // +in, −out, vw.
-				const sway = Math.sin(t * 0.1) * 0.34 * A; // the room lives at rest (§5.7).
+				const sway = 0; // PERF-006: was the room's autonomous sway — see the note above update().
 				/* THE NEAR WALLS SWEEP WITH THE HEAD, AND THE DUSK BEYOND THE GLASS DOES NOT.
 				   This is the term that makes the turn read as a turn on THIS page. In a real room the
 				   surface a metre from your shoulder crosses your whole field of view when you look
@@ -417,7 +437,7 @@ export function initInterieurCinema() {
 					'translate3d(0,' + (-walk * 54 * A + (nRel * 26 + nUit * 16) * A).toFixed(2) + 'vh,0)';
 				beyond.style.transform =
 					'translate3d(calc(' +
-					(Math.sin(t * 0.07) * 0.8 * A).toFixed(2) +
+					'0' +
 					'% + ' +
 					(headPan * 0.16).toFixed(2) +
 					'vw),' +
@@ -478,8 +498,51 @@ export function initInterieurCinema() {
 			refreshMetrics();
 			update();
 			docEl.classList.add('motion-scene');
-			gsap.ticker.add(update);
-			ScrollTrigger.addEventListener('refresh', refreshMetrics);
+			/* ---- THE DRIVE (PERF-006). `update()` runs once per FRAME while the reader is scrolling and not
+			   at all when they are not. `passive: true` so this can never delay a scroll; running off
+			   frames rather than off events also matters because a fast wheel or trackpad delivers more
+			   than one scroll event per frame. */
+			/* THE SETTLE TAIL, and it is load-bearing rather than caution.
+			   Several values above are read from `getBoundingClientRect()` of elements that a SCRUBBED
+			   ScrollTrigger is still moving after the reader's last scroll event — a scrub is, by
+			   definition, catch-up that outlives the gesture. Updating only on the scroll event would
+			   therefore freeze the light a fraction of a second before the composition it is lighting has
+			   finished arriving. So a scroll starts a short rAF loop that keeps running until the page has
+			   been quiet for `TAIL`, which is comfortably longer than the longest scrub on this page, and
+			   then stops completely. Idle cost is still zero; the only frames drawn are the ones in which
+			   something is genuinely still moving. */
+			const TAIL = 700; // ms of quiet after the last scroll before the loop stops
+			let lastScrollAt = 0;
+			let looping = false;
+			const loop = (now) => {
+				update();
+				if (now - lastScrollAt < TAIL) requestAnimationFrame(loop);
+				else {
+					looping = false;
+					/* PERF-012: the hint is taken back the moment the world has stopped. */
+					docEl.classList.remove('is-moving');
+				}
+			};
+			const requestUpdate = () => {
+				lastScrollAt = performance.now();
+				if (looping) return;
+				looping = true;
+				/* PERF-012 — `will-change` IS A PROMISE, NOT A DECORATION, so it is given only while it is true.
+				   The stylesheets used to declare it permanently on every full-screen atmosphere layer and on every
+				   scroll-driven photograph, which asks the compositor to keep a layer for each of them for the whole
+				   life of the page — six to eight full-viewport layers at device resolution, plus the photographs.
+				   This class is raised on the frame the world starts moving and dropped on the frame it stops, which
+				   is exactly the "kort vóór actieve beweging toevoegen, na stabilisatie verwijderen" the brief asks
+				   for, and it costs one class toggle per scroll burst instead of a permanent GPU allocation. */
+				docEl.classList.add('is-moving');
+				requestAnimationFrame(loop);
+			};
+			window.addEventListener('scroll', requestUpdate, { passive: true });
+			window.addEventListener('resize', requestUpdate, { passive: true });
+			ScrollTrigger.addEventListener('refresh', () => {
+				refreshMetrics();
+				requestUpdate();
+			});
 
 			/* ── THE TURN ─────────────────────────────────────────────────────────────────────────────
 			   Applied from the same ticker as the room, off one shared `turn` value, so the composition and
@@ -682,8 +745,9 @@ export function initInterieurCinema() {
 			ScrollTrigger.refresh();
 
 			return () => {
-				gsap.ticker.remove(update);
-				ScrollTrigger.removeEventListener('refresh', refreshMetrics);
+				window.removeEventListener('scroll', requestUpdate);
+				window.removeEventListener('resize', requestUpdate);
+				docEl.classList.remove('is-moving');
 				docEl.classList.remove('motion-scene');
 			};
 		}

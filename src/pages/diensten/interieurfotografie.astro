@@ -351,7 +351,6 @@ const svcSchema = [
 		position: relative;
 		width: min(90vw, 74rem);
 		margin-inline: auto;
-		will-change: transform;
 	}
 	/* THE STANDFIRST is this page's section head, a different editorial device from the architectuur
 	   page's eyebrow-and-title, which is how the two spreads stay a pair without becoming a template. It
@@ -359,7 +358,6 @@ const svcSchema = [
 	   one photograph, and it is the FAR plane when the head turns: it drifts against the pair's travel. */
 	.spread__head {
 		margin-bottom: clamp(2.25rem, 1.4rem + 3.4vw, 4rem);
-		will-change: transform;
 	}
 	.spread__lede {
 		margin: 0;
@@ -394,7 +392,6 @@ const svcSchema = [
 		width: var(--plate-w, auto);
 		max-width: 100%;
 		margin-top: var(--plate-drop, 0px);
-		will-change: transform;
 	}
 	/* Baseline proportions; the runtime replaces them with measured pixel widths. Unequal on purpose, the
 	   pavilion is a 2.2:1 panorama and the stairwell a portrait, and an even split would crush the wide one. */
@@ -645,7 +642,6 @@ const svcSchema = [
 	.stage > * {
 		position: absolute;
 		inset: 0;
-		will-change: opacity, transform;
 	}
 	/* The interior itself: warm toward the floor where the wood is, neutral-dark at the crown. Tuned to the
 	   surfaces it replaces so the walls that stay opaque never read as a slab of a colour the page stopped
@@ -675,6 +671,28 @@ const svcSchema = [
 	   box is now oversized enough that the falloff completes inside it: the layer's edge is never a thing
 	   that can be seen. This is the same failure the shaft hit at D-48, arriving through geometry instead of
 	   through the cascade. */
+	/* ============================================================================================
+	 * PERF-014, INVESTIGATED AND DELIBERATELY NOT APPLIED HERE.
+	 *
+	 * The same treatment was measured on this page as on /diensten/ and /diensten/architectuurfotografie/,
+	 * where `mix-blend-mode: screen` on the scroll-written atmosphere layers turned out to cost a full
+	 * style recalculation per frame and to be visually worth nothing (max 2-6 / 255). On THIS page the
+	 * answer is the opposite, and it is not close. A/B of the rendered page with the five blends forced to
+	 * `normal`, at three scroll positions:
+	 *
+	 *     scroll 600    mean 39.0 / 255   max 62    82% of channels over 8
+	 *     scroll 2200   mean 46.5 / 255   max 69    81%
+	 *     scroll 4600   mean 11.2 / 255   max 255   11%
+	 *
+	 * This page does not model a near-black sky; it models a LIT ROOM — the dusk beyond the glass, the
+	 * lamplight, the ceiling and floor planes and the silver. `screen` over a bright interior is a
+	 * fundamentally different composite from a normal one, and removing it would change the page's light,
+	 * which is the one thing this page is about. The blends stay.
+	 *
+	 * They are affordable now for the reason that mattered in the first place: since PERF-006 these layers
+	 * are only written while the reader is actually scrolling, and since PERF-012 they no longer hold
+	 * permanent compositor layers. The page measures 0 style recalculations at rest.
+	 * ============================================================================================ */
 	.stage > .stage__beyond {
 		inset: -34% -26%;
 		background:
@@ -846,5 +864,25 @@ const svcSchema = [
 			grid-template-columns: 1fr;
 			gap: var(--space-xs);
 		}
+	}
+
+	/* ============================================================================================
+	 * PERF-012 — `will-change` IS PAID FOR PER ELEMENT, FOR AS LONG AS IT IS DECLARED.
+	 * These used to be declared unconditionally, which asks the compositor for a dedicated layer at device
+	 * resolution for the whole life of the page, for elements that only move while the reader scrolls.
+	 * `html.is-moving` is raised by this page's runtime on the frame the world starts moving and dropped on
+	 * the frame it stops, so the hint is true exactly while it is true. Nothing about the rendering
+	 * changes — an element that is actually being transformed is promoted by the browser anyway; what goes
+	 * is the permanent allocation for an element standing still.
+	 * The full-screen `.stage > *` layers lose the hint outright rather than gaining the gate: they carry
+	 * only `opacity` and a small `transform`, both of which the compositor handles on demand, and they are
+	 * the largest surfaces on the page — where a permanent layer costs most and buys least.
+	 * TO RESTORE: move each declaration back into its own rule and re-add `will-change: opacity, transform`
+	 * to `.stage > *`.
+	 * ============================================================================================ */
+	:global(html.is-moving) .spread__rail,
+	:global(html.is-moving) .spread__head,
+	:global(html.is-moving) .plate {
+		will-change: transform;
 	}
 </style>

@@ -164,8 +164,28 @@ export function initDienstenCinema() {
 			   Only opacity + transform writes — no gradient repaint, CLS-safe. The light is the narrative; the
 			   dark is what is left when no room is near. The shaft and haze rake DIAGONALLY toward whichever
 			   room is near, so the world itself leans in the direction the camera is travelling. */
+			/* ============================================================================================
+			 * ONE UPDATE PER SCROLL, NOT PER FRAME (PERF-004 / P22)
+			 * ============================================================================================
+			 * Every value below is a pure function of where the reader is — `window.scrollY` and the
+			 * viewport rectangles of the beats, which cannot move unless the page scrolls or is re-measured.
+			 * Running it on `gsap.ticker` therefore paid 60 times a second for an answer that only changes
+			 * when the reader moves, and it did so for the whole life of the page. It also read
+			 * `getBoundingClientRect()` on several elements on every one of those frames.
+			 *
+			 * MEASURED on the built site, four seconds in which the visitor does nothing at all (before):
+			 *     desktop 130 recalcs / 208 ms, mobile 80 recalcs / 55 ms.
+			 *
+			 * THE AUTONOMOUS BREATH IS GONE WITH IT: `Math.sin(t * 0.13) * 1.4 * A` on the shaft's rake and `Math.sin(t * 0.11) * 1.8 * A` on the air's drift — the only term(s) here that were a function
+			 * of TIME rather than of the reader, and therefore the only reason a permanent loop was needed.
+			 * On the homepage the same breath was re-implemented as a CSS animation in four different ways
+			 * and every one of them still cost a full-rate style recalculation, because these are fixed,
+			 * isolated, full-viewport layers sitting behind the whole document (see the measurement table in
+			 * src/pages/index.astro above `.stage__sky--b`). The brief's condition — keep one breath IF it
+			 * demonstrably costs little — therefore resolves to removing it. The world stands still exactly
+			 * as long as the reader does, and moves completely, from the first pixel, the moment they scroll.
+			 * ============================================================================================ */
 			function update() {
-				const t = gsap.ticker.time;
 
 				const lI = roomLight(roomI.frame);
 				const lII = roomLight(roomII.frame);
@@ -180,7 +200,7 @@ export function initDienstenCinema() {
 				// light on a wall changing as you travel past its source. Lean = -1 (left) at the cool room,
 				// +1 (right) at the warm room, with a slow breath so it lives at rest.
 				const lean = lerp(-1, 1, warmth);
-				const shx = lean * 4 + Math.sin(t * 0.13) * 1.4 * A;
+				const shx = lean * 4;
 				const shy = lean * 2.4; // a genuine vertical component → the rake is diagonal, not horizontal.
 				shaft.style.transform =
 					'translate3d(' + shx.toFixed(2) + '%,' + shy.toFixed(2) + '%,0)';
@@ -190,7 +210,7 @@ export function initDienstenCinema() {
 				// Air — a soft depth plane that drifts diagonally and rises slower than scroll (parallax depth),
 				// leaning the same way as the shaft so the whole atmosphere moves with the camera's heading.
 				const p = clamp01(window.scrollY / maxScroll);
-				const hx = lean * 2.6 + Math.sin(t * 0.11) * 1.8 * A;
+				const hx = lean * 2.6;
 				const hy = lerp(6, -10, p);
 				haze.style.transform = 'translate3d(' + hx.toFixed(2) + '%,' + hy.toFixed(2) + 'vh,0)';
 
@@ -204,8 +224,51 @@ export function initDienstenCinema() {
 			refreshMetrics();
 			update();
 			docEl.classList.add('motion-scene');
-			gsap.ticker.add(update);
-			ScrollTrigger.addEventListener('refresh', refreshMetrics);
+			/* ---- THE DRIVE (PERF-004). `update()` runs once per FRAME while the reader is scrolling and not
+			   at all when they are not. `passive: true` so this can never delay a scroll; running off
+			   frames rather than off events also matters because a fast wheel or trackpad delivers more
+			   than one scroll event per frame. */
+			/* THE SETTLE TAIL, and it is load-bearing rather than caution.
+			   Several values above are read from `getBoundingClientRect()` of elements that a SCRUBBED
+			   ScrollTrigger is still moving after the reader's last scroll event — a scrub is, by
+			   definition, catch-up that outlives the gesture. Updating only on the scroll event would
+			   therefore freeze the light a fraction of a second before the composition it is lighting has
+			   finished arriving. So a scroll starts a short rAF loop that keeps running until the page has
+			   been quiet for `TAIL`, which is comfortably longer than the longest scrub on this page, and
+			   then stops completely. Idle cost is still zero; the only frames drawn are the ones in which
+			   something is genuinely still moving. */
+			const TAIL = 700; // ms of quiet after the last scroll before the loop stops
+			let lastScrollAt = 0;
+			let looping = false;
+			const loop = (now) => {
+				update();
+				if (now - lastScrollAt < TAIL) requestAnimationFrame(loop);
+				else {
+					looping = false;
+					/* PERF-012: the hint is taken back the moment the world has stopped. */
+					docEl.classList.remove('is-moving');
+				}
+			};
+			const requestUpdate = () => {
+				lastScrollAt = performance.now();
+				if (looping) return;
+				looping = true;
+				/* PERF-012 — `will-change` IS A PROMISE, NOT A DECORATION, so it is given only while it is true.
+				   The stylesheets used to declare it permanently on every full-screen atmosphere layer and on every
+				   scroll-driven photograph, which asks the compositor to keep a layer for each of them for the whole
+				   life of the page — six to eight full-viewport layers at device resolution, plus the photographs.
+				   This class is raised on the frame the world starts moving and dropped on the frame it stops, which
+				   is exactly the "kort vóór actieve beweging toevoegen, na stabilisatie verwijderen" the brief asks
+				   for, and it costs one class toggle per scroll burst instead of a permanent GPU allocation. */
+				docEl.classList.add('is-moving');
+				requestAnimationFrame(loop);
+			};
+			window.addEventListener('scroll', requestUpdate, { passive: true });
+			window.addEventListener('resize', requestUpdate, { passive: true });
+			ScrollTrigger.addEventListener('refresh', () => {
+				refreshMetrics();
+				requestUpdate();
+			});
 
 			/* ---- A ROOM YOU TRAVEL TO ------------------------------------------------------------------
 			   One pinned scene per discipline. The camera (photograph + caption, one unit) is discovered off to
@@ -344,8 +407,9 @@ export function initDienstenCinema() {
 			ScrollTrigger.refresh();
 
 			return () => {
-				gsap.ticker.remove(update);
-				ScrollTrigger.removeEventListener('refresh', refreshMetrics);
+				window.removeEventListener('scroll', requestUpdate);
+				window.removeEventListener('resize', requestUpdate);
+				docEl.classList.remove('is-moving');
 				docEl.classList.remove('motion-scene');
 			};
 		}

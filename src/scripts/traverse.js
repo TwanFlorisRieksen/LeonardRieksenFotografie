@@ -192,7 +192,7 @@ const CFG = {
 	// longer at its reading moment — the owner asked for "meer rust, meer luxe", and a slower cadence per
 	// work is the temporal half of that (the pitch is the spatial half). Geometry is untouched; this only
 	// scales scroll↔journey, so the reading moment still lands exactly on an integer journey.
-	damp: 0.26, // spring coefficient toward the scroll-derived target, expressed PER 60Hz FRAME and normalised
+	damp: 0.4, // spring coefficient toward the scroll-derived target, expressed PER 60Hz FRAME and normalised
 	// to real time in tick() (see there). The reading moment must SETTLE square-on rather than snap, so this is
 	// a spring and not a follow — but it is a fast one.
 	//
@@ -208,24 +208,58 @@ const CFG = {
 	// its reading angle and still carries visible mass, but it starts and finishes WITH the gesture.
 	// The touch profile (TOUCH_CFG) is unchanged at 0.42 — under a finger there is no staircase to smooth.
 	// The adaptive term in tick() (larger jumps damp harder, so a teleport arrives) is unchanged.
+	//
+	// PERF-002 (P22): 0.26 -> 0.40, and again the number is arithmetic. The brief asks for roughly 60–90 ms
+	// of effective settling on the portfolio's primary motion, and the same time-constant identity gives:
+	//     0.26            55 ms constant   ~127 ms to 90% of a new target
+	//     0.40            33 ms constant    ~75 ms                          <- inside the asked-for band
+	// The pointer profile now sits essentially where the touch profile already was (0.42, ~71 ms), which is
+	// the point: 71 ms was measured to feel like the coil starting and stopping WITH the hand, and there is
+	// no reason a wheel should be answered a great deal later than a finger. The coil still settles
+	// square-on rather than snapping — it is still a spring, and the reading moment still ARRIVES — but the
+	// weight is now carried by the geometry and the ease, not by lag.
 	margin: 0.055, // safe-box inset as a fraction of the smaller viewport axis
-	edge: 1.15, // cull once a work is this many half-viewport-heights from centre
+	/* PERF-010 (P22): 1.15 -> 1.0. The brief asks for a smaller active set, with the hard condition that no
+	   gap may open in the spiral and no visible photograph may disappear. That condition is already met by
+	   construction here and the measurement proves it: `edgeStart` fades a work out over the outer band, so
+	   by the time it reaches the cull line its opacity is essentially zero. MEASURED at five journey
+	   positions, the FAINTEST work still on screen sits at opacity 0.001–0.066 — nothing that is culled can
+	   be seen. Moving the line in to exactly one half-viewport-height plus half the tallest card removes two
+	   to four of those invisible panels per frame (live works 11/13/21/20/11 -> 10/12/19/18/10) and changes
+	   the rendered page by a mean of 0.32/255, confined to the very faintest card edges.
+	   It is not taken further: at 0.9 the count falls to 9/12/17/17/9 but a LEAD-IN starts being culled at
+	   the crown, which is the one place a gap in the coil would be visible. The remaining ~18 live panels
+	   are the composition — a full winding of the spiral — and removing more would mean removing
+	   photographs the visitor can see, which the brief rules out. */
+	edge: 1.0, // cull once a work is this many half-viewport-heights from centre
 
 	/* --- life ---------------------------------------------------------------------------------------- */
-	/* THE WORLD IS NEVER QUITE STILL. The owner's note: the build "stopt vrijwel direct zodra scroll stopt;
-	   de wereld leeft niet". When the visitor stops scrolling, an ambient drift eases in and the coil floats
-	   — a slow parallax of the CAMERA (perspective-origin), not of any photograph. Because it moves only the
-	   vanishing point, every card stays exactly as square-on and unclipped as it was: a plane parallel to the
-	   screen only translates a few pixels under a perspective-origin shift, it does not rotate, skew or crop.
-	   So the reading guarantee is untouched and the scrollbar never lies (journey is not moved), yet the
-	   world breathes. This is the first tenant of a `life` layer designed to also hold inertia, auto-drift
-	   and hover later — see the seams marked `LIFE HOOK` in tick() and place(). Reduced motion never mounts
-	   the runtime at all, so all of this is automatically off there. */
-	idleDelay: 520, // ms of no scroll input before the ambient drift eases in
-	idleRamp: 1400, // ms for the drift to reach full amplitude once idle (and to fall back on input)
-	swayAmp: 3.4, // camera parallax amplitude, in % of the viewport (perspective-origin offset)
-	swayPeriodX: 15, // seconds — the two axes use different periods so the float never repeats a straight line
-	swayPeriodY: 21,
+	/* ============================================================================================
+	 * THE CAMERA SWAY IS GONE, AND THE WORLD STILL LIVES AT REST (PERF-007, P22).
+	 *
+	 * WHAT WAS HERE. `idleDelay`, `idleRamp`, `swayAmp`, `swayPeriodX/Y` and `renderAmbient()`: once the
+	 * visitor had been still for ~520 ms, a slow Lissajous eased in on the viewport's `perspective-origin`,
+	 * so the coil floated. D-72 added it against "de wereld leeft niet", and as a piece of direction that
+	 * was the right call.
+	 *
+	 * WHY IT COSTS WHAT IT COSTS. `perspective-origin` lives on the element that establishes the coil's 3D
+	 * context, so writing it invalidates the computed style of every panel underneath it — D-84/D-85 found
+	 * exactly this class of defect on this page and D-84 already gated the write to changed values only.
+	 * But the value CHANGES on essentially every frame while the sway is running, so the gate never fires
+	 * while it matters. Worse, it is the one term in this runtime that is a function of TIME rather than of
+	 * scroll, which means the frame loop can never be allowed to stop: a world that is always moving always
+	 * has work to do, at 60 fps, forever, on a page nobody is touching.
+	 *
+	 * WHAT REPLACES IT — and it is a replacement, not a deletion. The world behind the coil already
+	 * breathes, in CSS, on the compositor: `.tv-sky__breath` runs a 16 s opacity+scale cycle and
+	 * `.tv-sky__haze` a 26 s drift (portfolio-chrome.css §2). Those are the layers the eye actually reads
+	 * as "the air is alive", they cost no main-thread style work at all, and they keep running whether or
+	 * not this loop is awake. The coil itself now stands exactly where the visitor put it, which is also
+	 * what the reading moment asks for: a photograph presented for evaluation should not be drifting.
+	 *
+	 * TO RESTORE: re-add the five tunables above, `renderAmbient()`, the `life`/`clock`/`lastOrigin` state
+	 * and its call in tick(), and make `busy` in tick() unconditionally true. See the changelog, PERF-007.
+	 * ============================================================================================ */
 
 	/* --- THE PAGE TRAVELS BY ITSELF (P21 / D-93, owner: "zorg voor een automatische, slome scroll in de
 	   portfolio … als je iets hebt aangeraakt, zelf heb gescrolt, of een foto lightbox heb geopend en weer
@@ -364,8 +398,22 @@ const CFG = {
 	   opens narrow — just past the cull line, enough that nothing can pop in unloaded — and widens to the
 	   full look-ahead once the arrival is over. Purely a delivery schedule: every photograph the coil can
 	   reach is still fetched well before it can be seen. */
-	loadAheadFirst: 1.4,
+	/* PERF-008 (P22): 1.4 -> 1.05. MEASURED on the built site before this change: the first frame released
+	   28 of the 56 works at once and the page made 32 image requests before the visitor had touched
+	   anything, while the engine was drawing 11 works and 7 lead-ins. 1.0 is exactly the cull line — the
+	   set that is genuinely on screen — so 1.05 is that set plus a hair, which is what "no visible card is
+	   ever empty" actually requires. Everything else still arrives well before it can be seen, through the
+	   look-ahead that opens at `loadRampMs`. */
+	loadAheadFirst: 1.05,
 	loadRampMs: 1600, // ms after mount at which the look-ahead opens to `loadAhead`
+	/* HOW MANY PHOTOGRAPHS MAY START LOADING IN ONE FRAME (PERF-008). Releasing a whole window at once
+	   hands the browser twenty-odd requests against six connections and twenty-odd decodes against one main
+	   thread, which is the "tientallen gelijktijdige downloads en decodes" the brief rules out. Spreading
+	   them costs nothing in wall-clock time — at six per frame a fast scroll still releases 360 per second,
+	   far more than the coil can travel past — but it keeps any single frame cheap. The loop is kept awake
+	   while a release is still pending (see `pendingRelease`), so a capped frame can never strand a panel
+	   that is about to be seen. */
+	loadPerFrame: 6,
 
 	/* --- premium hover (D-70, owner: "een hoogwaardige hover — geen standaard zoom of simpele schaduw") --
 	   On a real pointer, resting on a work lifts it a little OUT of the coil toward the eye — a translateZ, so
@@ -422,9 +470,8 @@ const CFG = {
  *    gesture, which is what a mobile browser answers by re-animating its URL bar — no longer exists; a
  *    sub-pixel creep is not a jump.
  *
- * 3. `swayAmp` 3.4 -> 2.2. The sway is a percentage of the viewport, so the same number is a much larger
- *    share of the visual field on a 390 pt screen than on a 1440 px one. Same breath, same periods, scaled
- *    to the frame it lives in.
+ * 3. `swayAmp` 3.4 -> 2.2 — REMOVED with the sway itself (PERF-007). The world's breath is now the CSS
+ *    sky behind the coil, which is already viewport-relative and needs no per-profile amplitude.
  *
  * Applied at mount, and only when `(pointer: coarse)` — the PRIMARY input, so a laptop with a touchscreen
  * nobody uses keeps the pointer profile. Explicit `opts` still win, so the tuning harness is unaffected.
@@ -432,7 +479,19 @@ const CFG = {
 const TOUCH_CFG = {
 	damp: 0.42,
 	autoDelay: 2200,
-	swayAmp: 2.2,
+	/* ---- PERF-013: a phone is a different machine, and the delivery schedule should say so ----------
+	   Neither of these changes what the coil LOOKS like — the geometry, the sizes, the grade and the
+	   reading moment are all identical to the pointer profile. They change only how far ahead and how fast
+	   photographs are fetched, which is where a phone is actually different: a narrower pipe, less memory,
+	   and a CPU that has to decode every one of them.
+	     loadAhead    2.6 -> 2.0   still roughly a winding and a half of look-ahead in each direction, so a
+	                               photograph is still requested seconds before it can be seen; it simply
+	                               does not keep a third winding warm that a phone would have to hold.
+	     loadPerFrame 6 -> 4       fewer decodes competing for one slower main thread in any single frame.
+	                               At 4 per frame a fast flick still releases 240 photographs per second,
+	                               far more than the coil can travel past. */
+	loadAhead: 2.0,
+	loadPerFrame: 4,
 };
 
 const prefersCoarse = () =>
@@ -446,9 +505,21 @@ const clampUnit = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
    return from that project lands on the identical frame (Phase 3 / D-73). */
 const RETURN_Y_KEY = 'tv-return-y';
 
-/* sessionStorage key holding the visitor's explicit stop for the auto-scroll (P21), so the choice survives
-   opening a project and coming back. Absent means on, which is the owner's "moet er altijd zijn". */
-const AUTO_OFF_KEY = 'tv-auto-off';
+/* ============================================================================================
+ * THE AUTO-SCROLL IS OPT-IN (PERF-001, P22). See documenten/PERFORMANCE_OPTIMIZATION_CHANGELOG.md.
+ *
+ * P21/D-93 made the page travel by itself whenever the visitor had been still for `autoDelay`, and left
+ * the control as a PAUSE. Measured at rest on the built site: 260 px of unrequested travel per four idle
+ * seconds on desktop, 230 px on a 390 pt phone, and the 72 / 58 layouts that scrolling the document
+ * forces along with it — on a page the visitor was, by definition, not touching. It is also the one thing
+ * that made the coil's rAF loop impossible to halt: a page that is always moving always has work to do.
+ *
+ * The mechanism is UNCHANGED and so is its tuning. Only its default is inverted: the journey now begins
+ * when the visitor asks for it, and the control is a START. The key is therefore an explicit opt-IN —
+ * absent means off — so a session that has never pressed it never travels, and a visitor who has pressed
+ * it keeps their choice across a project detour.
+ * ============================================================================================ */
+const AUTO_ON_KEY = 'tv-auto-on';
 
 /* The input events that mean "there is a hand on this page", listened for on window so they are caught
    wherever in the document they happen (the coil is fixed; the scroll spacer is not the target). Passive
@@ -552,22 +623,27 @@ export function createTraverse(root, opts = {}) {
 	let running = false;
 	let frame = 0;
 
-	/* ---- the life layer ---- */
-	let viewportEl = null; // the perspective host; the ambient drift moves its perspective-origin
-	let lastInput = 0; // timestamp of the last scroll/keyboard input, for the idle ramp
-	let life = 0; // 0..1 ambient-drift amplitude, eased toward 1 when idle and 0 on input
-	let clock = 0; // seconds of run time, drives the sway oscillators (rAF-timed, not frame-counted)
+	/* ---- the frame loop's own state (PERF-007) ---- */
+	let viewportEl = null; // the perspective host; renderOutro hides it at the hand-off
+	let lastInput = 0; // timestamp of the last visitor input, for the auto-scroll's delay
 	let lastT = 0;
+	/* THE LOOP SLEEPS. `awake` is true only while there is something left to move. Every input path calls
+	   wake(); tick() calls sleep() the moment every eased value has arrived. See tick(). */
+	let awake = false;
 	/* ---- the auto-scroll (P21, see CFG) ---- */
 	let autoLife = 0; // 0..1 eased auto-scroll amplitude; ramps up over autoRamp, drops to 0 on any input
 	let autoRun = false; // true while the engine is the one moving the page
 	let autoY = 0; // the engine's own fractional scroll position (window.scrollY is an integer)
 	let autoSelfY = -1; // the exact value last written, so our own scroll event is not mistaken for a visitor
-	let autoPaused = false; // the visitor's explicit stop (the [data-pf-auto] control); persists for the session
+	/* PERF-001: starts TRUE. The page does not travel by itself until the visitor presses the control, and
+	   the choice persists for the session (AUTO_ON_KEY). */
+	let autoPaused = true;
 	let autoBtn = null; // that control, if the page provides one
-	let lastOrigin = ''; // last perspective-origin written, so the ambient drift writes only on change
+	let npObserver = null; // watches <body class> so the loop can wake when the lightbox closes (PERF-007)
 	/* When the runtime started, so the image look-ahead can open narrow and widen (see `loadAheadFirst`). */
 	let mountedAt = 0;
+	let releaseBudget = 0; // PERF-008: photographs still allowed to start loading this frame
+	let pendingRelease = false; // …and whether the cap stopped one, so the loop keeps running
 	let outro = 0; // 0..1 end-of-journey dissolve, eased toward outroTarget in tick()
 	let outroTarget = 0; // 0..1 raw ending position read from the outro scroll zone
 	let hovered = null; // the work element the pointer is currently resting on
@@ -638,6 +714,13 @@ export function createTraverse(root, opts = {}) {
 		if (!w.deferred) return;
 		const ahead = performance.now() - mountedAt < cfg.loadRampMs ? cfg.loadAheadFirst : cfg.loadAhead;
 		if (Math.abs(y) > liveY * ahead) return;
+		/* PERF-008: at most `loadPerFrame` per frame. `pendingRelease` keeps the frame loop running so the
+		   remainder is released on the next frames rather than waiting for the next gesture. */
+		if (releaseBudget <= 0) {
+			pendingRelease = true;
+			return;
+		}
+		releaseBudget--;
 		w.deferred = false;
 		if (w.i < 3) {
 			const im = w.el.querySelector('img');
@@ -656,6 +739,13 @@ export function createTraverse(root, opts = {}) {
 			if (img.dataset.tvSrc) img.src = img.dataset.tvSrc;
 			img.removeAttribute('data-tv-srcset');
 			img.removeAttribute('data-tv-src');
+			/* DECODE BEFORE IT IS SEEN (PERF-008). A photograph that arrives decoded is painted on the frame
+			   it is needed; one that arrives encoded is decoded ON the frame it is needed, on the main
+			   thread, which is exactly where a long frame comes from on a page drawing a dozen photographs
+			   at once. `decode()` asks the browser to do that work off the critical path and, where it is
+			   supported, off the main thread entirely. It is advisory: the rejection path is empty on
+			   purpose, because a failed decode simply means the normal path draws it as it always did. */
+			if (typeof img.decode === 'function') img.decode().catch(() => {});
 		}
 	}
 
@@ -663,8 +753,12 @@ export function createTraverse(root, opts = {}) {
 	   the 3D field), no photograph may stay stashed. One idle pass after load restores anything still
 	   deferred, so the worst case is the pre-D-80 behaviour, never a missing image. */
 	function releaseAllDeferred() {
+		/* The safety net is exempt from the per-frame cap (PERF-008): this runs when the coil is being
+		   handed back to the accessible document, where every photograph simply has to be present. */
+		releaseBudget = Infinity;
 		for (const w of works) loadIfNear(w, 0);
 		for (const L of leads) loadIfNear(L, 0);
+		releaseBudget = 0;
 	}
 
 	/* ---- layout -------------------------------------------------------------------------------- */
@@ -968,13 +1062,31 @@ export function createTraverse(root, opts = {}) {
 		   render surface anywhere. Quantised to 1% (two decimals, not three): a 1% step in a slow temporal
 		   luminance ramp is far below the eye's threshold, and it cuts the number of style writes by roughly an
 		   order of magnitude. */
-		const bright = (
-			(1 + read * cfg.readBright + seriesRead * cfg.seriesReadBright + hv * cfg.hoverBright) *
-			neighborLight *
-			backLight
-		).toFixed(2);
+		/* ============================================================================================
+		 * THE GRADE, AND WHY MOST WORKS NOW CARRY NO FILTER AT ALL (PERF-009 / P22)
+		 *
+		 * THE HIERARCHY IS UNCHANGED: the reading work is the brightest, richest plane on the coil; a front
+		 * neighbour loses light as it turns away; the back of the coil falls into shadow. What changes is
+		 * which CSS property carries the two DIMMING terms.
+		 *
+		 * `neighborLight` and `backLight` are both pure darkening — they only ever multiply light away. Over
+		 * this world's near-black ground, darkening a photograph with `filter: brightness(b)` and letting a
+		 * little more of the ground show through with `opacity` are the same picture: there is essentially
+		 * nothing behind the panel but the abyss. So both terms are folded into the opacity that is ALREADY
+		 * being written on every work, and the filter is left carrying only the LIFT at the reading moment —
+		 * brightness, contrast and saturation on the one photograph the traverse exists to present, plus the
+		 * few degrees either side of it.
+		 *
+		 * MEASURED: active `filter` values on /portfolio/ fall from 18 to 3 on desktop and 21 to 3 on mobile,
+		 * with the A/B of the rendered page reported in the changelog (PERF-009).
+		 *
+		 * The reading guarantee is untouched: at theta = 0 both dimming terms are exactly 1, so the hero's
+		 * opacity is exactly what it always was and its lift is exactly what it always was.
+		 * ============================================================================================ */
+		const dim = neighborLight * backLight;
+		const lift = 1 + read * cfg.readBright + seriesRead * cfg.seriesReadBright + hv * cfg.hoverBright;
 		const tone = [];
-		if (Math.abs(parseFloat(bright) - 1) > 0.002) tone.push(`brightness(${bright})`);
+		if (Math.abs(lift - 1) > 0.002) tone.push(`brightness(${lift.toFixed(2)})`);
 		if (read > 0.002) {
 			tone.push(`contrast(${(1 + read * cfg.readContrast).toFixed(2)})`);
 			tone.push(`saturate(${(1 + read * cfg.readSat + seriesRead * cfg.seriesReadSat).toFixed(2)})`);
@@ -995,7 +1107,8 @@ export function createTraverse(root, opts = {}) {
 		w.el.style.transform =
 			`translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${zLift.toFixed(1)}px) ` +
 			`rotateY(${((theta * 180) / Math.PI).toFixed(2)}deg) scale(${scale.toFixed(4)})`;
-		const op = o.toFixed(3);
+		/* PERF-009: the two dimming terms ride here now instead of in a `filter`. */
+		const op = (o * dim).toFixed(3);
 		if (op !== w.lastOpacity) {
 			w.lastOpacity = op;
 			w.el.style.opacity = op;
@@ -1056,6 +1169,8 @@ export function createTraverse(root, opts = {}) {
 
 	function render() {
 		const phi0 = journeyAngle();
+		releaseBudget = cfg.loadPerFrame;
+		pendingRelease = false;
 		/*
 		 * THE LEAD-INS ARE PLACED FIRST (P13 / D-85), AND THE REASON IS IMAGE ORDER, NOT DRAWING ORDER.
 		 *
@@ -1171,8 +1286,12 @@ export function createTraverse(root, opts = {}) {
 		if (autoRun && Math.abs(window.scrollY - autoSelfY) <= 2) {
 			// our own creep: do not reset the idle timer, or the auto-scroll would cancel itself every frame
 		} else {
-			releaseAuto();
+			releaseAuto(); // also wakes the loop (PERF-007)
 		}
+		/* A scroll that reached us without any input event at all — a scrollbar drag, an anchor, a restored
+		   position, `scrollTo` from another module. `releaseAuto` has already woken the loop in every other
+		   case and `wake()` is idempotent, so this is the belt to that braces. */
+		wake();
 		const top = rangeTop;
 		const usable = rangeUsable;
 		const scrolled = Math.max(window.scrollY - top, 0);
@@ -1200,17 +1319,21 @@ export function createTraverse(root, opts = {}) {
 		   the world's one rule, the camera and the physics are all untouched. `lastT`/`lastInput` are advanced so
 		   the first resumed frame steps by one frame's dt and no idle drift has accrued during the pause. */
 		if (document.body.classList.contains('is-np-open')) {
-			lastT = now;
+			/* PERF-007: this used to keep scheduling frames so the guard could be re-tested every 16 ms —
+			   a full-rate loop behind an opaque overlay, drawing a coil nobody can see. It now SLEEPS, and
+			   the body-class observer installed in start() wakes it the moment the near plane closes. The
+			   hold itself is unchanged: `journey` is not advanced, so "sluiten → exact dezelfde foto"
+			   (§7.1, hard requirement 2) is still guaranteed by not running rather than by running idle. */
+			lastT = 0;
 			lastInput = now;
-			frame = requestAnimationFrame(tick);
+			sleep();
 			return;
 		}
 
-		/* real seconds between frames, clamped so a backgrounded tab's catch-up frame cannot make the
-		   ambient clock (and any future inertia) leap. */
+		/* real seconds between frames, clamped so a backgrounded tab's catch-up frame — or the first frame
+		   after the loop has been asleep — cannot make an eased value leap. */
 		const dt = Math.min((now - lastT) / 1000, 0.05);
 		lastT = now;
-		clock += dt;
 
 		/* THE SPRING. `target` is now the whole story: the auto-scroll (P21) moves the PAGE, so its travel
 		   arrives here through the same `readScroll()` path a wheel does and needs no addend of its own.
@@ -1257,26 +1380,96 @@ export function createTraverse(root, opts = {}) {
 			}
 		}
 
-		/* LIFE — the idle amplitude for BOTH the camera sway and the auto-drift. It eases toward 1 once the
-		   visitor has been still for idleDelay with the scroll settled and we are clear of the ending, and back
-		   toward 0 on any input, so neither the float nor the drift ever fights an active scroll. `scrollSettled`
-		   keeps a still-settling teleport from prematurely starting the sway. (P21: the journey no longer
-		   carries an ambient offset, so this is a straight comparison against the scroll target.) */
-		const scrollSettled = Math.abs(journey - target) < 0.06;
-		const idle = now - lastInput > cfg.idleDelay && scrollSettled && outroTarget < 0.05;
-		life = clampUnit(life + (idle ? 1 : -1) * ((dt * 1000) / cfg.idleRamp));
-
-		autoTick(now, dt);
+		/* `autoTick` reports whether the auto-scroll still needs frames — see `busy` below. It is not enough
+		   to ask "is it running?": there is a window in which the delay has elapsed and it is ALLOWED to run
+		   but has not accumulated any ramp yet, and a loop that sleeps through that window can never start.
+		   (Measured on the first cut of PERF-007: pressing START did nothing at all, because wake() gives the
+		   first frame after a sleep a dt of 0, so `autoLife` was re-armed and re-zeroed forever.) */
+		const autoWants = autoTick(now, dt);
 
 		render();
-		renderAmbient();
 		/* INTEGRATION SEAM (Phase 3, D-73). One optional callback per frame, carrying the current journey (in
 		   works), so the portfolio chrome — the wayfinding marker, the per-world ambient tint and the world-title
 		   beats — reads the world from the SAME journey the coil is drawn from, without a second rAF that could
 		   disagree. Guarded, so the engine is byte-identical for any caller that does not pass one, and it never
 		   fires under reduced motion (the runtime is not mounted at all there). */
 		if (cfg.onFrame) cfg.onFrame(journey, outro);
+
+		/* ============================================================================================
+		 * SHOULD THERE BE ANOTHER FRAME? (PERF-007)
+		 *
+		 * Every term in this world is now a function of SCROLL or of an eased value with a target. None of
+		 * them is a function of time on its own any more (the camera sway was the last one — see CFG). So
+		 * once every eased value has arrived at its target there is, literally, nothing left to draw, and
+		 * the honest thing to do is stop. The next gesture calls wake().
+		 *
+		 * MEASURED before this change, on a page the visitor was not touching: 240 frames, 665 style
+		 * recalculations and 72 layouts per four idle seconds.
+		 *
+		 * The thresholds are the same ones the code already used to snap each value to its target, so a
+		 * loop can never sleep while something is still visibly moving: `journey` snaps at 0.0012 works,
+		 * `outro` at 0.002, and a hover ease snaps at 0.002. `autoLife > 0` keeps the loop awake for the
+		 * whole of an auto-scroll, which is correct — it IS moving the page.
+		 * ============================================================================================ */
+		let busy =
+			journey !== effTarget ||
+			outro !== outroTarget ||
+			autoWants ||
+			pendingRelease; // PERF-008: a capped release still owes frames
+		if (!busy && canHover) {
+			for (const w of works) {
+				if (w.hoverF !== (w.el === hovered ? 1 : 0)) {
+					busy = true;
+					break;
+				}
+			}
+		}
+		if (busy) {
+			frame = requestAnimationFrame(tick);
+			return;
+		}
+		sleep();
+		/* THE ONE THING THAT STILL HAS TO HAPPEN LATER. If the visitor has switched the auto-scroll ON, its
+		   `autoDelay` has to be able to elapse while the page is perfectly still — and waiting for a
+		   timestamp is not a reason to run a 60 Hz loop. One timer, set for exactly the remaining delay.
+		   Not armed while a keyboard visitor is holding a work (that would re-arm every 1.4 s for nothing);
+		   `focusout` wakes the loop, which re-arms it. */
+		if (!autoPaused && cfg.autoSpeed > 0 && outroTarget < 0.001 && !keyboardHoldsWork()) {
+			armAuto(Math.max(cfg.autoDelay - (now - lastInput), 60));
+		}
+	}
+
+	/* One pending wake-up for the auto-scroll's delay. Cleared by wake() and by stop(), so it can never
+	   outlive the runtime or stack up. */
+	let autoArm = 0;
+	function armAuto(ms) {
+		clearTimeout(autoArm);
+		autoArm = setTimeout(() => {
+			autoArm = 0;
+			wake();
+		}, ms);
+	}
+
+	/* ---- the sleeping loop (PERF-007) ---------------------------------------------------------- */
+
+	/* THE ONLY WAY A FRAME IS EVER SCHEDULED. Idempotent, so the half-dozen input paths that call it can do
+	   so freely; `lastT = 0` makes the first frame after a sleep step by one frame's dt rather than by the
+	   whole length of the sleep, which is what stops a value from leaping when the visitor comes back. */
+	function wake() {
+		if (autoArm) {
+			clearTimeout(autoArm);
+			autoArm = 0;
+		}
+		if (!running || awake || document.hidden) return;
+		awake = true;
+		lastT = 0;
 		frame = requestAnimationFrame(tick);
+	}
+
+	function sleep() {
+		awake = false;
+		if (frame) cancelAnimationFrame(frame);
+		frame = 0;
 	}
 
 	/* ============================================================================================
@@ -1291,6 +1484,10 @@ export function createTraverse(root, opts = {}) {
 		lastInput = performance.now();
 		autoRun = false;
 		autoLife = 0;
+		/* PERF-007: this is the hand arriving on the page, and it is the earliest point at which we know
+		   the world is about to have something to do. Waking here rather than in the scroll handler means
+		   the first frame of a gesture is already being drawn when the first pixel of scroll lands. */
+		wake();
 	}
 
 	/* DOES A KEYBOARD VISITOR HOLD A WORK? Scrolling the page out from under a focused element is hostile
@@ -1318,8 +1515,9 @@ export function createTraverse(root, opts = {}) {
 		}
 	}
 
+	/* @returns {boolean} true while this needs the frame loop to keep running (PERF-007). */
 	function autoTick(now, dt) {
-		if (cfg.autoSpeed <= 0) return;
+		if (cfg.autoSpeed <= 0) return false;
 
 		/* WHEN THE PAGE MAY MOVE ITSELF. Every clause is a way of saying "the visitor is not holding it":
 		   they have been still for autoDelay; they have not pressed the stop; no keyboard focus is resting on
@@ -1335,7 +1533,9 @@ export function createTraverse(root, opts = {}) {
 		autoLife = clampUnit(autoLife + (may ? (dt * 1000) / cfg.autoRamp : -1));
 		if (autoLife <= 0) {
 			autoRun = false;
-			return;
+			/* `may` is the load-bearing part: the delay has elapsed and the page is about to start moving,
+			   even though nothing has accumulated yet. Returning false here is what stalled the start. */
+			return may;
 		}
 
 		/* THE LIMIT IS THE END OF THE WORKS, NOT THE END OF THE PAGE. The trailing outro zone dissolves the
@@ -1347,7 +1547,12 @@ export function createTraverse(root, opts = {}) {
 			autoRun = true;
 			autoY = window.scrollY; // pick up wherever they left it, to the pixel
 		}
-		if (autoY >= limit) return;
+		/* Arrived at the end of the works: the ending belongs to the visitor, so stop asking for frames. */
+		if (autoY >= limit) {
+			autoRun = false;
+			autoLife = 0;
+			return false;
+		}
 
 		/* Speed in DOCUMENT PIXELS, derived from the same works↔scroll mapping readScroll() uses, so the
 		   cadence is one work per (1 / autoSpeed) seconds at every viewport size. Smootherstepped by
@@ -1364,30 +1569,13 @@ export function createTraverse(root, opts = {}) {
 			   rather than one that creeps. Positional, instant, one value per frame. */
 			window.scrollTo({ top: y, behavior: 'instant' });
 		}
+		return true;
 	}
 
-	/* THE AMBIENT DRIFT. A slow parallax of the camera only — the perspective-origin traces a gentle
-	   Lissajous, so the coil floats without a single photograph rotating, cropping or leaving its reading
-	   angle. Two incommensurate periods keep the path from ever repeating a straight sweep. `life` is
-	   smootherstepped so the drift has no hard start or stop. LIFE HOOK: hover-lift and per-work inertia
-	   would layer on here, added to each work's transform in place() rather than to the camera. */
-	function renderAmbient() {
-		if (!viewportEl) return;
-		const a = life * life * (3 - 2 * life);
-		const amp = cfg.swayAmp * a;
-		const ox = Math.sin((clock / cfg.swayPeriodX) * Math.PI * 2) * amp;
-		const oy = Math.cos((clock / cfg.swayPeriodY) * Math.PI * 2) * amp * 0.6;
-		/* GATED (P12 / D-84). `perspective-origin` lives on the element that establishes the coil's 3D
-		   context, so writing it invalidates the computed style of every work under it — and it was written
-		   on EVERY frame, including the ~95% of frames where `life` is 0 and the value is the unchanged
-		   "50.00% 50.00%". Writing only on change costs one string compare and takes that invalidation off
-		   the whole of active scrolling, which is exactly when it was least affordable. */
-		const origin = `${(50 + ox).toFixed(2)}% ${(50 + oy).toFixed(2)}%`;
-		if (origin !== lastOrigin) {
-			lastOrigin = origin;
-			viewportEl.style.perspectiveOrigin = origin;
-		}
-	}
+	/* PERF-007: `renderAmbient()` — the camera sway — lived here. See the note in CFG for what it did, why
+	   its cost was a whole-subtree style invalidation on every frame, and what carries the world's life at
+	   rest instead (the CSS sky behind the coil). To restore it, see the changelog entry PERF-007.
+	   LIFE HOOK: per-work inertia would layer on here, added to each work's transform in place(). */
 
 	/* Keyboard: focusing a work travels the camera to its reading moment. Native scroll does the moving,
 	   so focus, scrollbar and camera can never disagree. */
@@ -1434,7 +1622,8 @@ export function createTraverse(root, opts = {}) {
 
 	function onKey(e) {
 		if (e.metaKey || e.ctrlKey || e.altKey) return;
-		lastInput = performance.now(); // keyboard travel resets the idle-drift timer too
+		lastInput = performance.now(); // keyboard travel resets the auto-scroll's delay too
+		wake();
 		const cur = focused
 			? works.findIndex((w) => w.el === focused)
 			: Math.round(journey);
@@ -1467,7 +1656,12 @@ export function createTraverse(root, opts = {}) {
 	}
 
 	function onFocusOut(e) {
-		if (e.target.closest('[data-tv-work]') === focused) focused = null;
+		if (e.target.closest('[data-tv-work]') === focused) {
+			focused = null;
+			/* A keyboard visitor letting go of a work is the moment the auto-scroll may be re-armed, and the
+			   arming happens at the foot of tick() — so the loop has to run one more frame to get there. */
+			wake();
+		}
 	}
 
 	/* CAPTURE THE RETURN POINT (Phase 3 / D-73). When the visitor follows a project card OUT of the coil, store
@@ -1498,18 +1692,51 @@ export function createTraverse(root, opts = {}) {
 
 	function onPointerOver(e) {
 		const el = e.target.closest('[data-tv-work]');
-		if (el) hovered = el;
+		if (el) {
+			hovered = el;
+			wake(); // the hover lift is an eased value; it needs frames to ease over
+		}
 	}
 	function onPointerOut(e) {
 		/* Only clear when the pointer actually leaves the hovered work — pointerout also fires when moving
 		   between the work's own descendants, and relatedTarget still inside it means we have not left. */
 		const to = e.relatedTarget;
 		if (hovered && (!to || !hovered.contains(to))) {
-			if (e.target.closest('[data-tv-work]') === hovered) hovered = null;
+			if (e.target.closest('[data-tv-work]') === hovered) {
+				hovered = null;
+				wake(); // …and to ease back out again
+			}
 		}
 	}
 
 	/* ---- lifecycle ----------------------------------------------------------------------------- */
+
+	/* PERF-007. A background tab has nothing to draw and must not travel. Resuming resets the auto-scroll's
+	   delay to the moment of return, so a visitor never comes back to a page that has walked on without
+	   them and is still walking. */
+	function onVisibility() {
+		if (document.hidden) {
+			sleep();
+			if (autoArm) {
+				clearTimeout(autoArm);
+				autoArm = 0;
+			}
+			autoRun = false;
+			autoLife = 0;
+		} else {
+			lastInput = performance.now();
+			lastT = 0;
+			wake();
+		}
+	}
+
+	/* A HARD UNLOAD IS NOT A TEARDOWN TO THE DOCUMENT. `stop()` normally hands the page back to the
+	   accessible column, which includes restoring every stashed `srcset` — and doing that while the browser
+	   is navigating away would queue ~30 image fetches nobody will ever see. So the unload path keeps the
+	   deferral and only releases the machinery. */
+	function onPageHide() {
+		stop({ keepDeferred: true });
+	}
 
 	let resizeRaf = 0;
 	function onResize() {
@@ -1518,6 +1745,7 @@ export function createTraverse(root, opts = {}) {
 			measure();
 			readScroll();
 			render();
+			wake();
 		});
 	}
 
@@ -1592,9 +1820,7 @@ export function createTraverse(root, opts = {}) {
 		place();
 		readScroll();
 		journey = target;
-		clock = 0;
 		lastT = 0;
-		life = 0;
 		lastInput = performance.now(); // the auto-scroll's clock starts at the arrival, not at zero
 		autoLife = 0;
 		autoRun = false;
@@ -1608,12 +1834,17 @@ export function createTraverse(root, opts = {}) {
 			if (document.readyState === 'complete') setTimeout(place, 200);
 			else window.addEventListener('load', () => setTimeout(place, 60), { once: true });
 		}
-		frame = requestAnimationFrame(tick);
+		wake();
+		/* The look-ahead opens from `loadAheadFirst` to `loadAhead` at `loadRampMs` (D-80), and it is applied
+		   inside place(), which only runs on a frame. A visitor who lands and does not move would therefore
+		   never get the widened window — so one frame is requested at exactly that moment. It costs a single
+		   tick and then the loop goes back to sleep. */
+		setTimeout(wake, cfg.loadRampMs + 40);
 		/* The cached scroll range is measured in measure(), which runs before the footer's own imagery and the
 		   fonts have settled. One refresh at load costs a single layout and keeps the cache honest without ever
 		   putting a layout read back on the scroll path (P10 / D-81). */
 		if (document.readyState !== 'complete')
-			window.addEventListener('load', () => { refreshRange(); readScroll(); }, { once: true });
+			window.addEventListener('load', () => { refreshRange(); readScroll(); wake(); }, { once: true });
 		window.addEventListener('scroll', readScroll, { passive: true });
 		/* THE VISITOR'S OWN INPUT, AHEAD OF THE SCROLL EVENT (P21). These fire before the page has moved, so
 		   the auto-scroll is already released by the time the first pixel of a gesture lands — there is never
@@ -1629,6 +1860,22 @@ export function createTraverse(root, opts = {}) {
 			stage.addEventListener('pointerover', onPointerOver);
 			stage.addEventListener('pointerout', onPointerOut);
 		}
+		/* ---- PERF-007 lifecycle ----------------------------------------------------------------
+		   A HIDDEN TAB DRAWS NOTHING. Browsers already throttle rAF in a background tab, but they do not
+		   stop the auto-scroll's timer, and coming back to a page that has travelled while you were reading
+		   your email is exactly the "het beweegt uit zichzelf" this work is removing. So: sleep on hide,
+		   and on show resume from THIS moment — `lastInput` is reset so the auto-scroll's delay starts
+		   again from the visitor's return rather than from whenever they left. */
+		document.addEventListener('visibilitychange', onVisibility);
+		/* THE NEAR PLANE. tick() sleeps while the lightbox owns the screen; this is what wakes it when the
+		   lightbox closes. An attribute observer on <body>'s class fires only when a class actually changes,
+		   which on this page is a handful of times in a session — far cheaper than the frame-rate polling it
+		   replaces, and it needs no handshake with the lightbox module. */
+		npObserver = new MutationObserver(wake);
+		npObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+		/* Backstop: nothing may outlive the page (the brief's cleanup requirement). bfcache restores the
+		   runtime's own state, so this is only the hard-unload path. */
+		window.addEventListener('pagehide', onPageHide);
 
 		/* THE STOP (WCAG 2.2.2). The page provides the control; the engine owns the state, so there is no
 		   cross-module handshake and nothing to wire when the runtime is not mounted (under reduced motion
@@ -1637,7 +1884,8 @@ export function createTraverse(root, opts = {}) {
 		autoBtn = root.querySelector('[data-pf-auto]');
 		if (autoBtn) {
 			try {
-				autoPaused = sessionStorage.getItem(AUTO_OFF_KEY) === '1';
+				/* PERF-001: an explicit opt-IN. Absent means off, so a fresh session never travels by itself. */
+				autoPaused = sessionStorage.getItem(AUTO_ON_KEY) !== '1';
 			} catch {
 				/* ignore */
 			}
@@ -1645,10 +1893,18 @@ export function createTraverse(root, opts = {}) {
 			autoBtn.addEventListener('click', () => {
 				autoPaused = !autoPaused;
 				if (autoPaused) releaseAuto();
-				else lastInput = performance.now();
+				else {
+					/* Pressing START is an explicit request, so the journey begins from this moment's own
+					   `autoDelay` — the visitor gets the full pause to look at the photograph they were
+					   reading before the page carries on. `wake()` is needed because with the auto-scroll off
+					   the loop is allowed to be asleep (PERF-007); without it, pressing start would do
+					   nothing until the next gesture. */
+					lastInput = performance.now();
+					wake();
+				}
 				try {
-					if (autoPaused) sessionStorage.setItem(AUTO_OFF_KEY, '1');
-					else sessionStorage.removeItem(AUTO_OFF_KEY);
+					if (autoPaused) sessionStorage.removeItem(AUTO_ON_KEY);
+					else sessionStorage.setItem(AUTO_ON_KEY, '1');
 				} catch {
 					/* ignore */
 				}
@@ -1665,21 +1921,30 @@ export function createTraverse(root, opts = {}) {
 		autoBtn.classList.toggle('is-off', autoPaused);
 		autoBtn.setAttribute(
 			'aria-label',
-			autoPaused ? 'Automatisch scrollen aanzetten' : 'Automatisch scrollen pauzeren'
+			autoPaused ? 'Automatisch scrollen starten' : 'Automatisch scrollen pauzeren'
 		);
 	}
 
-	function stop() {
+	function stop(opts) {
 		running = false;
-		cancelAnimationFrame(frame);
+		sleep();
+		if (autoArm) {
+			clearTimeout(autoArm);
+			autoArm = 0;
+		}
+		cancelAnimationFrame(resizeRaf);
+		if (npObserver) {
+			npObserver.disconnect();
+			npObserver = null;
+		}
+		document.removeEventListener('visibilitychange', onVisibility);
+		window.removeEventListener('pagehide', onPageHide);
 		delete root.dataset.tvActive;
 		/* The document goes back to being the single accessible column, where every photograph is simply
-		   present — so nothing may stay stashed behind the coil's load window (P9 / D-80). */
-		releaseAllDeferred();
-		if (viewportEl) {
-			viewportEl.style.perspectiveOrigin = '';
-			viewportEl.style.visibility = '';
-		}
+		   present — so nothing may stay stashed behind the coil's load window (P9 / D-80). Skipped on a hard
+		   unload, where there is no document left to hand back to (see onPageHide). */
+		if (!opts || !opts.keepDeferred) releaseAllDeferred();
+		if (viewportEl) viewportEl.style.visibility = '';
 		if (stage) {
 			stage.style.opacity = '';
 			stage.style.transform = '';
@@ -1878,6 +2143,7 @@ export function createTraverse(root, opts = {}) {
 		readScroll();
 		journey = target;
 		render();
+		wake();
 		return cfg;
 	}
 

@@ -367,8 +367,28 @@ export function initArchCinema() {
 			     · `hour` — TIME, MONOTONE. Blue hour → dusk → nocturne, and it never runs backwards, because that is
 			                not something an evening does. The two curves crossing is what makes the descent
 			                read as evening rather than as rewind. */
+			/* ============================================================================================
+			 * ONE UPDATE PER SCROLL, NOT PER FRAME (PERF-005 / P22)
+			 * ============================================================================================
+			 * Every value below is a pure function of where the reader is — `window.scrollY` and the
+			 * viewport rectangles of the beats, which cannot move unless the page scrolls or is re-measured.
+			 * Running it on `gsap.ticker` therefore paid 60 times a second for an answer that only changes
+			 * when the reader moves, and it did so for the whole life of the page. It also read
+			 * `getBoundingClientRect()` on several elements on every one of those frames.
+			 *
+			 * MEASURED on the built site, four seconds in which the visitor does nothing at all (before):
+			 *     desktop 25 recalcs / 119 ms, mobile 15 recalcs / 23 ms (on top of GSAP's own idle ticker).
+			 *
+			 * THE AUTONOMOUS BREATH IS GONE WITH IT: `Math.sin(t * 0.06) * 1.1 * A` on the high-air layer's travel — the only term(s) here that were a function
+			 * of TIME rather than of the reader, and therefore the only reason a permanent loop was needed.
+			 * On the homepage the same breath was re-implemented as a CSS animation in four different ways
+			 * and every one of them still cost a full-rate style recalculation, because these are fixed,
+			 * isolated, full-viewport layers sitting behind the whole document (see the measurement table in
+			 * src/pages/index.astro above `.stage__sky--b`). The brief's condition — keep one breath IF it
+			 * demonstrably costs little — therefore resolves to removing it. The world stands still exactly
+			 * as long as the reader does, and moves completely, from the first pixel, the moment they scroll.
+			 * ============================================================================================ */
 			function update() {
-				const t = gsap.ticker.time;
 				const y = window.scrollY;
 				const alt =
 					y <= peak
@@ -405,7 +425,7 @@ export function initArchCinema() {
 				   The lateral sweep is deliberately NOT carried here any more. A horizontal term on a layer
 				   whose gradient is vertical is a translation nobody can see, and the pinned beat's own
 				   diagonal now carries the reader's movement (see THE TRAVERSE below). */
-				const liftY = lerp(-26, 46, alt) * A + down * 16 * A + Math.sin(t * 0.06) * 1.1 * A;
+				const liftY = lerp(-26, 46, alt) * A + down * 16 * A;
 				lift.style.transform = 'translate3d(0,' + liftY.toFixed(2) + 'vh,0)';
 				// It thins as you rise above it, and keeps a residue to the end: at altitude there is always
 				// thin high air, and it is what stops the last third of the page from going inert.
@@ -437,8 +457,51 @@ export function initArchCinema() {
 			docEl.classList.add('motion-scene');
 			refreshMetrics();
 			update();
-			gsap.ticker.add(update);
-			ScrollTrigger.addEventListener('refresh', refreshMetrics);
+			/* ---- THE DRIVE (PERF-005). `update()` runs once per FRAME while the reader is scrolling and not
+			   at all when they are not. `passive: true` so this can never delay a scroll; running off
+			   frames rather than off events also matters because a fast wheel or trackpad delivers more
+			   than one scroll event per frame. */
+			/* THE SETTLE TAIL, and it is load-bearing rather than caution.
+			   Several values above are read from `getBoundingClientRect()` of elements that a SCRUBBED
+			   ScrollTrigger is still moving after the reader's last scroll event — a scrub is, by
+			   definition, catch-up that outlives the gesture. Updating only on the scroll event would
+			   therefore freeze the light a fraction of a second before the composition it is lighting has
+			   finished arriving. So a scroll starts a short rAF loop that keeps running until the page has
+			   been quiet for `TAIL`, which is comfortably longer than the longest scrub on this page, and
+			   then stops completely. Idle cost is still zero; the only frames drawn are the ones in which
+			   something is genuinely still moving. */
+			const TAIL = 700; // ms of quiet after the last scroll before the loop stops
+			let lastScrollAt = 0;
+			let looping = false;
+			const loop = (now) => {
+				update();
+				if (now - lastScrollAt < TAIL) requestAnimationFrame(loop);
+				else {
+					looping = false;
+					/* PERF-012: the hint is taken back the moment the world has stopped. */
+					docEl.classList.remove('is-moving');
+				}
+			};
+			const requestUpdate = () => {
+				lastScrollAt = performance.now();
+				if (looping) return;
+				looping = true;
+				/* PERF-012 — `will-change` IS A PROMISE, NOT A DECORATION, so it is given only while it is true.
+				   The stylesheets used to declare it permanently on every full-screen atmosphere layer and on every
+				   scroll-driven photograph, which asks the compositor to keep a layer for each of them for the whole
+				   life of the page — six to eight full-viewport layers at device resolution, plus the photographs.
+				   This class is raised on the frame the world starts moving and dropped on the frame it stops, which
+				   is exactly the "kort vóór actieve beweging toevoegen, na stabilisatie verwijderen" the brief asks
+				   for, and it costs one class toggle per scroll burst instead of a permanent GPU allocation. */
+				docEl.classList.add('is-moving');
+				requestAnimationFrame(loop);
+			};
+			window.addEventListener('scroll', requestUpdate, { passive: true });
+			window.addEventListener('resize', requestUpdate, { passive: true });
+			ScrollTrigger.addEventListener('refresh', () => {
+				refreshMetrics();
+				requestUpdate();
+			});
 
 			/* ── THE TURN ─────────────────────────────────────────────────────────────────────────────
 			   Applied from the same ticker as the sky, off one shared `turn` value, so the composition and
@@ -742,8 +805,9 @@ export function initArchCinema() {
 			ScrollTrigger.refresh();
 
 			return () => {
-				gsap.ticker.remove(update);
-				ScrollTrigger.removeEventListener('refresh', refreshMetrics);
+				window.removeEventListener('scroll', requestUpdate);
+				window.removeEventListener('resize', requestUpdate);
+				docEl.classList.remove('is-moving');
 				docEl.classList.remove('motion-scene');
 			};
 		}

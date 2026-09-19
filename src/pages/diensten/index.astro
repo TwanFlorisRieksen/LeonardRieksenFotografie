@@ -335,7 +335,6 @@ const intImg = projects.find((p) => p.id === 'interieur-ruimte-en-licht');
 		grid-template-columns: 1fr;
 		gap: clamp(1.75rem, 1rem + 3vw, 3.5rem);
 		align-items: center;
-		will-change: transform;
 	}
 	/* The rigid box holding the whole photograph, aspect ratio is the image's own (intrinsic, via Media), so
 	   the photograph is always complete. Baseline width; the runtime overrides with a no-upscale arrival width
@@ -344,7 +343,6 @@ const intImg = projects.find((p) => p.id === 'interieur-ruimte-en-licht');
 		position: relative;
 		margin: 0;
 		width: 100%;
-		will-change: transform;
 	}
 	.room__photo {
 		display: block;
@@ -467,7 +465,6 @@ const intImg = projects.find((p) => p.id === 'interieur-ruimte-en-licht');
 	.stage > * {
 		position: absolute;
 		inset: 0;
-		will-change: opacity, transform;
 	}
 
 	/* The room's own dark, the constant, always on under motion-scene, and what shows whenever no window
@@ -600,7 +597,11 @@ const intImg = projects.find((p) => p.id === 'interieur-ruimte-en-licht');
 			color-mix(in srgb, var(--sh) 10%, transparent) 62%,
 			transparent 78%
 		);
-		mix-blend-mode: screen;
+		/* PERF-014: `mix-blend-mode: screen` removed. A blended layer cannot be composited independently, so
+		   every frame in which this element moves — and it moves on every frame of every scroll — dragged a
+		   full style recalculation through the main thread. Over this page's near-black ground the blend
+		   buys nothing that can be seen: A/B of the rendered page at three scroll positions, mean 0.43-0.58 / 255, maximum 6, no channel over 8.
+		   To restore, put `mix-blend-mode: screen;` back here. */
 		opacity: 0;
 	}
 	/* Air, a soft depth plane that drifts laterally and rises slower than the reader scrolls (parallax
@@ -610,7 +611,11 @@ const intImg = projects.find((p) => p.id === 'interieur-ruimte-en-licht');
 		background:
 			radial-gradient(58% 44% at 30% 26%, rgba(var(--p-atmos-cool), 0.07) 0%, transparent 60%),
 			radial-gradient(52% 38% at 78% 62%, rgba(var(--p-atmos-warm), 0.05) 0%, transparent 56%);
-		mix-blend-mode: screen;
+		/* PERF-014: `mix-blend-mode: screen` removed. A blended layer cannot be composited independently, so
+		   every frame in which this element moves — and it moves on every frame of every scroll — dragged a
+		   full style recalculation through the main thread. Over this page's near-black ground the blend
+		   buys nothing that can be seen: A/B of the rendered page at three scroll positions, mean 0.43-0.58 / 255, maximum 6, no channel over 8.
+		   To restore, put `mix-blend-mode: screen;` back here. */
 		opacity: 0.5;
 	}
 	/* THE DARK BETWEEN, made structural. JS drives this as the INVERSE of the light, so the passage between
@@ -683,5 +688,24 @@ const intImg = projects.find((p) => p.id === 'interieur-ruimte-en-licht');
 	:global(html.motion-scene .cta .t-eyebrow) {
 		opacity: 0;
 		visibility: hidden;
+	}
+
+	/* ============================================================================================
+	 * PERF-012 — `will-change` IS PAID FOR PER ELEMENT, FOR AS LONG AS IT IS DECLARED.
+	 * These used to be declared unconditionally, which asks the compositor for a dedicated layer at device
+	 * resolution for the whole life of the page, for elements that only move while the reader scrolls.
+	 * `html.is-moving` is raised by this page's runtime on the frame the world starts moving and dropped on
+	 * the frame it stops, so the hint is true exactly while it is true. Nothing about the rendering
+	 * changes — an element that is actually being transformed is promoted by the browser anyway; what goes
+	 * is the permanent allocation for an element standing still.
+	 * The full-screen `.stage > *` layers lose the hint outright rather than gaining the gate: they carry
+	 * only `opacity` and a small `transform`, both of which the compositor handles on demand, and they are
+	 * the largest surfaces on the page — where a permanent layer costs most and buys least.
+	 * TO RESTORE: move each declaration back into its own rule and re-add `will-change: opacity, transform`
+	 * to `.stage > *`.
+	 * ============================================================================================ */
+	:global(html.is-moving) .room__camera,
+	:global(html.is-moving) .room__frame {
+		will-change: transform;
 	}
 </style>

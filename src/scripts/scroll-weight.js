@@ -34,26 +34,70 @@
  * scrolling remains the foundation on every device (blueprint 7.30).
  */
 
-/**
- * The most catch-up a scroll-linked move may carry under direct manipulation, in seconds.
+/* ============================================================================================
+ * P22 / PERF-002 — THE SAME RULE, RE-SCALED: WEIGHT WITHOUT LAG
+ * ============================================================================================
+ * THE OWNER'S SECOND REPORT, on a pointer this time: the site "voelt stroperig", the image "blijft
+ * bewegen nadat de invoer al is gestopt". The P14 note below diagnosed the touch half of this correctly
+ * and fixed it; what it left standing is that the authored DESKTOP weights are also too heavy.
  *
- * Not 0 (`scrub: true`): a hair of smoothing still absorbs a single dropped frame on a weak device, which
- * is worth having and is far below the ~100 ms at which a delay becomes perceptible as lag. Measured
- * against the numbers above, this takes the homepage hero's post-gesture travel from 800 ms to ~160 ms and
- * the specialisation plates' from 1766 ms to ~160 ms.
+ * WHY THE MEASURED NUMBERS LOOK BETTER THAN THE PAGE FEELS. ScrollTrigger's scrub is a tween with an
+ * `expo` ease, which front-loads almost everything: at `scrub: 0.8` the homepage hero covers 90% of its
+ * travel in 151 ms and then CREEPS through the last tenth for another 184 ms (measured t90 151 ms,
+ * t99 335 ms). The average is respectable and the tail is what the eye actually reads — a picture that
+ * is still arriving long after the hand stopped. That tail is what this compresses.
+ *
+ * WHAT IS NOT CHANGED, DELIBERATELY. Not one authored value is edited at its call site. Every scrub on
+ * the site already passes through this function, so the art direction — which beat carries more weight
+ * than which — stays exactly where its author put it, and is simply expressed over a shorter range. The
+ * mapping below is monotone, so the ordering of all seven authored weights is preserved precisely:
+ *
+ *     authored   0.45   0.50   0.80   0.85   0.90   1.00   1.20
+ *     pointer    0.100  0.107  0.147  0.153  0.160  0.173  0.200
+ *     touch      0.060  0.064  0.088  0.092  0.096  0.104  0.120
+ *
+ * The ceilings come from the brief: ~0.10–0.18 s for general pointer movement, ~0.20–0.25 s at most for
+ * the big hero transition (the heaviest authored weight, 1.2, lands on 0.20), and ~0.06–0.12 s on touch.
+ * Nothing reaches 0, so a single dropped frame is still absorbed and no move becomes mechanical.
+ * ============================================================================================ */
+
+/** The lightest and heaviest authored weights on the site — the input range of the mapping. */
+const AUTHORED_MIN = 0.45;
+const AUTHORED_MAX = 1.2;
+
+/** The output range under a pointer, in seconds of catch-up. */
+const POINTER_MIN = 0.1;
+const POINTER_MAX = 0.2;
+
+/**
+ * The output range under direct manipulation. Lower, for the reason the P14 note gives below: smoothing
+ * exists to smooth a jerky input, and a finger is not jerky. Not 0 — a hair of smoothing still absorbs a
+ * dropped frame on a weak device, and 0.06–0.12 s is far under the ~100 ms at which delay reads as lag.
  */
+const TOUCH_MIN = 0.06;
+const TOUCH_MAX = 0.12;
+
+/** The old flat touch ceiling (P14), kept as a named value because the note below refers to it. */
 export const TOUCH_SCRUB = 0.16;
+
+const remap = (v, inMin, inMax, outMin, outMax) => {
+	const t = inMax === inMin ? 0 : (v - inMin) / (inMax - inMin);
+	const c = t < 0 ? 0 : t > 1 ? 1 : t;
+	return outMin + (outMax - outMin) * c;
+};
 
 /**
  * Weight for one scroll-linked timeline.
  *
- * @param {number} desktopScrub the authored value — the tuned weight for a pointer device
+ * @param {number} desktopScrub the authored value — the tuned RELATIVE weight for this beat
  * @param {boolean} coarse      true on a touch primary input; pass `ctx.conditions.coarse` so GSAP's
  *                              matchMedia rebuilds the context if the primary input ever changes
  * @returns {number} the scrub to use
  */
 export const scrubFor = (desktopScrub, coarse) =>
-	coarse ? Math.min(desktopScrub, TOUCH_SCRUB) : desktopScrub;
+	coarse
+		? remap(desktopScrub, AUTHORED_MIN, AUTHORED_MAX, TOUCH_MIN, TOUCH_MAX)
+		: remap(desktopScrub, AUTHORED_MIN, AUTHORED_MAX, POINTER_MIN, POINTER_MAX);
 
 /**
  * The matchMedia condition every cinematic runtime adds alongside `motion` and `desktop`.

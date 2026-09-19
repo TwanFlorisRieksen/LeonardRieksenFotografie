@@ -109,12 +109,33 @@ export function initHomeCinema() {
 				maxScroll = Math.max(1, docEl.scrollHeight - vh);
 			}
 
-			/* ---- THE DESCENDING ENVIRONMENT (one update, every frame) ----------------------------------
-			   p = 0 at the top of the page, 1 at the very bottom — the camera's ALTITUDE. Everything is a
-			   function of p (where the reader is) plus a slow autonomous breath (so the world lives at rest).
-			   Only opacity/transform/custom-property writes — no layout reads, no gradient repaints. --- */
+			/* ============================================================================================
+			 * THE DESCENDING ENVIRONMENT — ONE UPDATE, PER SCROLL, NOT PER FRAME (PERF-003 / P22)
+			 * ============================================================================================
+			 * p = 0 at the top of the page, 1 at the very bottom — the camera's ALTITUDE. Every value below
+			 * is a pure function of p, which is a pure function of `window.scrollY`. It therefore cannot
+			 * change unless the reader scrolls (or the page is re-measured), and running it on a ticker was
+			 * paying 60 times a second for an answer that only ever changes when the reader moves.
+			 *
+			 * MEASURED before this change, four seconds in which the visitor does nothing at all:
+			 *     420 style recalculations, 355 ms of main thread, 240 frames.
+			 *
+			 * WHAT WAS ALSO IN HERE AND IS NOT ANY MORE: the autonomous breath — three
+			 * `Math.sin(gsap.ticker.time * k)` terms, on the horizon's travel, on the haze's drift and on the
+			 * hero's water-light. Those were the only terms that were a function of TIME rather than of the
+			 * reader, and therefore the only reason a permanent loop was needed at all.
+			 * They were re-implemented as CSS animations first, in four different ways, and every one of them
+			 * still cost a full-rate style recalculation — see the measurement table in index.astro above
+			 * `.stage__sky--b`. The atmosphere therefore stands still while the reader does, which is what
+			 * the brief permits and what its "keep one breath IF it demonstrably costs little" condition
+			 * resolves to here. The world still lives at the hero (the scroll cue) and moves completely,
+			 * from the first pixel, the moment the reader scrolls.
+			 * TO RESTORE: put the three sine terms back (horizon `+ Math.sin(t * 0.3) * 1.1 * A` vh, haze
+			 * `Math.sin(t * 0.16) * 2.2 * A` % on X, and the `--lx`/`--lo` block on `lumen`), reinstate
+			 * `const t = gsap.ticker.time;` at the top of update(), and call `gsap.ticker.add(update)`
+			 * instead of the scroll drive below.
+			 * ============================================================================================ */
 			function update() {
-				const t = gsap.ticker.time;
 				const p = clamp01(window.scrollY / maxScroll);
 
 				// Sky blend — blue hour fades out over the first ~40% of the descent; the warm interior fades
@@ -126,41 +147,28 @@ export function initHomeCinema() {
 				// from low to high = a genuine sense of falling THROUGH space, not just recolouring), breathes
 				// slowly, and shifts cool→warm. Strong at the hero, dimming into the fall, a warm return low.
 				const warm = smooth((p - 0.5) / 0.5);
-				const hy = lerp(16, -34, p) + Math.sin(t * 0.3) * 1.1 * A;
+				const hy = lerp(16, -34, p); // the breath rides alongside, in CSS, on `translate`
 				horizon.style.transform = 'translate3d(0,' + hy.toFixed(2) + 'vh,0)';
 				horizon.style.opacity = (0.85 * (1 - smooth((p - 0.12) / 0.46)) + 0.32 * warm).toFixed(3);
 				horizon.style.setProperty('--warm', warm.toFixed(3));
 
 				// Atmospheric haze — a soft depth plane that drifts laterally + rises slower than scroll (parallax
 				// depth). Keeps the air alive without any busy motion.
-				const hx = Math.sin(t * 0.16) * 2.2 * A;
 				const hhy = lerp(8, -16, p);
-				haze.style.transform =
-					'translate3d(' + hx.toFixed(2) + '%,' + hhy.toFixed(2) + 'vh,0)';
+				haze.style.transform = 'translate3d(0,' + hhy.toFixed(2) + 'vh,0)';
 
 				// Depth vignette — deepens AS the camera passes the gallery (the abyss the plate emerges from)
 				// and again as it lands in the deep footer dark.
 				const vg = 0.22 + 0.5 * Math.max(bump(p, 0.36, 0.16), smooth((p - 0.72) / 0.28));
 				vig.style.opacity = vg.toFixed(3);
 
-				// Hero living water-light — drift + breath of Leo's reflected window-lights on the still water,
-				// so the establishing shot keeps a cinematic presence at rest.
-				// On DESKTOP the pinned scene's exchange takes this layer out with the photograph
-				// (`set([heroMedia, heroScrim, heroLumen], autoAlpha:0)`), so it needs nothing here. MOBILE has
-				// no such exchange, so the water-light is faded out with the water it models — otherwise it
-				// outlives the shot as a warm bloom hanging over an empty hero box. Driven here off `--lo`
-				// rather than as a tween on `opacity`, deliberately: this element's opacity is already owned by
-				// the 1.4s intro tween below, and a second tween on the same property would fight it for the
-				// opening seconds. Amplitude only — no new movement, and it cannot darken anything (the layer
-				// is `mix-blend-mode: screen`, so it only ever adds light).
-				if (lumen) {
-					const heroLight = desktop ? 1 : clamp01(1 - window.scrollY / (vh * 0.7));
-					lumen.style.setProperty('--lx', (50 + Math.sin(t * 0.33) * 7).toFixed(1) + '%');
-					lumen.style.setProperty(
-						'--lo',
-						((0.11 + Math.sin(t * 0.55) * 0.05) * heroLight).toFixed(3)
-					);
-				}
+				/* THE HERO'S WATER-LIGHT used to be written here, as two custom properties (`--lx`, `--lo`)
+				   on a full-screen screen-blended gradient — i.e. a full-viewport GRADIENT REPAINT on every
+				   frame, forever, to move a soft glow a few per cent sideways. Its gradient is now static
+				   (index.astro), painted once at the value the breath oscillated around. The element's
+				   `opacity` is left alone here because GSAP owns it — the 1.4 s intro tween, the desktop
+				   exchange's `autoAlpha: 0`, and (new) the mobile hero melt, which is what the old
+				   `heroLight` factor approximated by hand. */
 			}
 
 			// Seed the world at the hero altitude and reveal it BEFORE flagging `.motion-scene`, so the honest
@@ -170,8 +178,51 @@ export function initHomeCinema() {
 			docEl.classList.add('motion-scene');
 			if (lumen) gsap.to(lumen, { opacity: 1, duration: 1.4, delay: 0.3, ease: 'power1.out' });
 
-			gsap.ticker.add(update);
-			ScrollTrigger.addEventListener('refresh', refreshMetrics);
+			/* ---- THE DRIVE (PERF-003). `update()` runs once per FRAME while the reader is scrolling and
+			   not at all when they are not. `passive: true` so this can never delay a scroll; running off
+			   frames rather than off events also matters because a fast wheel or trackpad delivers more
+			   than one scroll event per frame. */
+			/* THE SETTLE TAIL, and it is load-bearing rather than caution.
+			   Several values above are read from `getBoundingClientRect()` of elements that a SCRUBBED
+			   ScrollTrigger is still moving after the reader's last scroll event — a scrub is, by
+			   definition, catch-up that outlives the gesture. Updating only on the scroll event would
+			   therefore freeze the light a fraction of a second before the composition it is lighting has
+			   finished arriving. So a scroll starts a short rAF loop that keeps running until the page has
+			   been quiet for `TAIL`, which is comfortably longer than the longest scrub on this page, and
+			   then stops completely. Idle cost is still zero; the only frames drawn are the ones in which
+			   something is genuinely still moving. */
+			const TAIL = 700; // ms of quiet after the last scroll before the loop stops
+			let lastScrollAt = 0;
+			let looping = false;
+			const loop = (now) => {
+				update();
+				if (now - lastScrollAt < TAIL) requestAnimationFrame(loop);
+				else {
+					looping = false;
+					/* PERF-012: the hint is taken back the moment the world has stopped. */
+					docEl.classList.remove('is-moving');
+				}
+			};
+			const requestUpdate = () => {
+				lastScrollAt = performance.now();
+				if (looping) return;
+				looping = true;
+				/* PERF-012 — `will-change` IS A PROMISE, NOT A DECORATION, so it is given only while it is true.
+				   The stylesheets used to declare it permanently on every full-screen atmosphere layer and on every
+				   scroll-driven photograph, which asks the compositor to keep a layer for each of them for the whole
+				   life of the page — six to eight full-viewport layers at device resolution, plus the photographs.
+				   This class is raised on the frame the world starts moving and dropped on the frame it stops, which
+				   is exactly the "kort vóór actieve beweging toevoegen, na stabilisatie verwijderen" the brief asks
+				   for, and it costs one class toggle per scroll burst instead of a permanent GPU allocation. */
+				docEl.classList.add('is-moving');
+				requestAnimationFrame(loop);
+			};
+			window.addEventListener('scroll', requestUpdate, { passive: true });
+			window.addEventListener('resize', requestUpdate, { passive: true });
+			ScrollTrigger.addEventListener('refresh', () => {
+				refreshMetrics();
+				requestUpdate();
+			});
 
 			/* ---- SCENE 1 · THE HERO DISSOLVES INTO THE SKY --------------------------------------------
 			   The single most important cut on the page was hero → positionering: a self-contained 100vh photo
@@ -306,7 +357,12 @@ export function initHomeCinema() {
 					// is a shot fading, and the box hands off fully transparent (0, not 0.15) onto the stage
 					// sky, which is the same transparent hand-off the pinned desktop scene reaches at unpin.
 					// The choreography is unchanged: same start, same end, same ease, same melt.
-					gsap.to([heroMedia, heroScrim].filter(Boolean), {
+					/* PERF-003 adds `heroLumen` to this set. The mobile branch used to fade the water-light by
+					   multiplying its own `--lo` by a hand-computed `heroLight` on every ticker frame; the
+					   layer's light now lives in CSS, so the fade belongs on the same scrubbed tween that
+					   already carries the photograph and its scrim. Same intent ("the water-light must not
+					   outlive the water"), same curve, same trigger — one fewer per-frame gradient repaint. */
+					gsap.to([heroMedia, heroScrim, heroLumen].filter(Boolean), {
 						opacity: 0,
 						ease: 'none',
 						scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: scrubFor(0.8, coarse) },
@@ -418,8 +474,9 @@ export function initHomeCinema() {
 			//   3. the first impression survives this bundle failing to load entirely.
 
 			return () => {
-				gsap.ticker.remove(update);
-				ScrollTrigger.removeEventListener('refresh', refreshMetrics);
+				window.removeEventListener('scroll', requestUpdate);
+				window.removeEventListener('resize', requestUpdate);
+				docEl.classList.remove('is-moving');
 				docEl.classList.remove('motion-scene');
 			};
 		}

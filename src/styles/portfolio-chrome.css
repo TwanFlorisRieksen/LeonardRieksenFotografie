@@ -311,30 +311,61 @@ html.js .tv[data-tv-boot] .pf-intro::after,
 	opacity: var(--tv-warm, 0);
 }
 
+/* ============================================================================================
+ * PERF-014 — A LAYER THAT BLENDS MUST NOT ALSO ANIMATE.
+ *
+ * These are the only two layers in the world that move on their own, and until P22 they were also
+ * screen-blended. That combination is the single most expensive thing on this page at rest, and the cost
+ * is the BLEND, not the animation. MEASURED on the built site, 1440x900, four seconds in which the
+ * visitor does absolutely nothing:
+ *
+ *     as shipped (screen + animation)      461 style recalcs   259 layouts   571.6 ms main thread
+ *     animations forced off                 18                   1            23.5 ms
+ *     BLEND forced to normal, animations still running
+ *                                            0                   0             4.9 ms
+ *
+ * The third row is the proof: with the blend gone the identical 16 s and 26 s cycles run entirely on the
+ * compositor and cost nothing at all. A blended element has to read what is behind it, so Chrome cannot
+ * give it an independent layer — every frame of a slow ambient cycle was dragging a full style recalc and
+ * a layout of the page through the main thread.
+ *
+ * WHAT IT COSTS VISUALLY: nothing that can be seen. `screen` over a near-black sky is arithmetically very
+ * close to a normal composite at the same alpha, and these two layers are deliberately the faintest in the
+ * stack. A/B of the rendered page, same frozen point of both cycles, per-channel:
+ *
+ *     journey 0 (blue hour)        mean 0.219 / 255   max 3    0 px over 8
+ *     journey 0.80 (interieur)     mean 0.310 / 255   max 4    0 px over 8
+ *     journey 0.92 (warm foot)     mean 0.350 / 255   max 5    0 px over 8
+ *
+ * The blend stays exactly where it earns its keep: `.tv-sky__cool` and `.tv-sky__warm` above, which model
+ * light added to a dark world and whose opacity is driven by the JOURNEY — so they change only while the
+ * visitor is travelling, and cost nothing while they are not.
+ *
+ * `will-change` also goes (PERF-012): a CSS animation of `transform`/`opacity` is given a compositor layer
+ * by the browser for its own duration, so declaring the hint permanently only pins a layer that is already
+ * there when it is needed. To restore: re-add `mix-blend-mode: screen` and the two `will-change` lines.
+ * ============================================================================================ */
+
 /* 4. THE BREATH — the world lives at rest (§5.7): a soft central glow low in the frame that breathes on a
    long, low-amplitude cycle (light only, never geometry or layout). A cool blue-hour tint, so it reads as the
-   dominant hour's slow atmospheric pulse; the warm layer above carries the landing. Screen-blended. */
+   dominant hour's slow atmospheric pulse; the warm layer above carries the landing. */
 .tv-sky__breath {
 	background: radial-gradient(
 		70% 46% at 50% 64%,
 		rgba(var(--p-atmos-cool), 0.22) 0%,
 		rgba(var(--p-atmos-cool), 0) 66%
 	);
-	mix-blend-mode: screen;
-	will-change: opacity, transform;
 	animation: tv-breath 16s ease-in-out infinite;
 }
 
 /* 5. THE HAZE — air and depth: two very soft planes that drift slowly and laterally (parallax, no busy
-   motion), giving the world dimension without any readable movement. Low alpha, screen-blended. */
+   motion), giving the world dimension without any readable movement. Low alpha. */
 .tv-sky__haze {
 	inset: -24% -12%;
 	background:
 		radial-gradient(56% 44% at 26% 30%, rgba(var(--p-atmos-cool), 0.1) 0%, transparent 60%),
 		radial-gradient(50% 40% at 82% 54%, rgba(var(--p-atmos-cool), 0.08) 0%, transparent 56%);
-	mix-blend-mode: screen;
 	opacity: 0.85;
-	will-change: transform;
 	animation: tv-haze 26s ease-in-out infinite alternate;
 }
 
